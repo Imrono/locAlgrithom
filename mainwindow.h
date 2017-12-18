@@ -6,6 +6,7 @@
 #include <QTimer>
 #include "datatype.h"
 #include "calcPos.h"
+#include "showPoint.h"
 
 namespace Ui {
 class MainWindow;
@@ -20,12 +21,12 @@ public:
     ~MainWindow();
 
     QVector<labelDistance> dist;
-    QVector<locationCoor>  pos;
+    QVector<QVector<locationCoor>>  pos;
     QVector<locationCoor>  kalmanPos;
     QVector<QLine>         lines;
     QVector<QLine>         kalmanLines;
 
-    locationCoor calcFromDist(uint32_t dist[], uint32_t count = 4);
+    QVector<locationCoor> calcFromDist(uint32_t dist[], uint32_t count = 4);
     void calcPosVector();
     double calcTotalDistanceMeas();
     locationCoor calcKalmanFromPos(uint32_t dist[], uint32_t count = 4);
@@ -35,8 +36,7 @@ public:
 private:
     Ui::MainWindow *ui;
     QTimer timer;
-    QVector<QPoint> labels;
-    QVector<QLine>  showLine;
+    QVector<showPoint> labels;
     calcPos calc;
     int distCount{1};
 

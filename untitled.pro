@@ -28,14 +28,16 @@ SOURCES += \
         mainwindow.cpp \
     calcPos.cpp \
     kalmanCalc.cpp \
-    showPoint.cpp
+    showPoint.cpp \
+    showStore.cpp
 
 HEADERS += \
         mainwindow.h \
         datatype.h \
     calcPos.h \
     kalmanCalc.h \
-    showPoint.h
+    showPoint.h \
+    showStore.h
 
 FORMS += \
         mainwindow.ui

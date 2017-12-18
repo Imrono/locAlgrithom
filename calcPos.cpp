@@ -78,13 +78,13 @@ locationCoor calcPos::calcOnePos(double dist[], locationCoor loca[]) {
     double a21 = 2*(loca[2].x-loca[0].x);
     double a22 = 2*(loca[2].y-loca[0].y);
 
-    //qDebug() << QString("a11(%0)*x + a12(%1)*y = b1(%2)").arg(a11, 6).arg(a12, 6).arg(b1, 6);
-    //qDebug() << QString("a21(%0)*x + a22(%1)*y = b2(%2)").arg(a21, 6).arg(a22, 6).arg(b2, 6);
+    qDebug() << QString("a11(%0)*x + a12(%1)*y = b1(%2)").arg(a11, 6).arg(a12, 6).arg(b1, 6);
+    qDebug() << QString("a21(%0)*x + a22(%1)*y = b2(%2)").arg(a21, 6).arg(a22, 6).arg(b2, 6);
 
     double y_pos = (b1*a21-b2*a11) / (a12*a21-a22*a11);
     double x_pos = (b1*a22-b2*a12) / (a11*a22-a21*a12);
     double z_pos = 0.0f;
-    //qDebug() << QString("(%0,%1,%2)").arg(x_pos, 4).arg(y_pos, 4).arg(z_pos, 4);
+    qDebug() << QString("(%0,%1,%2)").arg(x_pos, 4).arg(y_pos, 4).arg(z_pos, 4);
     return locationCoor{x_pos, y_pos, z_pos};
 }
 locationCoor calcPos::calcOnePos(distance_3 info) {
@@ -93,8 +93,8 @@ locationCoor calcPos::calcOnePos(distance_3 info) {
 
 QVector<locationCoor> calcPos::calcPosFromDistance(uint32_t dist[], uint32_t count) {
     //qDebug() << "dist in:" << dist[0] << dist[1] << dist[2] << dist[3];
-    distance_3 min_3 = calcMin3Loca(dist, count);
-    locationCoor min_Coor = calcPos::calcOnePos(min_3);
+    //distance_3 min_3 = calcMin3Loca(dist, count);
+    //locationCoor min_Coor = calcPos::calcOnePos(min_3);
     //qDebug() << "min_3 location Coordiator:" << min_3.toString() << min_Coor.toString();
 
     QVector<locationCoor> vectorAns;
@@ -110,7 +110,7 @@ QVector<locationCoor> calcPos::calcPosFromDistance(uint32_t dist[], uint32_t cou
                 info.loca[2] = loc[k];
                 locationCoor pos = calcPos::calcOnePos(info);
                 vectorAns.append(pos);
-                //qDebug() << info.toString() << pos.toString();
+                qDebug() << info.toString() << pos.toString();
             }
         }
     }

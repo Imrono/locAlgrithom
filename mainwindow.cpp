@@ -9,14 +9,15 @@ MainWindow::MainWindow(calcPos calcIn, QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    labels.append({0,0});
-    labels.append({0,0});
-    showLine.append({{0,0}, {0,0}});
-    showLine.append({{0,0}, {0,0}});
-    qDebug() << "labelCount:" << labels.count() << "showLine:" << showLine.count();
+    labels.append(showPoint(3, QPen(QColor(0, 160, 230), 2), QBrush(QColor(255, 160, 90))));
+    labels.append(showPoint(3, QPen(QColor(0, 160, 230), 2), QBrush(QColor(255, 160, 90))));
+    labels.append(showPoint(3, QPen(QColor(0, 160, 230), 2), QBrush(QColor(255, 160, 90))));
+    labels.append(showPoint(3, QPen(QColor(0, 160, 230), 2), QBrush(QColor(255, 160, 90))));
+    //labels.append(showPoint(4, QPen(Qt::gray, 2), QBrush(Qt::darkGreen)));
+    qDebug() << "labelCount:" << labels.count();
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(handleTimeout()));
-    //timer.start(500);
+    timer.start(500);
 }
 
 MainWindow::~MainWindow()
@@ -54,40 +55,46 @@ void MainWindow::paintEvent(QPaintEvent *event) {
 
     painter.setRenderHint(QPainter::Antialiasing, true);// 反走样
 
-    painter.setPen(QPen(QColor(0, 160, 230), 2));
-    painter.setBrush(QColor(255, 160, 90));
-    painter.drawEllipse(QPoint(labels[0].rx(), labels[0].ry()), 4, 4);
-
-    painter.setPen(QPen(Qt::gray, 2));
-    painter.setBrush(Qt::darkGreen);
-    painter.drawEllipse(QPoint(labels[1].rx(), labels[1].ry()), 4, 4);
+    labels[0].drawPoint(painter);
+    labels[0].drawLine(painter);
+    labels[1].drawPoint(painter);
+    labels[1].drawLine(painter);
+    labels[2].drawPoint(painter);
+    labels[2].drawLine(painter);
+    labels[3].drawPoint(painter);
+    labels[3].drawLine(painter);
 
     painter.setPen(QPen(QColor(0, 160, 230), 1));
     painter.drawText(0, 0, 50, 10, Qt::AlignLeft, "measure");
-    //painter.drawLine(showLine[0]);
-    painter.drawLines(lines);
+    //painter.drawLines(lines);
 
     painter.setPen(QPen(Qt::gray, 1));
     painter.drawText(0, 10, 50, 10, Qt::AlignLeft, "kalman");
-    //painter.drawLine(showLine[1]);
-    painter.drawLines(kalmanLines);
+    //painter.drawLines(kalmanLines);
 }
 
 void MainWindow::handleTimeout() {
+    /*
     qDebug() << QString("distCount:%0, POSITION(%1,%2,%3)->(%4,%5,%6) => d=%7").arg(distCount, 4)
                 .arg(pos[distCount].x,4,'g',3).arg(pos[distCount].y,4,'g',3).arg(pos[distCount].z,4,'g',3)
                 .arg(kalmanPos[distCount].x,4,'g',3).arg(kalmanPos[distCount].y,4,'g',3).arg(kalmanPos[distCount].z,4,'g',3)
                 .arg(calcDistance(kalmanPos[distCount], pos[distCount]),4,'g',3);
+    */
+    qDebug() << distCount;
+    labels[0].setPosition(pos[distCount][0].x, pos[distCount][0].y);
+    labels[0].setLine(pos[distCount-1][0].x, pos[distCount-1][0].y, pos[distCount][0].x, pos[distCount][0].y);
 
-    QPoint lastPoint = labels[0];
-    labels[0].setX(int(pos[distCount].x));
-    labels[0].setY(int(pos[distCount].y));
-    showLine[0].setPoints(lastPoint, labels[0]);
+    //labels[1].setPosition(kalmanPos[distCount].x, kalmanPos[distCount].y);
+    //labels[1].setLine(kalmanPos[distCount-1].x, kalmanPos[distCount-1].y, kalmanPos[distCount].x, kalmanPos[distCount].y);
 
-    lastPoint = labels[1];
-    labels[1].setX(int(kalmanPos[distCount].x));
-    labels[1].setY(int(kalmanPos[distCount].y));
-    showLine[1].setPoints(lastPoint, labels[1]);
+    labels[1].setPosition(pos[distCount][1].x, pos[distCount][1].y);
+    labels[1].setLine(pos[distCount-1][1].x, pos[distCount-1][1].y, pos[distCount][1].x, pos[distCount][1].y);
+
+    labels[2].setPosition(pos[distCount][2].x, pos[distCount][2].y);
+    labels[2].setLine(pos[distCount-1][2].x, pos[distCount-1][2].y, pos[distCount][2].x, pos[distCount][2].y);
+
+    labels[3].setPosition(pos[distCount][3].x, pos[distCount][3].y);
+    labels[3].setLine(pos[distCount-1][3].x, pos[distCount-1][3].y, pos[distCount][3].x, pos[distCount][3].y);
 
     update();
     distCount++;
@@ -98,13 +105,22 @@ void MainWindow::handleTimeout() {
 
 void MainWindow::calcPosVector() {
     pos.append(calcFromDist(dist[0].distance));
+    qDebug() << "#" << 0 << dist[0].distance[0] << dist[0].distance[1] << dist[0].distance[2] << dist[0].distance[3];
+    qDebug() << "#" << 0 << pos[0][0].toString() << pos[0][1].toString() << pos[0][2].toString() << pos[0][3].toString();
+    qDebug() << "---------------------------------------";
     for (int i = 1; i < dist.count(); i++) {
         pos.append(calcFromDist(dist[i].distance));
-        lines.append(QLine{int(pos[i-1].x), int(pos[i-1].y), int(pos[i].x), int(pos[i].y)});
+        //lines.append(QLine{int(pos[i-1].x), int(pos[i-1].y), int(pos[i].x), int(pos[i].y)});
+        qDebug() << "#" << i << dist[i].distance[0] << dist[i].distance[1] << dist[i].distance[2] << dist[i].distance[3];
+        qDebug() << "#" << i << pos[i][0].toString() << pos[i][1].toString() << pos[i][2].toString() << pos[i][3].toString();
+        qDebug() << "---------------------------------------";
     }
 }
-locationCoor MainWindow::calcFromDist(uint32_t dist[], uint32_t count) {
+QVector<locationCoor> MainWindow::calcFromDist(uint32_t dist[], uint32_t count) {
     QVector<locationCoor> Positions = calc.calcPosFromDistance(dist, count);
+    //qDebug() << Positions[0].toString() << Positions[1].toString() << Positions[2].toString() << Positions[3].toString();
+
+    /*
     locationCoor optimizedPos;
     double maxDistance = 0.0f;
     double tmpDistance = 0.0f;
@@ -133,6 +149,8 @@ locationCoor MainWindow::calcFromDist(uint32_t dist[], uint32_t count) {
 
     optimizedPos = center;
     return optimizedPos;
+    */
+    return Positions;
 }
 double MainWindow::calcTotalDistanceMeas() {
     double ans = 0.0f;
@@ -160,7 +178,7 @@ void MainWindow::calcKalmanPosVector(double Q_in) {
     //double R;   // is sigmaB2 itself
     locationCoor x_t;
 
-    x_t_1 = pos[0];
+    x_t_1 = pos[0][0];
     v_t_1 = {0,0,0};
     v_t_2 = {0,0,0};
     a_t_1 = {0,0,0};
@@ -170,7 +188,7 @@ void MainWindow::calcKalmanPosVector(double Q_in) {
     for(int i = 1; i < pos.count(); i++) {
         //x_hat_t = x_t_1 + (v_t_1 + a_t_1*delta_t/2.0f) * delta_t;
         x_hat_t = x_t_1 + v_t_1 * delta_t;
-        x_t_meas = pos[i];
+        x_t_meas = pos[i][0];
         v_t_meas = (x_t_meas - x_t_1) / delta_t;
         sigma_square_A_t = delta_t*delta_t * sigma_square_A_t_1 + Q;
         sigma_square_B = kalmanCalc::calcSigmaB(v_t_meas, v_t_1);
