@@ -4,12 +4,14 @@
 #include "datatype.h"
 #include "showStore.h"
 
-double distanceSquare(const locationCoor &a, const locationCoor &b);
-double distanceSquare(const QPoint &a, const QPoint &b);
+double calcDistanceSquare(const locationCoor &a, const locationCoor &b);
+double calcDistanceSquare(const QPoint &a, const QPoint &b);
 double calcDistance(const locationCoor &a, const locationCoor &b);
 double calcDistance(const QPoint &a, const QPoint &b);
 double calcTotalDistance(QVector<QLine> &lines, int discount = 10);
 double calcTotalAvgDistance(QVector<QLine> &lines, int discount = 10);
+double calcTotalDistanceSquare(QVector<QLine> &lines, int discount = 10);
+double calcTotalAvgDistanceSquare(QVector<QLine> &lines, int discount = 10);
 
 class calcPos
 {

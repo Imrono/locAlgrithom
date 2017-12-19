@@ -2,13 +2,13 @@
 #include <QtMath>
 #include <QDebug>
 
-double distanceSquare(const locationCoor &a, const locationCoor &b) {
+double calcDistanceSquare(const locationCoor &a, const locationCoor &b) {
     double ans = (a.x - b.x) * (a.x - b.x)
                + (a.y - b.y) * (a.y - b.y)
                + (a.z - b.z) * (a.z - b.z);
     return ans;
 }
-double distanceSquare(const QPoint &a, const QPoint &b) {
+double calcDistanceSquare(const QPoint &a, const QPoint &b) {
     double ans = (a.x() - b.x()) * (a.x() - b.x())
                + (a.y() - b.y()) * (a.y() - b.y());
     return ans;
@@ -31,11 +31,17 @@ double calcTotalDistance(QVector<QLine> &lines, int discount) {
     return ans;
 }
 double calcTotalAvgDistance(QVector<QLine> &lines, int discount) {
+    return calcTotalDistance(lines, discount)/(lines.count()-double(discount));
+}
+double calcTotalDistanceSquare(QVector<QLine> &lines, int discount) {
     double ans = 0.0f;
     for(int i = discount; i < lines.count(); i++) {
-        ans += calcDistance(lines[i].p1(), lines[i].p2());
+        ans += calcDistanceSquare(lines[i].p1(), lines[i].p2());
     }
-    return ans/(lines.count()-double(discount));
+    return ans;
+}
+double calcTotalAvgDistanceSquare(QVector<QLine> &lines, int discount) {
+    return calcTotalDistanceSquare(lines, discount)/(lines.count()-double(discount));
 }
 
 calcPos::calcPos()
@@ -167,19 +173,27 @@ void calcPos::calcPotimizedPos(labelInfo *label) {
     */
 
     for (int i = 0; i < numData; i++) {
-        distance_3 min_3 = calcMin3Loca(dist[i].distance, 4);
-        locationCoor min_Coor = calcPos::calcOnePos(min_3);
+        //distance_3 min_3 = calcMin3Loca(dist[i].distance, 4);
+        //locationCoor min_Coor = calcPos::calcOnePos(min_3);
         //qDebug() << "min_3 location Coordiator:" << min_3.toString() << min_Coor.toString();
+        //optimizedPos = min_Coor;
+        //label->Ans.append(optimizedPos);
+        //label->Reliability.append(1.0f);
 
-        /*
-        for (int j = 0; j < label->RawPoints[i].count(); j++) {
+        int rawPoints = label->RawPoints[i].count();
+        for (int j = 0; j < rawPoints; j++) {
             center = center + label->RawPoints[i][j] / double(label->RawPoints[i].count());
         }
         optimizedPos = center;
-        */
-
-        optimizedPos = min_Coor;
+        double totalDistance = 0.0f;
+        for(int i1 = 0; i1 < rawPoints; i1++) {
+            for(int i2 = 0; i2 < rawPoints; i2++) {
+                totalDistance += calcDistance(label->RawPoints[i][i1], label->RawPoints[i][i2]) / 2.0f;
+            }
+        }
         label->Ans.append(optimizedPos);
+        label->Reliability.append(totalDistance);
+
         if (i > 0)
             label->AnsLines.append(QLine(p_1.toQPoint(), optimizedPos.toQPoint()));
         p_1 = optimizedPos;

@@ -11,7 +11,7 @@ MainWindow::MainWindow(showStore *store, QWidget *parent) :
     ui->setupUi(this);
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(handleTimeout()));
-    //timer.start(500);
+    timer.start(500);
 }
 
 MainWindow::~MainWindow()
@@ -62,14 +62,14 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     store->getLabel(KALMAN_STR)->showStyle.drawPoint(painter);
     store->getLabel(KALMAN_STR)->showStyle.drawLine(painter);
 
-    store->getLabel(MEASUR_STR)->showStyle.drawLines(painter, store->getLabel(MEASUR_STR)->AnsLines);
-    store->getLabel(KALMAN_STR)->showStyle.drawLines(painter, store->getLabel(KALMAN_STR)->AnsLines);
+    //store->getLabel(MEASUR_STR)->showStyle.drawLines(painter, store->getLabel(MEASUR_STR)->AnsLines);
+    //store->getLabel(KALMAN_STR)->showStyle.drawLines(painter, store->getLabel(KALMAN_STR)->AnsLines);
 }
 
 void MainWindow::handleTimeout() {
     locationCoor p_meas = store->getLabel(MEASUR_STR)->Ans[distCount];
     locationCoor p_kalm = store->getLabel(KALMAN_STR)->Ans[distCount];
-    qDebug() << QString("distCount:%0, POSITION(%1,%2,%3)->KALMAN(%4,%5,%6) => d=%7").arg(distCount, 4)
+    qDebug() << QString("distCount:%0, POSITION(%1,%2,%3)->KALMAN(%4,%5,%6) => d=%7").arg(distCount, 4, 10, QChar('0'))
                 .arg(p_meas.x,4,'g',3).arg(p_meas.y,4,'g',3).arg(p_meas.z,4,'g',3)
                 .arg(p_kalm.x,4,'g',3).arg(p_kalm.y,4,'g',3).arg(p_kalm.z,4,'g',3)
                 .arg(calcDistance(p_meas, p_kalm),4,'g',3);

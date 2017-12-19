@@ -8,19 +8,30 @@ kalmanCalc::kalmanCalc()
 
 }
 
+double kalmanCalc::calcSigmaB(locationCoor v_t, locationCoor v_t_1, double reliability) {
+    double ans = 0.0f;
+    double k = 0.0f;
+
+    double v_mod_square = calcDistanceSquare(v_t, v_t_1);
+    double part1 = 1.0f / (1.0f + 3.0*qExp(-v_mod_square+10));
+    double part2 = reliability/250.0f;
+
+    ans = k*part1 + (1.0f-k)*part2;
+    qDebug() << v_t.toString() << v_t_1.toString() << v_mod_square
+             << "part1" << part1 << "part2" << part2 << reliability
+             << "ans=" << ans;
+    ans = ans < 0.1 ? 0.1 : ans;
+    return ans;
+}
 double kalmanCalc::calcSigmaB(locationCoor v_t, locationCoor v_t_1) {
-    double v_mod_square = distanceSquare(v_t, v_t_1);
+    double v_mod_square = calcDistanceSquare(v_t, v_t_1);
     double ans = qExp(-v_mod_square/200.0f);
     //qDebug() << v_t.toString() << v_t_1.toString() << v_mod_square << "ans=" << ans;
     ans = ans < 0.1 ? 0.1 : ans;
     return ans;
 }
 double kalmanCalc::calcSigmaB(QPoint v_t, QPoint v_t_1) {
-    double v_mod_square = distanceSquare(v_t, v_t_1);
-    double ans = qExp(-v_mod_square/200.0f);
-    //qDebug() << v_t.toString() << v_t_1.toString() << v_mod_square << "ans=" << ans;
-    ans = ans < 0.1 ? 0.1 : ans;
-    return ans;
+    return kalmanCalc::calcSigmaB(locationCoor(v_t), locationCoor(v_t_1));
 }
 
 void kalmanCalc::calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman, double Q_in) {
@@ -63,7 +74,7 @@ void kalmanCalc::calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman
         x_t_meas = labelPos->Ans[i];
         v_t_meas = (x_t_meas - x_t_1) / delta_t;
         sigma_square_A_t = delta_t*delta_t * sigma_square_A_t_1 + Q;
-        sigma_square_B = kalmanCalc::calcSigmaB(v_t_meas, v_t_1);
+        sigma_square_B = kalmanCalc::calcSigmaB(v_t_meas, v_t_1, labelPos->Reliability[i]);
         k = sigma_square_A_t / (sigma_square_A_t + sigma_square_B);
         x_t = x_hat_t * (1 - k) + x_t_meas * k;
 

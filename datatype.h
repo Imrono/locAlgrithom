@@ -21,6 +21,8 @@ struct locationCoor
     {}
     locationCoor(const locationCoor &obj): x(obj.x), y(obj.y), z(obj.z)
     {}
+    locationCoor(const QPoint &obj): x(obj.x()), y(obj.y()), z(0.0f)
+    {}
     locationCoor operator=(const locationCoor &t) {
         x = t.x;
         y = t.y;

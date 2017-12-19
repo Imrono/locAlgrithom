@@ -10,13 +10,14 @@
 
 struct labelInfo {
     QVector<locationCoor>          Ans;
+    QVector<double>                Reliability;
     QVector<QLine>                 AnsLines;
     QVector<QVector<locationCoor>> RawPoints;
     showPoint                      showStyle;
     QString                        name;
     QString toString() {
         return QString("name:%0, nLines:%1, nAnsPoints:%2")
-                .arg(name, 10).arg(AnsLines.count(), 4).arg(Ans.count(), 4);
+                .arg(name, 8).arg(AnsLines.count(), 4).arg(Ans.count(), 4);
     }
 };
 
