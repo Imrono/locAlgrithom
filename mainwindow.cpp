@@ -17,7 +17,7 @@ MainWindow::MainWindow(showStore *store, QWidget *parent) :
             this->ui->beginTrack->setText("track");
         } else {
             timer.start(500);
-            ui->beginTrack->setText("untrack");
+            ui->beginTrack->setText("stop");
         }
         timerStarted = !timerStarted;
     });

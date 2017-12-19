@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>显示路径</string>
+     <string>SHOW PATH</string>
     </property>
    </widget>
    <widget class="QPushButton" name="beginTrack">
@@ -37,7 +37,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>开始追踪</string>
+     <string>track</string>
     </property>
    </widget>
    <widget class="QWidget" name="canvas" native="true">

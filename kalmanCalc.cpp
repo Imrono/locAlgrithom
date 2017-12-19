@@ -50,13 +50,15 @@ void kalmanCalc::calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman
     locationCoor v_t_2;
     locationCoor a_t_1;
     double delta_t = 1.f;
-    locationCoor x_t_meas;
+    locationCoor z_t_meas;
     locationCoor v_t_meas;
-    double sigma_square_A_t_1;  //上一点的可信度，越可信，值越小
-    double sigma_square_A_t;    //上一点的可信度，越可信，值越小
-    double sigma_square_B;      //测量点的可信度，越可信，值越小
-    double k;
-    double Q = Q_in;
+    locationCoor y_tilde;
+    double S;
+    double P_t_1;       //上一点的可信度，越可信，值越小
+    double P_t;         //上一点的可信度，越可信，值越小
+    double R;           //测量方差，越可信，值越小
+    double Q = Q_in;    //模型方差，越可信，值越小
+    double K;
     //double R;   // is sigmaB2 itself
     locationCoor x_t;
 
@@ -65,29 +67,39 @@ void kalmanCalc::calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman
     v_t_1 = {0,0,0};
     v_t_2 = {0,0,0};
     a_t_1 = {0,0,0};
-    sigma_square_A_t_1 = 0.3f;
+    P_t_1 = 0.3f;
     labelKalman->Ans.append(labelPos->Ans[0]);
 
     for(int i = 1; i < labelPos->Ans.count(); i++) {
+        // 1. x = Hx + Bu
         //x_hat_t = x_t_1 + (v_t_1 + a_t_1*delta_t/2.0f) * delta_t;
         x_hat_t = x_t_1 + v_t_1 * delta_t;
-        x_t_meas = labelPos->Ans[i];
-        v_t_meas = (x_t_meas - x_t_1) / delta_t;
-        sigma_square_A_t = delta_t*delta_t * sigma_square_A_t_1 + Q;
-        sigma_square_B = kalmanCalc::calcSigmaB(v_t_meas, v_t_1, labelPos->Reliability[i]);
-        k = sigma_square_A_t / (sigma_square_A_t + sigma_square_B);
-        x_t = x_hat_t * (1 - k) + x_t_meas * k;
+        z_t_meas = labelPos->Ans[i];
+        v_t_meas = (z_t_meas - x_t_1) / delta_t;
+        // 2. P = FPF + Q
+        P_t = delta_t * P_t_1 * delta_t + Q;
+        // 3. y = z - Hx
+        y_tilde = z_t_meas - x_hat_t;
+        // 4. S = R + HPH
+        R = kalmanCalc::calcSigmaB(v_t_meas, v_t_1, labelPos->Reliability[i]);
+        S = R + P_t;
+        // 5. k = PH/S
+        K = P_t / S;
+        // 6. x = x + Ky
+        x_t = x_hat_t + y_tilde * K;
+        // 7. P = P - KHP
+        P_t_1 = P_t - P_t * K;
 
         labelKalman->Ans.append(x_t);
         labelKalman->AnsLines.append(QLine{x_t_1.toQPoint(), x_t.toQPoint()});
 
         /*
-        qDebug() << QString("i=%0, sigmaA2_t_1=%1, sigmaA2_t=%2, sigmaB2=%3, k=%4, dist_x=%5, dist_v=%6, Q=%7")
+        qDebug() << QString("i=%0, sigmaA2_t_1=%1, P_t_1=%2, P_t=%3, K=%4, dist_x=%5, dist_v=%6, Q=%7")
                     .arg(i, 4, 10, QChar('0'))
-                    .arg(sigma_square_A_t_1, 8, 'g', 4)
-                    .arg(sigma_square_A_t, 8, 'g', 4)
+                    .arg(P_t_1, 8, 'g', 4)
+                    .arg(P_t, 8, 'g', 4)
                     .arg(sigma_square_B, 8, 'g', 4)
-                    .arg(k, 7, 'g', 4)
+                    .arg(K, 7, 'g', 4)
                     .arg(calcDistance(kalmanPos[i], pos[i]), 6, 'g', 3)
                     .arg(calcDistance(v_t_1, v_t_meas), 6, 'g', 3)
                     .arg(Q, 6, 'g', 3);
@@ -98,6 +110,5 @@ void kalmanCalc::calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman
         v_t_1 = (x_t - x_t_1) / delta_t;
         x_t_1 = x_t;
         a_t_1 = (v_t_1 - v_t_2) / delta_t;
-        sigma_square_A_t_1 = sigma_square_A_t * (1 - k);
     }
 }
