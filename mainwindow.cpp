@@ -5,13 +5,31 @@
 #include "kalmanCalc.h"
 
 MainWindow::MainWindow(showStore *store, QWidget *parent) :
-    store(store), QMainWindow(parent),
+    store(store), QMainWindow(parent), timerStarted(false), isShowPath{false},
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(handleTimeout()));
-    timer.start(500);
+    connect(ui->beginTrack, &QPushButton::clicked, this, [this](void) {
+        if (timerStarted) {
+            timer.stop();
+            this->ui->beginTrack->setText("track");
+        } else {
+            timer.start(500);
+            ui->beginTrack->setText("untrack");
+        }
+        timerStarted = !timerStarted;
+    });
+    connect(ui->showPath, &QPushButton::clicked, this, [this](void) {
+        if (isShowPath) {
+            ui->showPath->setText("SHOW PATH");
+        } else {
+            ui->showPath->setText("HIDE PATH");
+        }
+        isShowPath = !isShowPath;
+        update();
+    });
 }
 
 MainWindow::~MainWindow()
@@ -24,9 +42,11 @@ void MainWindow::paintEvent(QPaintEvent *event) {
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
-    // 设置画笔颜色、宽度
+    painter.setPen(QPen(Qt::gray, 1));
+    painter.drawLine(401, 0, 401, 300);
+
+    // 中间探测器所在区域
     painter.setPen(QPen(Qt::gray, 0));
-    // 设置画刷颜色
     painter.setBrush(Qt::gray);
     painter.drawRect(QRect(185, 140, 30, 20));
 
@@ -57,13 +77,15 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     painter.drawText(0, 10, 50, 10, Qt::AlignLeft, "kalman");
     //painter.drawLines(kalmanLines);
 
+    if (isShowPath) {
+        store->getLabel(MEASUR_STR)->showStyle.drawLines(painter, store->getLabel(MEASUR_STR)->AnsLines);
+        store->getLabel(KALMAN_STR)->showStyle.drawLines(painter, store->getLabel(KALMAN_STR)->AnsLines);
+    }
+
     store->getLabel(MEASUR_STR)->showStyle.drawPoint(painter);
     store->getLabel(MEASUR_STR)->showStyle.drawLine(painter);
     store->getLabel(KALMAN_STR)->showStyle.drawPoint(painter);
     store->getLabel(KALMAN_STR)->showStyle.drawLine(painter);
-
-    //store->getLabel(MEASUR_STR)->showStyle.drawLines(painter, store->getLabel(MEASUR_STR)->AnsLines);
-    //store->getLabel(KALMAN_STR)->showStyle.drawLines(painter, store->getLabel(KALMAN_STR)->AnsLines);
 }
 
 void MainWindow::handleTimeout() {

@@ -26,9 +26,11 @@ public:
 private:
     Ui::MainWindow *ui;
     QTimer timer;
+    bool timerStarted;
 
     int distCount{1};
 
+    bool isShowPath{false};
     void paintEvent(QPaintEvent *event);
 
 private slots:
