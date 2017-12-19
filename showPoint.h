@@ -19,6 +19,10 @@ public:
     void setPen(const QPen pen) {
         painterPen = pen;
     }
+    QPen getPen() {
+        return painterPen;
+    }
+
     void setBrush(const QBrush brush) {
         painterBrush = brush;
     }
@@ -52,15 +56,9 @@ public:
         return line;
     }
 
-    void drawPoint(QPainter &painter) {
-        painter.setPen(painterPen);
-        painter.setBrush(painterBrush);
-        painter.drawEllipse(pos, radius, radius);
-    }
-    void drawLine(QPainter &painter) {
-        painter.setPen(painterPen);
-        painter.drawLine(line);
-    }
+    void drawPoint(QPainter &painter);
+    void drawLine(QPainter &painter);
+    void drawLines(QPainter &painter, QVector<QLine> lines);
 
     showPoint& operator=(const showPoint &sp)
     {

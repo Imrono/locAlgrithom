@@ -2,14 +2,20 @@
 #define CALCPOS_H
 #include <QVector>
 #include "datatype.h"
+#include "showStore.h"
 
 double distanceSquare(const locationCoor &a, const locationCoor &b);
+double distanceSquare(const QPoint &a, const QPoint &b);
 double calcDistance(const locationCoor &a, const locationCoor &b);
 double calcDistance(const QPoint &a, const QPoint &b);
+double calcTotalDistance(QVector<QLine> &lines, int discount = 10);
+double calcTotalAvgDistance(QVector<QLine> &lines, int discount = 10);
 
 class calcPos
 {
 public:
+    QVector<labelDistance> dist;
+
     calcPos();
     calcPos(locationCoor locIn[4]) {
         loc[0] = locIn[0];
@@ -27,7 +33,12 @@ public:
     QVector<locationCoor> calcPosFromDistance(uint32_t dist[], uint32_t count = 4);
     distance_3 calcMin3Loca(uint32_t dist[], uint32_t count = 4);
     static locationCoor calcOnePos(double dist[], locationCoor loca[]);
-    static locationCoor calcOnePos(distance_3 info);
+    static locationCoor calcOnePos(distance_3 info) {
+        return calcPos::calcOnePos(info.dist, info.loca);
+    }
+    void calcPosVector (labelInfo *label);
+    void calcPotimizedPos(labelInfo *label);
+
     locationCoor getLoc(int idx) {
         return loc[idx];
     }

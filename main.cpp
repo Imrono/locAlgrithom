@@ -5,17 +5,13 @@
 #include <QVector>
 #include <QDebug>
 #include <calcPos.h>
+#include "showStore.h"
+#include "kalmanCalc.h"
 
 int main(int argc, char *argv[])
 {
-    qDebug() << "test: {2,2,2}+{1,1,1} = " << (locationCoor(2,2,2)+locationCoor(1,1,1)).toString()
-             << "{1,1,1}-{2,2,2} = " <<  (locationCoor(1,1,1)-locationCoor(2,2,2)).toString()
-             << "{1,1,1} * 2 = " <<  (locationCoor(1,1,1)*2).toString()
-             << "{1,1,1} / 2 = " <<  (locationCoor(1,1,1)/2).toString();
     QApplication a(argc, argv);
 
-    //locationCoor loc[4] = {{0,0,0}, {300,0,0}, {300,200,0}, {0,200,0}};
-    //185, 140
     locationCoor loc[4] = {{185+0,140+0,0}, {185+30,140+0,0}, {185+30,140+20,0}, {185+0,140+20,0}};
     for (int i = 0; i < 4; i++)
         qDebug() << QString("receiver location: %1 (%2,%3,%4)").arg(i)
@@ -23,7 +19,11 @@ int main(int argc, char *argv[])
                     .arg(loc[i].y, 6)
                     .arg(loc[i].z, 6);
     calcPos calc(loc);
-    MainWindow w(calc);
+
+    showStore store(loc);
+    store.appendLabel(MEASUR_STR, showPoint(4, QPen(QColor(0, 160, 230), 2), QBrush(QColor(255, 160, 90))));
+    store.appendLabel(KALMAN_STR, showPoint(4, QPen(Qt::gray, 2), QBrush(Qt::darkGreen)));
+    MainWindow w(&store);
     labelDistance tmpDist;
     //QFile file("D:\\code\\kelmanLocationData\\201712111501.log");
     QFile file("D:\\code\\kelmanLocationData\\201712111515.log");
@@ -53,26 +53,23 @@ int main(int argc, char *argv[])
                     continue;
                 } else {
                     count ++;
-                    w.dist.append(tmpDist);
+                    calc.dist.append(tmpDist);
                 }
                 //qDebug() << tmpDist.distance[0] << tmpDist.distance[1] << tmpDist.distance[2] << tmpDist.distance[3];
             }
             //qDebug() << dateStr << ", " << tmpLoc << ", " << distStr << ", " << statStr << ", " << (count++)/4;
         }
     }
-    qDebug() << "w.dist.count() =" << w.dist.count();
+    qDebug() << "calcPos.dist.count() =" << calc.dist.count();
 
-    w.calcPosVector();
-    double measDist = w.calcTotalDistanceMeas();
+    calc.calcPosVector(store.getLabel(MEASUR_STR));
+    calc.calcPotimizedPos(store.getLabel(MEASUR_STR));
+    double measDist = calcTotalAvgDistance(store.getLabel(MEASUR_STR)->AnsLines);
+    qDebug() << store.getLabel(MEASUR_STR)->toString();
 
-    for(double Q = 0.0f; Q < 0.3; Q+= 0.002) {
-        //w.calcKalmanPosVector(Q);
-        //qDebug() << Q << "$$ measDist:" << measDist << "kalmanDist:" << w.calcTotalDistanceKalman();
-
-    }
-
-    w.calcKalmanPosVector(0.014f);
-    double kalmanDist = w.calcTotalDistanceKalman();
+    kalmanCalc::calcKalmanPosVector(store.getLabel(MEASUR_STR), store.getLabel(KALMAN_STR), 0.014f);
+    double kalmanDist = calcTotalAvgDistance(store.getLabel(KALMAN_STR)->AnsLines);
+    qDebug() << store.getLabel(KALMAN_STR)->toString();
     qDebug() << "w.calcTotalDistanceKalman() => measDist:" << measDist << "kalmanDist:" << kalmanDist;
 
     w.show();

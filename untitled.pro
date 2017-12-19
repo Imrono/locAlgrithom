@@ -42,7 +42,5 @@ HEADERS += \
 FORMS += \
         mainwindow.ui
 
-RESOURCES += \
-    ball.qrc
 
 

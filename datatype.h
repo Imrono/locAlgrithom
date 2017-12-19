@@ -1,6 +1,6 @@
 #ifndef DATATYPE_H
 #define DATATYPE_H
-
+#include <QPoint>
 #include <QDateTime>
 
 struct labelDistance {
@@ -57,6 +57,9 @@ struct locationCoor
     }
     QString toString() {
         return QString("(%0,%1,%2)").arg(x).arg(y).arg(z);
+    }
+    QPoint toQPoint() {
+        return {int(x), int(y)};
     }
 };
 

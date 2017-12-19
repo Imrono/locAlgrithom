@@ -1,66 +1,70 @@
 #ifndef SHOWSTORE_H
 #define SHOWSTORE_H
 #include <QVector>
+#include <QMap>
 #include "showPoint.h"
+#include "datatype.h"
+
+#define MEASUR_STR "measure"
+#define KALMAN_STR "kalman"
 
 struct labelInfo {
-    QVector<QPoint>          Ans;
-    QVector<QVector<QPoint>> RawPoints;
-    showPoint                showStyle;
-    QString                  name;
+    QVector<locationCoor>          Ans;
+    QVector<QLine>                 AnsLines;
+    QVector<QVector<locationCoor>> RawPoints;
+    showPoint                      showStyle;
+    QString                        name;
+    QString toString() {
+        return QString("name:%0, nLines:%1, nAnsPoints:%2")
+                .arg(name, 10).arg(AnsLines.count(), 4).arg(Ans.count(), 4);
+    }
 };
 
 class showStore
 {
 public:
-    showStore();
+    showStore(locationCoor loc[4]);
 
-    void appendLabel() {
-        labelInfo label;
-        labels.append(label);
-    }
-    void appendLabel(const labelInfo label) {
-        labels.append(label);
-    }
+    QMap<QString, int> name2idx;
+    locationCoor loc[4];
 
-    void setName(int idx, QString name) {
-        if (idx < labels.count())
-            labels[idx].name = name;
-    }
-    void setShowStyle(int idx, QString showStyle) {
-        if (idx < labels.count())
-            labels[idx].showStyle = showStyle;
-    }
-    void setShowStyle(QString name, QString showStyle) {
-        foreach (labelInfo &label, label) {
-            if(label.name == name)
-                label.showStyle = showStyle;
-        }
+    void appendLabel(const QString &name);
+    void appendLabel(const QString &name, showPoint showStyle);
+    void appendLabel(labelInfo *label);
+    labelInfo * getLabel(int idx);
+    labelInfo * getLabel(const QString &name) {
+        return getLabel(name2idx[name]);
     }
 
-    void addRawPoints(int idx, QVector<QPoint> points) {
-        if (idx < labels.count())
-            labels[idx].RawPoints.append(points);
+    void setName(int idx, const QString &name);
+    void setShowStyle(int idx, showPoint showStyle);
+
+    void addRawPoints(int idx, QVector<locationCoor> points);
+    void addRawPoints(const QString &name, QVector<locationCoor> points) {
+        addRawPoints(name2idx[name], points);
     }
-    void addRawPoints(QString name, QVector<QPoint> points) {
-        foreach (labelInfo &label, label) {
-            if(label.name == name)
-                label.RawPoints.append(points);
-        }
+
+    void clearRawPoints(int idx);
+
+    void addAnsPoint(int idx, locationCoor p);
+    void addAnsPoint(const QString &name, locationCoor p) {
+        addAnsPoint(name2idx[name], p);
     }
-    void addAnsPoint(int idx, QPoint p) {
-        if (idx < labels.count())
-            labels[idx].Ans = p;
+
+    QVector<locationCoor> getAnsPointVector(int idx);
+    QVector<locationCoor> getAnsPointVector(const QString &name) {
+        return getAnsPointVector(name2idx[name]);
     }
-    void addAnsPoint(QString name, QPoint p) {
-        foreach (labelInfo &label, label) {
-            if(label.name == name)
-                label.Ans = p;
-        }
+
+    locationCoor getAnsPoint(int idx, int pointIdx);
+    locationCoor getAnsPoint(const QString &name, int pointIdx) {
+        return getAnsPoint(name2idx[name], pointIdx);
     }
+
+    void clearAnsPoints(int idx);
 
 private:
-    QVector<labelInfo> labels;
+    QVector<labelInfo *> labels;
 };
 
 #endif // SHOWSTORE_H
