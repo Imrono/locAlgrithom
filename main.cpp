@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     double measDist = calcTotalAvgDistanceSquare(store.getLabel(MEASUR_STR)->AnsLines);
     qDebug() << store.getLabel(MEASUR_STR)->toString();
 
-    kalmanCalc::calcKalmanPosVector(store.getLabel(MEASUR_STR), store.getLabel(KALMAN_STR), 0.014f);
+    kalmanCalc::calcKalmanPosVector(store.getLabel(MEASUR_STR), store.getLabel(KALMAN_STR));
     double kalmanDist = calcTotalAvgDistanceSquare(store.getLabel(KALMAN_STR)->AnsLines);
     qDebug() << store.getLabel(KALMAN_STR)->toString();
     qDebug() << "w.calcTotalDistanceKalman() => measDist:" << measDist << "kalmanDist:" << kalmanDist;

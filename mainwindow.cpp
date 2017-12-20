@@ -123,11 +123,15 @@ void MainWindow::handleTimeout() {
 
     locationCoor p_meas = meas->Ans[distCount];
     locationCoor p_kalm = kalm->Ans[distCount];
-    qDebug() << QString("distCount:%0, POSITION(%1,%2,%3)->KALMAN(%4,%5,%6) => d=%7")
+    qDebug() << QString("distCount:%0, POSITION(%1,%2,%3)->KALMAN(%4,%5,%6) => d=%7, totDist=%8, R=%9, P=%10, K=%11")
                 .arg(distCount, 4, 10, QChar('0'))
                 .arg(p_meas.x,4,'g',3).arg(p_meas.y,4,'g',3).arg(p_meas.z,4,'g',3)
                 .arg(p_kalm.x,4,'g',3).arg(p_kalm.y,4,'g',3).arg(p_kalm.z,4,'g',3)
-                .arg(calcDistance(p_meas, p_kalm),4,'g',3);
+                .arg(calcDistance(p_meas, p_kalm),4,'g',3)
+                .arg(meas->Reliability[distCount],5,'g',3)
+                .arg(kalm->dataR[distCount],5,'g',3)
+                .arg(kalm->dataP[distCount],5,'g',3)
+                .arg(kalm->Reliability[distCount],5,'g',3);
 
     meas->showStyle.setPosition(meas->Ans[distCount].toQPoint());
     meas->showStyle.setLine(meas->AnsLines[distCount-1]);

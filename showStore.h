@@ -10,7 +10,9 @@
 
 struct labelInfo {
     QVector<locationCoor>          Ans;
-    QVector<double>                Reliability;
+    QVector<double>                Reliability; //1.meas：长度之和；2.kalman：卡尔曼增益K
+    QVector<double>                dataR;
+    QVector<double>                dataP;
     QVector<QLine>                 AnsLines;
     QVector<QVector<locationCoor>> RawPoints;
     showPoint                      showStyle;
