@@ -16,7 +16,7 @@ void showStore::appendLabel(const QString &name) {
     }
     labels.append(label);
 }
-void showStore::appendLabel(const QString &name, showPoint showStyle) {
+void showStore::appendLabel(const QString &name, const showPoint &showStyle) {
     labelInfo *label = new labelInfo;
     label->name = name;
     label->showStyle = showStyle;

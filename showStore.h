@@ -30,7 +30,7 @@ public:
     locationCoor loc[4];
 
     void appendLabel(const QString &name);
-    void appendLabel(const QString &name, showPoint showStyle);
+    void appendLabel(const QString &name, const showPoint &showStyle);
     void appendLabel(labelInfo *label);
     labelInfo * getLabel(int idx);
     labelInfo * getLabel(const QString &name) {

@@ -17,9 +17,9 @@ double kalmanCalc::calcSigmaB(locationCoor v_t, locationCoor v_t_1, double relia
     double part2 = reliability/250.0f;
 
     ans = k*part1 + (1.0f-k)*part2;
-    qDebug() << v_t.toString() << v_t_1.toString() << v_mod_square
-             << "part1" << part1 << "part2" << part2 << reliability
-             << "ans=" << ans;
+    //qDebug() << v_t.toString() << v_t_1.toString() << v_mod_square
+    //         << "part1" << part1 << "part2" << part2 << reliability
+    //         << "ans=" << ans;
     ans = ans < 0.1 ? 0.1 : ans;
     return ans;
 }

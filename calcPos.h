@@ -32,16 +32,16 @@ public:
         loc[3] = other.loc[3];
     }
 
-    QVector<locationCoor> calcPosFromDistance(uint32_t dist[], uint32_t count = 4);
-    distance_3 calcMin3Loca(uint32_t dist[], uint32_t count = 4);
+    QVector<locationCoor> calcPosFromDistance(const uint32_t dist[], uint32_t count = 4) const;
+    distance_3 calcMin3Loca(uint32_t dist[], uint32_t count = 4) const;
     static locationCoor calcOnePos(double dist[], locationCoor loca[]);
     static locationCoor calcOnePos(distance_3 info) {
         return calcPos::calcOnePos(info.dist, info.loca);
     }
-    void calcPosVector (labelInfo *label);
-    void calcPotimizedPos(labelInfo *label);
+    void calcPosVector (labelInfo *label) const;
+    void calcPotimizedPos(labelInfo *label) const;
 
-    locationCoor getLoc(int idx) {
+    locationCoor getLoc(int idx) const {
         return loc[idx];
     }
 

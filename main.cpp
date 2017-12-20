@@ -21,8 +21,11 @@ int main(int argc, char *argv[])
     calcPos calc(loc);
 
     showStore store(loc);
-    store.appendLabel(MEASUR_STR, showPoint(4, QPen(QColor(0, 160, 230), 2), QBrush(QColor(255, 160, 90))));
+    store.appendLabel(MEASUR_STR,
+                      showPoint(4, QPen(QColor(0, 160, 230), 2), QBrush(QColor(255, 160, 90)),
+                                   QPen(Qt::black, 1), QBrush(QColor(255, 160, 90))));
     store.appendLabel(KALMAN_STR, showPoint(4, QPen(Qt::gray, 2), QBrush(Qt::darkGreen)));
+
     MainWindow w(&store);
     labelDistance tmpDist;
     //QFile file("D:\\code\\kelmanLocationData\\201712111501.log");

@@ -28,9 +28,10 @@ private:
     QTimer timer;
     bool timerStarted;
 
-    int distCount{1};
+    int distCount{0};
 
     bool isShowPath{false};
+    bool isShowAllPos{false};
     void paintEvent(QPaintEvent *event);
 
 private slots:

@@ -5,7 +5,7 @@
 #include "kalmanCalc.h"
 
 MainWindow::MainWindow(showStore *store, QWidget *parent) :
-    store(store), QMainWindow(parent), timerStarted(false), isShowPath{false},
+    store(store), QMainWindow(parent), timerStarted(false), isShowPath{false}, isShowAllPos{false},
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -28,6 +28,22 @@ MainWindow::MainWindow(showStore *store, QWidget *parent) :
             ui->showPath->setText("HIDE PATH");
         }
         isShowPath = !isShowPath;
+        update();
+    });
+    connect(ui->reset, &QPushButton::clicked, this, [this](void) {
+        distCount = 0;
+        handleTimeout();
+    });
+    connect(ui->next, &QPushButton::clicked, this, [this](void) {
+        handleTimeout();
+    });
+    connect(ui->allPos, &QPushButton::clicked, this, [this](void) {
+        if (isShowAllPos) {
+            ui->allPos->setText("show pos");
+        } else {
+            ui->allPos->setText("hide pos");
+        }
+        isShowAllPos = !isShowAllPos;
         update();
     });
 }
@@ -69,41 +85,59 @@ void MainWindow::paintEvent(QPaintEvent *event) {
 
     painter.setRenderHint(QPainter::Antialiasing, true);// 反走样
 
-    painter.setPen(store->getLabel(MEASUR_STR)->showStyle.getPen());
+    labelInfo *meas = store->getLabel(MEASUR_STR);
+    labelInfo *kalm = store->getLabel(KALMAN_STR);
+
+    painter.setPen(meas->showStyle.getPen());
     painter.drawText(0, 0, 50, 10, Qt::AlignLeft, "measure");
     //painter.drawLines(lines);
 
-    painter.setPen(store->getLabel(KALMAN_STR)->showStyle.getPen());
-    painter.drawText(0, 10, 50, 10, Qt::AlignLeft, "kalman");
+    painter.setPen(kalm->showStyle.getPen());
+    painter.drawText(0, 12, 50, 10, Qt::AlignLeft, "kalman");
+    //painter.drawLines(kalmanLines);
+
+    painter.setPen(QPen(Qt::black, 1));
+    painter.drawText(0, 24, 50, 10, Qt::AlignLeft, QString("%0").arg(distCount, 4, 10, QChar('0')));
     //painter.drawLines(kalmanLines);
 
     if (isShowPath) {
-        store->getLabel(MEASUR_STR)->showStyle.drawLines(painter, store->getLabel(MEASUR_STR)->AnsLines);
-        store->getLabel(KALMAN_STR)->showStyle.drawLines(painter, store->getLabel(KALMAN_STR)->AnsLines);
+        meas->showStyle.drawLines(painter, meas->AnsLines);
+        kalm->showStyle.drawLines(painter, kalm->AnsLines);
     }
 
-    store->getLabel(MEASUR_STR)->showStyle.drawPoint(painter);
-    store->getLabel(MEASUR_STR)->showStyle.drawLine(painter);
-    store->getLabel(KALMAN_STR)->showStyle.drawPoint(painter);
-    store->getLabel(KALMAN_STR)->showStyle.drawLine(painter);
+    meas->showStyle.drawPoint(painter);
+    meas->showStyle.drawLine(painter);
+    kalm->showStyle.drawPoint(painter);
+    kalm->showStyle.drawLine(painter);
+
+    if (isShowAllPos) {
+        meas->showStyle.drawPointsRaw(painter);
+    }
 }
 
 void MainWindow::handleTimeout() {
-    locationCoor p_meas = store->getLabel(MEASUR_STR)->Ans[distCount];
-    locationCoor p_kalm = store->getLabel(KALMAN_STR)->Ans[distCount];
-    qDebug() << QString("distCount:%0, POSITION(%1,%2,%3)->KALMAN(%4,%5,%6) => d=%7").arg(distCount, 4, 10, QChar('0'))
+    distCount++;    //为了保证qDebug与paintEvent显示一致，先distCount++，实际从1开始。
+
+    labelInfo *meas = store->getLabel(MEASUR_STR);
+    labelInfo *kalm = store->getLabel(KALMAN_STR);
+
+    locationCoor p_meas = meas->Ans[distCount];
+    locationCoor p_kalm = kalm->Ans[distCount];
+    qDebug() << QString("distCount:%0, POSITION(%1,%2,%3)->KALMAN(%4,%5,%6) => d=%7")
+                .arg(distCount, 4, 10, QChar('0'))
                 .arg(p_meas.x,4,'g',3).arg(p_meas.y,4,'g',3).arg(p_meas.z,4,'g',3)
                 .arg(p_kalm.x,4,'g',3).arg(p_kalm.y,4,'g',3).arg(p_kalm.z,4,'g',3)
                 .arg(calcDistance(p_meas, p_kalm),4,'g',3);
 
-    store->getLabel(MEASUR_STR)->showStyle.setPosition(store->getLabel(MEASUR_STR)->Ans[distCount].toQPoint());
-    store->getLabel(MEASUR_STR)->showStyle.setLine(store->getLabel(MEASUR_STR)->AnsLines[distCount-1]);
-    store->getLabel(KALMAN_STR)->showStyle.setPosition(store->getLabel(KALMAN_STR)->Ans[distCount].toQPoint());
-    store->getLabel(KALMAN_STR)->showStyle.setLine(store->getLabel(KALMAN_STR)->AnsLines[distCount-1]);
+    meas->showStyle.setPosition(meas->Ans[distCount].toQPoint());
+    meas->showStyle.setLine(meas->AnsLines[distCount-1]);
+    kalm->showStyle.setPosition(kalm->Ans[distCount].toQPoint());
+    kalm->showStyle.setLine(kalm->AnsLines[distCount-1]);
+
+    meas->showStyle.setPointsRaw(meas->RawPoints[distCount]);
 
     update();
-    distCount++;
 
-    if (distCount == store->getLabel(MEASUR_STR)->Ans.count())
+    if (distCount == meas->Ans.count())
         timer.stop();
 }

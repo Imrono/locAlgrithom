@@ -49,7 +49,7 @@ calcPos::calcPos()
 
 }
 
-distance_3 calcPos::calcMin3Loca(uint32_t dist[], uint32_t count) {
+distance_3 calcPos::calcMin3Loca(uint32_t dist[], uint32_t count) const {
     distance_3 min_3;
 
     uint32_t num = count;
@@ -113,7 +113,7 @@ locationCoor calcPos::calcOnePos(double dist[], locationCoor loca[]) {
     return locationCoor{x_pos, y_pos, z_pos};
 }
 
-QVector<locationCoor> calcPos::calcPosFromDistance(uint32_t dist[], uint32_t count) {
+QVector<locationCoor> calcPos::calcPosFromDistance(const uint32_t dist[], uint32_t count) const {
     QVector<locationCoor> vectorAns;
     distance_3 info;
     for (uint32_t i = 0; i < count - 2; i++) {
@@ -135,7 +135,7 @@ QVector<locationCoor> calcPos::calcPosFromDistance(uint32_t dist[], uint32_t cou
     return vectorAns;
 }
 
-void calcPos::calcPosVector (labelInfo *label) {
+void calcPos::calcPosVector (labelInfo *label) const {
     if (nullptr == label)
         return;
     label->RawPoints.clear();
@@ -144,7 +144,7 @@ void calcPos::calcPosVector (labelInfo *label) {
     }
 }
 
-void calcPos::calcPotimizedPos(labelInfo *label) {
+void calcPos::calcPotimizedPos(labelInfo *label) const {
     locationCoor optimizedPos = {0, 0, 0};
     locationCoor center = {0.0f, 0.0f, 0.0f};
     locationCoor p_1 = {0, 0, 0};

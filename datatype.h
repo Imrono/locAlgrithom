@@ -57,10 +57,10 @@ struct locationCoor
         ans.z /= t;
         return ans;
     }
-    QString toString() {
+    QString toString() const {
         return QString("(%0,%1,%2)").arg(x).arg(y).arg(z);
     }
-    QPoint toQPoint() {
+    QPoint toQPoint() const {
         return {int(x), int(y)};
     }
 };
@@ -73,7 +73,7 @@ struct coorLine {
 struct distance_3 {
     double dist[3];
     locationCoor loca[3];
-    QString toString() {
+    QString toString() const {
         QString ans =  QString("%0@%1,%2@%3,%4@%5")
                 .arg(loca[0].toString(), 14).arg(dist[0], 5, 'g', 3)
                 .arg(loca[1].toString(), 14).arg(dist[1], 5, 'g', 3)
