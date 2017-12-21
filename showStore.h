@@ -15,6 +15,7 @@ struct labelInfo {
     QVector<double>                dataP;
     QVector<QLine>                 AnsLines;
     QVector<QVector<locationCoor>> RawPoints;
+    QVector<QVector<locationCoor>> RefinedPoints;
     showPoint                      showStyle;
     QString                        name;
     QString toString() {

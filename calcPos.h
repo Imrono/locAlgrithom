@@ -17,6 +17,7 @@ class calcPos
 {
 public:
     QVector<labelDistance> dist;
+    QVector<labelDistance> distRefined;
 
     calcPos();
     calcPos(locationCoor locIn[4]) {
@@ -38,8 +39,8 @@ public:
     static locationCoor calcOnePos(distance_3 info) {
         return calcPos::calcOnePos(info.dist, info.loca);
     }
-    void calcPosVector (labelInfo *label) const;
-    void calcPotimizedPos(labelInfo *label) const;
+    void calcPosVector (labelInfo *label);
+    void calcPotimizedPos(labelInfo *label);
 
     locationCoor getLoc(int idx) const {
         return loc[idx];

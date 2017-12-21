@@ -12,7 +12,13 @@ void showPoint::drawPointsRaw(QPainter &painter) const {
         painter.drawEllipse(pointsRaw[i], 3, 3);
     }
 }
-
+void showPoint::drawPointsRefined(QPainter &painter) const {
+    painter.setPen(painterPenRaw);
+    painter.setBrush(QBrush(Qt::black));
+    for (int i = 0; i < pointsRefined.count(); i++) {
+        painter.drawEllipse(pointsRefined[i], 3, 3);
+    }
+}
 void showPoint::drawLine(QPainter &painter) const {
     painter.setPen(painterPen);
     painter.drawLine(line);

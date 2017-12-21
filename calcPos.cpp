@@ -135,20 +135,69 @@ QVector<locationCoor> calcPos::calcPosFromDistance(const uint32_t dist[], uint32
     return vectorAns;
 }
 
-void calcPos::calcPosVector (labelInfo *label) const {
+void calcPos::calcPosVector (labelInfo *label) {
     if (nullptr == label)
         return;
     label->RawPoints.clear();
     for (int i = 0; i < dist.count(); i++) {
         label->RawPoints.append(calcPosFromDistance(dist[i].distance, 4));
+
+        if (i >= 1) {
+            double factor = 1.7;
+            double totalDistance = 0.0f;
+            double maxDist = 0.0f;
+            double avgDist_noMax = 0.0f;
+            uint32_t distance[4] = {0};
+            for (int j = 0; j < 4; j++) {
+                distance[j] = dist[i].distance[j];
+            }
+            for(int i1 = 0; i1 < 4; i1++) {
+                for(int i2 = i1; i2 < 4; i2++) {
+                    totalDistance += calcDistance(label->RawPoints[label->RawPoints.count()-1][i1],
+                            label->RawPoints[label->RawPoints.count()-1][i2]);
+                }
+            }
+            int maxIdx = -1;
+            for (int j = 0; j < 4; j++) {
+                //double diffDist = qAbs(double(dist[i].distance[j]) - double(dist[i-1].distance[j]));
+                double diffDist = qAbs(double(dist[i].distance[j]) - double(distRefined[i-1].distance[j]));
+                if (maxDist <= diffDist) {
+                    maxDist = diffDist;
+                    maxIdx = j;
+                }
+                avgDist_noMax += diffDist;
+            }
+            avgDist_noMax = (avgDist_noMax - maxDist) / 3.0f;
+            if (maxDist > avgDist_noMax * factor
+             && totalDistance > 80.f) {
+                //distance[maxIdx] = dist[i-1].distance[maxIdx] + avgDist_noMax;
+                distance[maxIdx] = distRefined[i-1].distance[maxIdx]
+                        + uint32_t((double(dist[i].distance[maxIdx]) - double(distRefined[i-1].distance[maxIdx])) * 0.3);
+            }
+            label->RefinedPoints.append(calcPosFromDistance(distance, 4));
+
+            labelDistance tmpDist;
+            tmpDist.distance[0] = distance[0];
+            tmpDist.distance[1] = distance[1];
+            tmpDist.distance[2] = distance[2];
+            tmpDist.distance[3] = distance[3];
+            distRefined.append(tmpDist);
+            //qDebug() << i << dist[i].distance[0] << dist[i].distance[1] << dist[i].distance[2] << dist[i].distance[3]
+            //         << avgDist_noMax << maxDist << (maxDist > avgDist_noMax * factor) << (totalDistance > 80.f);
+        } else {
+            label->RefinedPoints.append(calcPosFromDistance(dist[i].distance, 4));
+            distRefined.append(dist[i]);
+        }
     }
 }
 
-void calcPos::calcPotimizedPos(labelInfo *label) const {
+void calcPos::calcPotimizedPos(labelInfo *label) {
     locationCoor optimizedPos = {0, 0, 0};
     locationCoor center = {0.0f, 0.0f, 0.0f};
     locationCoor p_1 = {0, 0, 0};
-    int numData = label->RawPoints.count();
+    //const QVector<QVector<locationCoor>> &calcPoints = label->RawPoints;
+    const QVector<QVector<locationCoor>> &calcPoints = label->RefinedPoints;
+    int numData = calcPoints.count();
 
     /*
     double maxDistance = 0.0f;
@@ -180,15 +229,15 @@ void calcPos::calcPotimizedPos(labelInfo *label) const {
         //label->Ans.append(optimizedPos);
         //label->Reliability.append(1.0f);
 
-        int rawPoints = label->RawPoints[i].count();
+        int rawPoints = calcPoints[i].count();
         for (int j = 0; j < rawPoints; j++) {
-            center = center + label->RawPoints[i][j] / double(label->RawPoints[i].count());
+            center = center + calcPoints[i][j] / double(calcPoints[i].count());
         }
         optimizedPos = center;
         double totalDistance = 0.0f;
         for(int i1 = 0; i1 < rawPoints; i1++) {
             for(int i2 = 0; i2 < rawPoints; i2++) {
-                totalDistance += calcDistance(label->RawPoints[i][i1], label->RawPoints[i][i2]) / 2.0f;
+                totalDistance += calcDistance(calcPoints[i][i1], calcPoints[i][i2]) / 2.0f;
             }
         }
         label->Ans.append(optimizedPos);

@@ -76,9 +76,18 @@ public:
         for (int i = 0; i < ps.count(); i++)
             pointsRaw.append(ps[i].toQPoint());
     }
+    void setPointsRefined(const QVector<QPoint> ps) {
+        pointsRefined = ps;
+    }
+    void setPointsRefined(QVector<locationCoor> ps) {
+        pointsRefined.clear();
+        for (int i = 0; i < ps.count(); i++)
+            pointsRefined.append(ps[i].toQPoint());
+    }
 
     void drawPoint(QPainter &painter) const;
     void drawPointsRaw(QPainter &painter) const;
+    void drawPointsRefined(QPainter &painter) const;
     void drawLine(QPainter &painter) const;
     void drawLines(QPainter &painter, QVector<QLine> lines) const;
 
@@ -98,6 +107,7 @@ private:
     int    radius;
     QLine  line;
     QVector<QPoint> pointsRaw;
+    QVector<QPoint> pointsRefined;
 
     QPen   painterPen;
     QBrush painterBrush;

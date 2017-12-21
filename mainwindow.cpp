@@ -22,6 +22,10 @@ MainWindow::MainWindow(showStore *store, QWidget *parent) :
         timerStarted = !timerStarted;
     });
     connect(ui->showPath, &QPushButton::clicked, this, [this](void) {
+        QFont font;
+        font.setBold(true);
+        font.setWeight(75);
+        ui->showPath->setFont(font);
         if (isShowPath) {
             ui->showPath->setText("SHOW PATH");
         } else {
@@ -32,6 +36,10 @@ MainWindow::MainWindow(showStore *store, QWidget *parent) :
     });
     connect(ui->reset, &QPushButton::clicked, this, [this](void) {
         distCount = 0;
+        handleTimeout();
+    });
+    connect(ui->previous, &QPushButton::clicked, this, [this](void) {
+        distCount -= 2;     //handleTimeout()里有distCount++，所以这里-2
         handleTimeout();
     });
     connect(ui->next, &QPushButton::clicked, this, [this](void) {
@@ -112,11 +120,14 @@ void MainWindow::paintEvent(QPaintEvent *event) {
 
     if (isShowAllPos) {
         meas->showStyle.drawPointsRaw(painter);
+        meas->showStyle.drawPointsRefined(painter);
     }
 }
 
 void MainWindow::handleTimeout() {
     distCount++;    //为了保证qDebug与paintEvent显示一致，先distCount++，实际从1开始。
+    if (distCount <= 1)
+        return;
 
     labelInfo *meas = store->getLabel(MEASUR_STR);
     labelInfo *kalm = store->getLabel(KALMAN_STR);
@@ -139,6 +150,7 @@ void MainWindow::handleTimeout() {
     kalm->showStyle.setLine(kalm->AnsLines[distCount-1]);
 
     meas->showStyle.setPointsRaw(meas->RawPoints[distCount]);
+    meas->showStyle.setPointsRefined(meas->RefinedPoints[distCount]);
 
     update();
 
