@@ -182,8 +182,15 @@ void calcPos::calcPosVector (labelInfo *label) {
             tmpDist.distance[2] = distance[2];
             tmpDist.distance[3] = distance[3];
             distRefined.append(tmpDist);
-            //qDebug() << i << dist[i].distance[0] << dist[i].distance[1] << dist[i].distance[2] << dist[i].distance[3]
-            //         << avgDist_noMax << maxDist << (maxDist > avgDist_noMax * factor) << (totalDistance > 80.f);
+            /*
+            qDebug() << i
+                     << dist[i].toStringDist()
+                     << tmpDist.toStringDist()
+                     << labelDistance::diffDist(dist[i], tmpDist).toStringDist()
+                     << "maxIdx" << maxIdx
+                     << avgDist_noMax << maxDist
+                     << (maxDist > avgDist_noMax * factor) << (totalDistance > 80.f);
+            */
         } else {
             label->RefinedPoints.append(calcPosFromDistance(dist[i].distance, 4));
             distRefined.append(dist[i]);
@@ -236,12 +243,12 @@ void calcPos::calcPotimizedPos(labelInfo *label) {
         optimizedPos = center;
         double totalDistance = 0.0f;
         for(int i1 = 0; i1 < rawPoints; i1++) {
-            for(int i2 = 0; i2 < rawPoints; i2++) {
-                totalDistance += calcDistance(calcPoints[i][i1], calcPoints[i][i2]) / 2.0f;
+            for(int i2 = i1; i2 < rawPoints; i2++) {
+                totalDistance += calcDistance(calcPoints[i][i1], calcPoints[i][i2]);
             }
         }
         label->Ans.append(optimizedPos);
-        label->Reliability.append(totalDistance);
+        label->Reliability.append(totalDistance/(rawPoints*(rawPoints-1)/2.0f));
 
         if (i > 0)
             label->AnsLines.append(QLine(p_1.toQPoint(), optimizedPos.toQPoint()));

@@ -28,8 +28,8 @@ int main(int argc, char *argv[])
 
     MainWindow w(&store);
     labelDistance tmpDist;
-    //QFile file("D:\\code\\kelmanLocationData\\201712111501.log");
-    QFile file("D:\\code\\kelmanLocationData\\201712111515.log");
+    QString fileName("D:\\code\\kelmanLocationData\\201712111515.log");
+    QFile file(fileName);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug()<<"Can't open the file!"<<endl;
     }
@@ -63,17 +63,18 @@ int main(int argc, char *argv[])
             //qDebug() << dateStr << ", " << tmpLoc << ", " << distStr << ", " << statStr << ", " << (count++)/4;
         }
     }
-    qDebug() << "calcPos.dist.count() =" << calc.dist.count();
+    qDebug() << "fileName:" << fileName << ",calcPos.dist.count():" << calc.dist.count();
 
     calc.calcPosVector(store.getLabel(MEASUR_STR));
     calc.calcPotimizedPos(store.getLabel(MEASUR_STR));
     double measDist = calcTotalAvgDistanceSquare(store.getLabel(MEASUR_STR)->AnsLines);
     qDebug() << store.getLabel(MEASUR_STR)->toString();
 
+    //kalmanCalc::calcKalmanPosVectorModified(store.getLabel(MEASUR_STR), store.getLabel(KALMAN_STR));
     kalmanCalc::calcKalmanPosVector(store.getLabel(MEASUR_STR), store.getLabel(KALMAN_STR));
     double kalmanDist = calcTotalAvgDistanceSquare(store.getLabel(KALMAN_STR)->AnsLines);
     qDebug() << store.getLabel(KALMAN_STR)->toString();
-    qDebug() << "w.calcTotalDistanceKalman() => measDist:" << measDist << "kalmanDist:" << kalmanDist;
+    qDebug() << "avgDistanceSquare => measDist:" << measDist << "; kalmanDist:" << kalmanDist;
 
     w.show();
 

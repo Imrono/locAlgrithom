@@ -125,9 +125,8 @@ void MainWindow::paintEvent(QPaintEvent *event) {
 }
 
 void MainWindow::handleTimeout() {
+    distCount = distCount < 0 ? 0 : distCount;
     distCount++;    //为了保证qDebug与paintEvent显示一致，先distCount++，实际从1开始。
-    if (distCount <= 1)
-        return;
 
     labelInfo *meas = store->getLabel(MEASUR_STR);
     labelInfo *kalm = store->getLabel(KALMAN_STR);
