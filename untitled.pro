@@ -29,7 +29,8 @@ SOURCES += \
     calcPos.cpp \
     kalmanCalc.cpp \
     showPoint.cpp \
-    showStore.cpp
+    showStore.cpp \
+    matrixOp.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -37,7 +38,8 @@ HEADERS += \
     calcPos.h \
     kalmanCalc.h \
     showPoint.h \
-    showStore.h
+    showStore.h \
+    matrixOp.h
 
 FORMS += \
         mainwindow.ui

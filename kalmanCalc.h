@@ -5,9 +5,9 @@
 #include "showStore.h"
 #include <QDebug>
 
-inline void calcMatrix22Mulit(const double a, const double b, const double c, const double d,
-                              const double A, const double B, const double C, const double D,
-                              double &aA, double &bB, double &cC, double &dD) {
+inline void calcMatrix22Mulit(const dType a, const dType b, const dType c, const dType d,
+                              const dType A, const dType B, const dType C, const dType D,
+                              dType &aA, dType &bB, dType &cC, dType &dD) {
     aA = a*A + b*C;
     bB = a*B + b*D;
     cC = c*A + d*C;
@@ -22,14 +22,14 @@ public:
 
     static void calcKalmanPosVectorModified(labelInfo *labelPos, labelInfo *labelKalman);
     static void calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman);
-    static void calcMatrixMulit_KP(const double Kx, const double Kv,
-                                   const double Pxx_pri_t, const double Pxv_pri_t, const double Pvv_pri_t,
-                                   double &Pxx_t, double &Pxv_t, double &Pvv_t);
+    static void calcMatrixMulit_KP(const dType Kx, const dType Kv,
+                                   const dType Pxx_pri_t, const dType Pxv_pri_t, const dType Pvv_pri_t,
+                                   dType &Pxx_t, dType &Pxv_t, dType &Pvv_t);
 
-    static double calcR(double reliability);
-    static double calcR(locationCoor v_t, locationCoor v_t_1, double reliability);
-    static double calcR(locationCoor v_t, locationCoor v_t_1);
-    static double calcR(QPoint v_t, QPoint v_t_1);
+    static dType calcR(dType reliability);
+    static dType calcR(locationCoor v_t, locationCoor v_t_1, dType reliability);
+    static dType calcR(locationCoor v_t, locationCoor v_t_1);
+    static dType calcR(QPoint v_t, QPoint v_t_1);
 };
 
 #endif // KALMANCALC_H

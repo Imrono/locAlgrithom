@@ -3,6 +3,10 @@
 #include <QPoint>
 #include <QDateTime>
 
+#ifndef dType
+#define dType double
+#endif
+
 struct labelDistance {
     uint32_t distance[4];
     uint32_t status[4];
@@ -28,13 +32,13 @@ struct labelDistance {
 
 struct locationCoor
  {
-    double x;
-    double y;
-    double z;
+    dType x;
+    dType y;
+    dType z;
 
     locationCoor()
     {}
-    locationCoor(double x, double y, double z) : x{x}, y{y}, z{z}
+    locationCoor(dType x, dType y, dType z) : x{x}, y{y}, z{z}
     {}
     locationCoor(const locationCoor &obj): x(obj.x), y(obj.y), z(obj.z)
     {}
@@ -60,14 +64,14 @@ struct locationCoor
         ans.z -= t.z;
         return ans;
     }
-    locationCoor operator*(const double &t) const {
+    locationCoor operator*(const dType &t) const {
         locationCoor ans(*this);
         ans.x *= t;
         ans.y *= t;
         ans.z *= t;
         return ans;
     }
-    locationCoor operator/(const double &t) const {
+    locationCoor operator/(const dType &t) const {
         locationCoor ans(*this);
         ans.x /= t;
         ans.y /= t;
@@ -88,7 +92,7 @@ struct coorLine {
 };
 
 struct distance_3 {
-    double dist[3];
+    dType dist[3];
     locationCoor loca[3];
     QString toString() const {
         QString ans =  QString("%0@%1,%2@%3,%4@%5")

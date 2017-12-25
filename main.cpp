@@ -66,13 +66,14 @@ int main(int argc, char *argv[])
     qDebug() << "fileName:" << fileName << ",calcPos.dist.count():" << calc.dist.count();
 
     calc.calcPosVector(store.getLabel(MEASUR_STR));
+    //calc.calcPosVectorWylie(store.getLabel(MEASUR_STR));
     calc.calcPotimizedPos(store.getLabel(MEASUR_STR));
-    double measDist = calcTotalAvgDistanceSquare(store.getLabel(MEASUR_STR)->AnsLines);
+    dType measDist = calcTotalAvgDistanceSquare(store.getLabel(MEASUR_STR)->AnsLines);
     qDebug() << store.getLabel(MEASUR_STR)->toString();
 
     //kalmanCalc::calcKalmanPosVectorModified(store.getLabel(MEASUR_STR), store.getLabel(KALMAN_STR));
     kalmanCalc::calcKalmanPosVector(store.getLabel(MEASUR_STR), store.getLabel(KALMAN_STR));
-    double kalmanDist = calcTotalAvgDistanceSquare(store.getLabel(KALMAN_STR)->AnsLines);
+    dType kalmanDist = calcTotalAvgDistanceSquare(store.getLabel(KALMAN_STR)->AnsLines);
     qDebug() << store.getLabel(KALMAN_STR)->toString();
     qDebug() << "avgDistanceSquare => measDist:" << measDist << "; kalmanDist:" << kalmanDist;
 

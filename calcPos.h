@@ -4,14 +4,14 @@
 #include "datatype.h"
 #include "showStore.h"
 
-double calcDistanceSquare(const locationCoor &a, const locationCoor &b);
-double calcDistanceSquare(const QPoint &a, const QPoint &b);
-double calcDistance(const locationCoor &a, const locationCoor &b);
-double calcDistance(const QPoint &a, const QPoint &b);
-double calcTotalDistance(QVector<QLine> &lines, int discount = 10);
-double calcTotalAvgDistance(QVector<QLine> &lines, int discount = 10);
-double calcTotalDistanceSquare(QVector<QLine> &lines, int discount = 10);
-double calcTotalAvgDistanceSquare(QVector<QLine> &lines, int discount = 10);
+dType calcDistanceSquare(const locationCoor &a, const locationCoor &b);
+dType calcDistanceSquare(const QPoint &a, const QPoint &b);
+dType calcDistance(const locationCoor &a, const locationCoor &b);
+dType calcDistance(const QPoint &a, const QPoint &b);
+dType calcTotalDistance(QVector<QLine> &lines, int discount = 10);
+dType calcTotalAvgDistance(QVector<QLine> &lines, int discount = 10);
+dType calcTotalDistanceSquare(QVector<QLine> &lines, int discount = 10);
+dType calcTotalAvgDistanceSquare(QVector<QLine> &lines, int discount = 10);
 
 class calcPos
 {
@@ -35,12 +35,14 @@ public:
 
     QVector<locationCoor> calcPosFromDistance(const uint32_t dist[], uint32_t count = 4) const;
     distance_3 calcMin3Loca(uint32_t dist[], uint32_t count = 4) const;
-    static locationCoor calcOnePos(double dist[], locationCoor loca[]);
+    static locationCoor calcOnePos(dType dist[], locationCoor loca[]);
     static locationCoor calcOnePos(distance_3 info) {
         return calcPos::calcOnePos(info.dist, info.loca);
     }
     void calcPosVector (labelInfo *label);
     void calcPotimizedPos(labelInfo *label);
+    void calcPosVectorWylie (labelInfo *label);
+    void calcPotimizedPosWylie(labelInfo *label);
 
     locationCoor getLoc(int idx) const {
         return loc[idx];
