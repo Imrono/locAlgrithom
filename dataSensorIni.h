@@ -1,0 +1,36 @@
+#ifndef DATASENSORINI_H
+#define DATASENSORINI_H
+#include "_myheads.h"
+#include <QSettings>
+#include <QVector>
+#include "datatype.h"
+
+#define my2Str(xyz, idx)    QString("%0%1").arg(xyz).arg(idx)
+
+struct configData {
+    QVector<locationCoor> sensor;
+    QVector<QVector<locationCoor>> stop;
+    QVector<QVector<locationCoor>> alarm;
+    QVector<QVector<locationCoor>> oper;
+
+    QString toString();
+};
+
+class dataSensorIni
+{
+public:
+    explicit dataSensorIni(QString fileName);
+    ~dataSensorIni();
+    QString toString();
+    configData *get_q() {
+        return q;
+    }
+
+private:
+    QString fileName;
+    QSettings iniSetting;
+
+    configData *q{nullptr};
+};
+
+#endif // DATASENSORINI_H

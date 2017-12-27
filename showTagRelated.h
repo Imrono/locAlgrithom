@@ -1,21 +1,22 @@
 #ifndef SHOWPOINT_H
 #define SHOWPOINT_H
+#include "_myheads.h"
 #include <QPainter>
 #include <QColor>
 #include <QDebug>
 #include "datatype.h"
 
-class showPoint
+class showTagRelated
 {
 public:
-    explicit showPoint() :
+    explicit showTagRelated() :
         pos(QPoint{0,0}), radius(0), line(0,0,0,0)
     {}
-    explicit showPoint(int r, const QPen pen, const QBrush brush, const QPen penRaw, const QBrush brushRaw) :
+    explicit showTagRelated(int r, const QPen pen, const QBrush brush, const QPen penRaw, const QBrush brushRaw) :
         pos(QPoint{0,0}), line(0,0,0,0), radius(r), painterPen(pen), painterBrush(brush),
         painterPenRaw(penRaw), painterBrushRaw(brushRaw)
     {}
-    explicit showPoint(int r, const QPen pen, const QBrush brush) :
+    explicit showTagRelated(int r, const QPen pen, const QBrush brush) :
         pos(QPoint{0,0}), line(0,0,0,0), radius(r), painterPen(pen), painterBrush(brush)
     {}
 
@@ -39,10 +40,11 @@ public:
         return painterBrushRaw;
     }
 
+    /******************************************************************/
     void setRadius(int r) {
         radius = r;
     }
-    void setPosition(const QPoint &p) {
+    void setPosition(const QPointF &p) {
         pos.setX(p.x());
         pos.setY(p.y());
     }
@@ -50,48 +52,55 @@ public:
         pos.setX(x);
         pos.setY(y);
     }
-    QPoint getPosition() const {
+    QPointF getPosition() const {
         return pos;
     }
 
-    void setLine(const QPoint &p1, const QPoint &p2) {
+    void setLine(const QPointF &p1, const QPointF &p2) {
         line.setP1(p1);
         line.setP2(p2);
     }
-    void setLine(const QLine &l) {
+    void setLine(const QLineF &l) {
         line.setLine(l.p1().x(), l.p1().y(), l.p2().x(), l.p2().y());
     }
     void setLine(int p1X, int p1Y, int p2X, int p2Y) {
         line.setLine(p1X, p1Y, p2X, p2Y);
     }
-    QLine getLine() const {
+    QLineF getLine() const {
         return line;
     }
 
-    void setPointsRaw(const QVector<QPoint> ps) {
+    void setLines(const QVector<QLineF> &lines) {
+        this->lines = lines;
+    }
+    QVector<QLineF> getLines() const {
+        return lines;
+    }
+
+    void setPointsRaw(const QVector<QPointF> ps) {
         pointsRaw = ps;
     }
     void setPointsRaw(QVector<locationCoor> ps) {
         pointsRaw.clear();
         for (int i = 0; i < ps.count(); i++)
-            pointsRaw.append(ps[i].toQPoint());
+            pointsRaw.append(ps[i].toQPointF());
     }
-    void setPointsRefined(const QVector<QPoint> ps) {
+    void setPointsRefined(const QVector<QPointF> ps) {
         pointsRefined = ps;
     }
     void setPointsRefined(QVector<locationCoor> ps) {
         pointsRefined.clear();
         for (int i = 0; i < ps.count(); i++)
-            pointsRefined.append(ps[i].toQPoint());
+            pointsRefined.append(ps[i].toQPointF());
     }
 
-    void drawPoint(QPainter &painter) const;
-    void drawPointsRaw(QPainter &painter) const;
-    void drawPointsRefined(QPainter &painter) const;
-    void drawLine(QPainter &painter) const;
-    void drawLines(QPainter &painter, QVector<QLine> lines) const;
+    void drawPoint(QPainter &painter, dType ratio = 1.f) const;
+    void drawPointsRaw(QPainter &painter, dType ratio = 1.f) const;
+    void drawPointsRefined(QPainter &painter, dType ratio = 1.f) const;
+    void drawLine(QPainter &painte, dType ratio = 1.f) const;
+    void drawLines(QPainter &painter, dType ratio = 1.f) const;
 
-    showPoint& operator=(const showPoint &sp)
+    showTagRelated& operator=(const showTagRelated &sp)
     {
         pos = sp.pos;
         radius = sp.radius;
@@ -103,11 +112,12 @@ public:
     }
 
 private:
-    QPoint pos;
-    int    radius;
-    QLine  line;
-    QVector<QPoint> pointsRaw;
-    QVector<QPoint> pointsRefined;
+    QPointF pos;
+    int     radius;
+    QLineF  line;
+    QVector<QPointF> pointsRaw;
+    QVector<QPointF> pointsRefined;
+    QVector<QLineF>  lines;
 
     QPen   painterPen;
     QBrush painterBrush;

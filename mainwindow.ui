@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>520</width>
-    <height>300</height>
+    <width>750</width>
+    <height>450</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <widget class="QPushButton" name="showPath">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>620</x>
       <y>20</y>
       <width>75</width>
       <height>23</height>
@@ -30,13 +30,13 @@
      </font>
     </property>
     <property name="text">
-     <string>SHOW PATH</string>
+     <string>显示路径</string>
     </property>
    </widget>
    <widget class="QPushButton" name="beginTrack">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>620</x>
       <y>80</y>
       <width>75</width>
       <height>23</height>
@@ -46,20 +46,20 @@
      <string>track</string>
     </property>
    </widget>
-   <widget class="QWidget" name="canvas" native="true">
+   <widget class="uiCanvas" name="canvas" native="true">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>400</width>
-      <height>300</height>
+      <width>600</width>
+      <height>450</height>
      </rect>
     </property>
    </widget>
    <widget class="QPushButton" name="reset">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>620</x>
       <y>170</y>
       <width>75</width>
       <height>23</height>
@@ -72,7 +72,7 @@
    <widget class="QPushButton" name="next">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>620</x>
       <y>140</y>
       <width>75</width>
       <height>23</height>
@@ -85,20 +85,20 @@
    <widget class="QPushButton" name="allPos">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>620</x>
       <y>50</y>
       <width>75</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
-     <string>show pos</string>
+     <string>显示所有点</string>
     </property>
    </widget>
    <widget class="QPushButton" name="previous">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>620</x>
       <y>110</y>
       <width>75</width>
       <height>23</height>
@@ -108,8 +108,94 @@
      <string>previous</string>
     </property>
    </widget>
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>240</y>
+      <width>131</width>
+      <height>118</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout" columnstretch="1,7,7">
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="raw_0"/>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="raw_1"/>
+     </item>
+     <item row="3" column="2">
+      <widget class="QLineEdit" name="refine_2"/>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="raw_3"/>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="raw_2"/>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLineEdit" name="refine_0"/>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLineEdit" name="refine_1"/>
+     </item>
+     <item row="4" column="2">
+      <widget class="QLineEdit" name="refine_3"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>1</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>3</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>2</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>raw</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>refined</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>uiCanvas</class>
+   <extends>QWidget</extends>
+   <header>uiCanvas.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

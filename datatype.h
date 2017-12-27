@@ -1,14 +1,11 @@
 #ifndef DATATYPE_H
 #define DATATYPE_H
+#include "_myheads.h"
 #include <QPoint>
 #include <QDateTime>
 
-#ifndef dType
-#define dType double
-#endif
-
 struct labelDistance {
-    uint32_t distance[4];
+    int distance[4];
     uint32_t status[4];
     QDateTime time[4];
 
@@ -83,6 +80,9 @@ struct locationCoor
     }
     QPoint toQPoint() const {
         return {int(x), int(y)};
+    }
+    QPointF toQPointF() const {
+        return {x, y};
     }
 };
 

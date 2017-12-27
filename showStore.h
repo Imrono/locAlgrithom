@@ -1,23 +1,21 @@
 #ifndef SHOWSTORE_H
 #define SHOWSTORE_H
+#include "_myheads.h"
 #include <QVector>
 #include <QMap>
-#include "showPoint.h"
+#include "showTagRelated.h"
 #include "datatype.h"
-
-#define MEASUR_STR "measure"
-#define KALMAN_STR "kalman"
 
 struct labelInfo {
     QVector<locationCoor>          Ans;
-    QVector<dType>                Reliability; //1.meas：长度之和；2.kalman：卡尔曼增益K
-    QVector<dType>                data_R;
-    QVector<dType>                data_P;
-    QVector<dType>                data_y;
-    QVector<QLine>                 AnsLines;
+    QVector<dType>                 Reliability; //1.meas：长度之和；2.kalman：卡尔曼增益K
+    QVector<dType>                 data_R;
+    QVector<dType>                 data_P;
+    QVector<dType>                 data_y;
+    QVector<QLineF>                AnsLines;
     QVector<QVector<locationCoor>> RawPoints;
     QVector<QVector<locationCoor>> RefinedPoints;
-    showPoint                      showStyle;
+    showTagRelated                 showStyle;
     QString                        name;
     QString toString() {
         return QString("name:%0, nLines:%1, nAnsPoints:%2")
@@ -28,13 +26,12 @@ struct labelInfo {
 class showStore
 {
 public:
-    showStore(locationCoor loc[4]);
+    showStore();
 
     QMap<QString, int> name2idx;
-    locationCoor loc[4];
 
     void appendLabel(const QString &name);
-    void appendLabel(const QString &name, const showPoint &showStyle);
+    void appendLabel(const QString &name, const showTagRelated &showStyle);
     void appendLabel(labelInfo *label);
     labelInfo * getLabel(int idx);
     labelInfo * getLabel(const QString &name) {
@@ -42,7 +39,7 @@ public:
     }
 
     void setName(int idx, const QString &name);
-    void setShowStyle(int idx, showPoint showStyle);
+    void setShowStyle(int idx, showTagRelated showStyle);
 
     void addRawPoints(int idx, QVector<locationCoor> points);
     void addRawPoints(const QString &name, QVector<locationCoor> points) {

@@ -1,5 +1,6 @@
 #ifndef KALMANCALC_H
 #define KALMANCALC_H
+#include "_myheads.h"
 #include <QVector>
 #include "datatype.h"
 #include "showStore.h"
@@ -15,10 +16,10 @@ inline void calcMatrix22Mulit(const dType a, const dType b, const dType c, const
     //qDebug() << c << B << d << D << c*B << d*D << dD;
 }
 
-class kalmanCalc
+class calcKalman
 {
 public:
-    kalmanCalc();
+    calcKalman();
 
     static void calcKalmanPosVectorModified(labelInfo *labelPos, labelInfo *labelKalman);
     static void calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman);

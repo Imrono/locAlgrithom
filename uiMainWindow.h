@@ -1,27 +1,33 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
+#include "_myheads.h"
 #include <QMainWindow>
 #include <QPixmap>
 #include <QTimer>
 #include "datatype.h"
+#include "dataSensorIni.h"
 #include "calcPos.h"
-#include "showPoint.h"
+#include "showTagRelated.h"
 #include "showStore.h"
 
 namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow
+class uiMainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(showStore *store, QWidget *parent = 0);
-    ~MainWindow();
+    explicit uiMainWindow(showStore *store, QWidget *parent = 0);
+    ~uiMainWindow();
+
+    void setConfigData(const configData *d);
 
     showStore *store;
+
+signals:
+    void countChanged(int cnt);
 
 private:
     Ui::MainWindow *ui;
@@ -30,8 +36,6 @@ private:
 
     int distCount{0};
 
-    bool isShowPath{false};
-    bool isShowAllPos{false};
     void paintEvent(QPaintEvent *event);
 
 private slots:

@@ -1,9 +1,6 @@
 #ifndef MATRIXOP_H
 #define MATRIXOP_H
-
-#ifndef dType
-#define dType double
-#endif
+#include "_myheads.h"
 
 void matrixSum(const dType **a, const dType **b, dType **c, const long nRow, const long nCol);
 void matrixMuti(dType **a, dType **b, dType **c, const long naRow, const long naCol_nbRow, const long nbCol);

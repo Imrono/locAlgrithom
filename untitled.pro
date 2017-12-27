@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
-
+#CONFIG   += console
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = untitled
@@ -25,24 +25,29 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp \
     calcPos.cpp \
-    kalmanCalc.cpp \
-    showPoint.cpp \
     showStore.cpp \
-    matrixOp.cpp
+    matrixOp.cpp \
+    calcKalman.cpp \
+    uiCanvas.cpp \
+    uiMainWindow.cpp \
+    dataSensorIni.cpp \
+    showTagRelated.cpp
 
 HEADERS += \
-        mainwindow.h \
         datatype.h \
     calcPos.h \
-    kalmanCalc.h \
-    showPoint.h \
     showStore.h \
-    matrixOp.h
+    matrixOp.h \
+    calcKalman.h \
+    _myheads.h \
+    uiMainWindow.h \
+    uiCanvas.h \
+    dataSensorIni.h \
+    showTagRelated.h
 
 FORMS += \
-        mainwindow.ui
+    mainwindow.ui
 
 
 
