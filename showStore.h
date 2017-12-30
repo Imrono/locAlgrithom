@@ -21,6 +21,14 @@ struct labelInfo {
         return QString("name:%0, nLines:%1, nAnsPoints:%2")
                 .arg(name, 8).arg(AnsLines.count(), 4).arg(Ans.count(), 4);
     }
+    void resetTrack() {
+        Ans.clear();
+        Reliability.clear();
+        data_R.clear();
+        data_P.clear();
+        data_y.clear();
+        AnsLines.clear();
+    }
 };
 
 class showStore

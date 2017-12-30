@@ -13,22 +13,30 @@ struct configData {
     QVector<QVector<locationCoor>> alarm;
     QVector<QVector<locationCoor>> oper;
 
+    void reset() {
+        sensor.clear();
+        stop.clear();
+        alarm.clear();
+        oper.clear();
+    }
+
     QString toString();
 };
 
 class dataSensorIni
 {
 public:
-    explicit dataSensorIni(QString fileName);
+    explicit dataSensorIni();
     ~dataSensorIni();
+    void loadNewFile(const QString &fileName);
+
     QString toString();
-    configData *get_q() {
+    configData *get_q() const {
         return q;
     }
 
 private:
     QString fileName;
-    QSettings iniSetting;
 
     configData *q{nullptr};
 };

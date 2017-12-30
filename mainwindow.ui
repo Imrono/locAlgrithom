@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>750</width>
-    <height>450</height>
+    <height>499</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,6 +54,12 @@
       <width>600</width>
       <height>450</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
    </widget>
    <widget class="QPushButton" name="reset">
@@ -187,6 +193,184 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>750</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>位置算法</string>
+    </property>
+    <addaction name="actionFullCentroid"/>
+    <addaction name="actionSubLS"/>
+    <addaction name="actionTwoCenter"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuview">
+    <property name="title">
+     <string>视图</string>
+    </property>
+    <addaction name="actionZoom_In"/>
+    <addaction name="actionZoom_Out"/>
+   </widget>
+   <widget class="QMenu" name="menu_Filter">
+    <property name="title">
+     <string>距离滤波</string>
+    </property>
+    <addaction name="actionKalmanDist"/>
+    <addaction name="actionKangDist"/>
+   </widget>
+   <widget class="QMenu" name="menuNLOS">
+    <property name="title">
+     <string>NLOS检测</string>
+    </property>
+    <addaction name="actionWylie"/>
+    <addaction name="actionMultiPoint"/>
+    <addaction name="separator"/>
+    <addaction name="actionRes"/>
+    <addaction name="actionSumDist"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>标签跟踪</string>
+    </property>
+    <addaction name="actionKalmanTrack"/>
+    <addaction name="actionkalmanLiteTrack"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="actionRead_ini"/>
+    <addaction name="actionRead_dist"/>
+   </widget>
+   <addaction name="menu_3"/>
+   <addaction name="menuNLOS"/>
+   <addaction name="menu_Filter"/>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menuview"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionFullCentroid">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>全质心</string>
+   </property>
+  </action>
+  <action name="actionSubLS">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>相减最小二乘</string>
+   </property>
+  </action>
+  <action name="actionZoom_In">
+   <property name="text">
+    <string>Zoom In</string>
+   </property>
+  </action>
+  <action name="actionZoom_Out">
+   <property name="text">
+    <string>Zoom Out</string>
+   </property>
+  </action>
+  <action name="actionTwoCenter">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>纯二维求中心</string>
+   </property>
+  </action>
+  <action name="actionWylie">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Wylie算法</string>
+   </property>
+  </action>
+  <action name="actionMultiPoint">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>多点比较</string>
+   </property>
+  </action>
+  <action name="actionRes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>残差比较</string>
+   </property>
+  </action>
+  <action name="actionSumDist">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>距离和比较</string>
+   </property>
+  </action>
+  <action name="actionKalmanDist">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Kalman</string>
+   </property>
+  </action>
+  <action name="actionKangDist">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Kang</string>
+   </property>
+  </action>
+  <action name="actionKalmanTrack">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>kalman</string>
+   </property>
+  </action>
+  <action name="actionkalmanLiteTrack">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>kalmanLite</string>
+   </property>
+  </action>
+  <action name="actionRead_ini">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Read ini</string>
+   </property>
+  </action>
+  <action name="actionRead_dist">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Read distance</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

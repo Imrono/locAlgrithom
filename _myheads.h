@@ -1,6 +1,9 @@
 #ifndef MYHEADS_H
 #define MYHEADS_H
 
+#include <QVector>
+#include <QDebug>
+
 #ifndef dType
 #define dType double
 #endif

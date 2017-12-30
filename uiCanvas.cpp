@@ -1,4 +1,4 @@
-#include "uiCanvas.h"
+﻿#include "uiCanvas.h"
 #include <QPainter>
 #include <QPainterPath>
 
@@ -90,7 +90,9 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
-
+    // 画canvas的边框
+    painter.setPen(QPen(Qt::gray, 5));
+    painter.drawRect(geometry());
     // legend
     painter.setPen(tags[MEASUR_STR].getPen());
     painter.drawText(0, 0, 50, 10, Qt::AlignLeft, MEASUR_STR);

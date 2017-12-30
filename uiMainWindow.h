@@ -4,11 +4,13 @@
 #include <QMainWindow>
 #include <QPixmap>
 #include <QTimer>
+#include <QAction>
 #include "datatype.h"
 #include "dataSensorIni.h"
-#include "calcPos.h"
+#include "calcTagPos.h"
 #include "showTagRelated.h"
 #include "showStore.h"
+#include "calcTagNLOS.h"
 
 namespace Ui {
 class MainWindow;
@@ -19,12 +21,10 @@ class uiMainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit uiMainWindow(showStore *store, QWidget *parent = 0);
+    explicit uiMainWindow(QWidget *parent = 0);
     ~uiMainWindow();
 
-    void setConfigData(const configData *d);
-
-    showStore *store;
+    showStore store;
 
 signals:
     void countChanged(int cnt);
@@ -36,7 +36,33 @@ private:
 
     int distCount{0};
 
+    calcTagPos calcPos;
+    calcTagNLOS calcNlos;
+
+    dataSensorIni cfgData;
+    dataDistanceLog distData;
+
     void paintEvent(QPaintEvent *event);
+
+private slots:
+    // FILE
+    void loadIniConfigFile(bool checked);
+    void loadLogDistanceFile(bool checked);
+
+    // NLOS
+    void nlosWylie(bool checked);
+    void nlosMultiPoint(bool checked);
+    void nlosRes(bool checked);
+    void nlosSumDist(bool checked);
+
+    // POS
+    void posFullCentroid(bool checked);
+    void posSubLS(bool checked);
+    void posTwoCenter(bool checked);
+
+    // TRACK
+    void trackKalman(bool checked);
+    void trackKalmanLite(bool checked);
 
 private slots:
     void handleTimeout();

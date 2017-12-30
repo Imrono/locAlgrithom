@@ -25,29 +25,38 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-    calcPos.cpp \
     showStore.cpp \
     matrixOp.cpp \
-    calcKalman.cpp \
     uiCanvas.cpp \
     uiMainWindow.cpp \
     dataSensorIni.cpp \
-    showTagRelated.cpp
+    showTagRelated.cpp \
+    calcDistanceFilter.cpp \
+    calcTargetTracking.cpp \
+    dataDistanceLog.cpp \
+    calcTagPos.cpp \
+    calcTagNLOS.cpp
 
 HEADERS += \
         datatype.h \
-    calcPos.h \
     showStore.h \
     matrixOp.h \
-    calcKalman.h \
     _myheads.h \
     uiMainWindow.h \
     uiCanvas.h \
     dataSensorIni.h \
-    showTagRelated.h
+    showTagRelated.h \
+    calcDistanceFilter.h \
+    calcTargetTracking.h \
+    dataDistanceLog.h \
+    calcTagPos.h \
+    calcTagNLOS.h
 
 FORMS += \
     mainwindow.ui
 
 
 
+#win32-msvc*:QMAKE_CXXFLAGS += /wd"4819"
+win64-msvc*:QMAKE_CXXFLAGS += /wd"4819"
+win32-msvc*:QMAKE_CXXFLAGS += /wd"4819"

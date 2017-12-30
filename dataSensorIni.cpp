@@ -1,5 +1,5 @@
-#include "dataSensorIni.h"
-#include <QDebug>
+﻿#include "dataSensorIni.h"
+#include <QFile>
 
 QString configData::toString() {
     QString str;
@@ -40,10 +40,25 @@ QString configData::toString() {
     return str;
 }
 
-dataSensorIni::dataSensorIni(QString fileName)
-    : iniSetting{fileName, QSettings::IniFormat}, fileName{fileName}
+dataSensorIni::dataSensorIni()
 {
     q = new configData;
+}
+dataSensorIni::~dataSensorIni() {
+    if (nullptr == q)
+        delete q;
+}
+
+void dataSensorIni::loadNewFile(const QString &fileName) {
+    QFile file(fileName);
+    if (!file.exists()) {
+        qDebug() << "dataSensorIni file not exist";
+        return;
+    }
+
+    QSettings iniSetting{fileName, QSettings::IniFormat};
+    this->fileName = fileName;
+    q->reset();
 
     int Cnt = 0;
     int AreaCnt = 0;
@@ -103,10 +118,6 @@ dataSensorIni::dataSensorIni(QString fileName)
         q->oper.append(tmp);
         iniSetting.endGroup();
     }
-}
-dataSensorIni::~dataSensorIni() {
-    if (nullptr == q)
-        delete q;
 }
 
 QString dataSensorIni::toString() {
