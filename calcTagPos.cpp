@@ -499,25 +499,7 @@ void calcTagPos::calcPosVectorKang (labelInfo *label) {
             // ITERATION
             param.count = 2;
             do {
-                B_ls[0] = qPow(tmpDist.distance[1], 2) - qPow(tmpDist.distance[0], 2) +
-                       qPow(cfg_d->sensor[0].x, 2) - qPow(cfg_d->sensor[1].x, 2) +
-                       qPow(cfg_d->sensor[0].y, 2) - qPow(cfg_d->sensor[1].y, 2);
-                B_ls[1] = qPow(tmpDist.distance[2], 2) - qPow(tmpDist.distance[0], 2) +
-                       qPow(cfg_d->sensor[0].x, 2) - qPow(cfg_d->sensor[2].x, 2) +
-                       qPow(cfg_d->sensor[0].y, 2) - qPow(cfg_d->sensor[2].y, 2);
-                B_ls[2] = qPow(tmpDist.distance[3], 2) - qPow(tmpDist.distance[0], 2) +
-                       qPow(cfg_d->sensor[0].x, 2) - qPow(cfg_d->sensor[3].x, 2) +
-                       qPow(cfg_d->sensor[0].y, 2) - qPow(cfg_d->sensor[3].y, 2);
-
-                //leastSquare(A_ls, B_ls, X, 3, 2);
-                //mse = calcMSE(A_ls, B_ls, X, 3, 2);
-                //qDebug() << i << "   " << mse;
                 tmpX = calcSubLS(tmpDist.distance, mse);
-                qDebug() << i << "   " << mse;
-                //qDebug() << "KANG"  << i << mse << param.count;
-                //qDebug() << A_ls[0][0] << A_ls[0][1]
-                //         << A_ls[1][0] << A_ls[1][1]
-                //         << A_ls[2][0] << A_ls[2][1];
 
                 if (mse < param.threshold) {  // MSE小于阈值，直接退出循环
                     break;
@@ -546,7 +528,6 @@ void calcTagPos::calcPosVectorKang (labelInfo *label) {
             // store and update
             label->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, 4));
             label->Ans.append(tmpX);
-            //label->Ans.append({X[0], X[1], 0.f});
             label->Reliability.append(mse);
             label->AnsLines.append(QLineF(label->Ans[i-1].toQPointF(), label->Ans[i].toQPointF()));
             distRefined.append(tmpDist);
@@ -555,17 +536,6 @@ void calcTagPos::calcPosVectorKang (labelInfo *label) {
             label->RefinedPoints.append(calcPosFromDistance(dist_d->dist[i].distance, 4));
             distRefined.append(dist_d->dist[i]);
 
-            B_ls[0] = qPow(dist_d->dist[i].distance[1], 2) - qPow(dist_d->dist[i].distance[0], 2) +
-                   qPow(cfg_d->sensor[0].x, 2) - qPow(cfg_d->sensor[1].x, 2) +
-                   qPow(cfg_d->sensor[0].y, 2) - qPow(cfg_d->sensor[1].y, 2);
-            B_ls[1] = qPow(dist_d->dist[i].distance[2], 2) - qPow(dist_d->dist[i].distance[0], 2) +
-                   qPow(cfg_d->sensor[0].x, 2) - qPow(cfg_d->sensor[2].x, 2) +
-                   qPow(cfg_d->sensor[0].y, 2) - qPow(cfg_d->sensor[2].y, 2);
-            B_ls[2] = qPow(dist_d->dist[i].distance[3], 2) - qPow(dist_d->dist[i].distance[0], 2) +
-                   qPow(cfg_d->sensor[0].x, 2) - qPow(cfg_d->sensor[3].x, 2) +
-                   qPow(cfg_d->sensor[0].y, 2) - qPow(cfg_d->sensor[3].y, 2);
-            //leastSquare(A_ls, B_ls, X, 3, 2);
-            //label->Ans.append({X[0], X[1], 0.f});
             tmpX = calcSubLS(tmpDist.distance, mse);
             label->Ans.append(tmpX);
             label->Reliability.append(0.f);
