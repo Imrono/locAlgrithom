@@ -135,7 +135,15 @@ void uiMainWindow::handleTimeout() {
     ui->canvas->setPointsRaw(MEASUR_STR, meas->RawPoints[distCount]);
     ui->canvas->setPointsRefined(MEASUR_STR, meas->RefinedPoints[distCount]);
 
-    //ui->raw_0->setText(QString::number(meas->));
+    ui->raw_0->setText(QString::number(distData.get_q()->dist[distCount].distance[0]));
+    ui->raw_1->setText(QString::number(distData.get_q()->dist[distCount].distance[1]));
+    ui->raw_2->setText(QString::number(distData.get_q()->dist[distCount].distance[2]));
+    ui->raw_3->setText(QString::number(distData.get_q()->dist[distCount].distance[3]));
+
+    ui->refine_0->setText(QString::number(calcPos.distRefined[distCount].distance[0]));
+    ui->refine_1->setText(QString::number(calcPos.distRefined[distCount].distance[1]));
+    ui->refine_2->setText(QString::number(calcPos.distRefined[distCount].distance[2]));
+    ui->refine_3->setText(QString::number(calcPos.distRefined[distCount].distance[3]));
 
     update();
 
@@ -203,7 +211,7 @@ void uiMainWindow::posFullCentroid(bool checked) {
     ui->actionFullCentroid->setChecked(true);
     ui->actionSubLS->setChecked(false);
     ui->actionTwoCenter->setChecked(false);
-    calcPos.calcPosType = calcTagPos::FullCentroid;
+    calcPos.calcPosType = CALC_POS_TYPE::FullCentroid;
 
     store.getLabel(MEASUR_STR)->resetTrack();
     calcPos.calcPosVectorKang(store.getLabel(MEASUR_STR));
@@ -220,7 +228,7 @@ void uiMainWindow::posSubLS(bool checked) {
     ui->actionFullCentroid->setChecked(false);
     ui->actionSubLS->setChecked(true);
     ui->actionTwoCenter->setChecked(false);
-    calcPos.calcPosType = calcTagPos::SubLS;
+    calcPos.calcPosType = CALC_POS_TYPE::SubLS;
 
     store.getLabel(MEASUR_STR)->resetTrack();
     //calc.calcPosVector_2(store.getLabel(MEASUR_STR));
@@ -239,7 +247,7 @@ void uiMainWindow::posTwoCenter(bool checked) {
     ui->actionFullCentroid->setChecked(false);
     ui->actionSubLS->setChecked(false);
     ui->actionTwoCenter->setChecked(true);
-    calcPos.calcPosType = calcTagPos::TwoCenter;
+    calcPos.calcPosType = CALC_POS_TYPE::TwoCenter;
 
     store.getLabel(MEASUR_STR)->resetTrack();
     //calc.calcPosVector_2(store.getLabel(MEASUR_STR));

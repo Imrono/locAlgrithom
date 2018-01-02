@@ -37,7 +37,14 @@ dType calcKalman::calcR(locationCoor v_t, locationCoor v_t_1, dType reliability)
     ans = ans < lBound ? lBound : ans;
     return ans;
 }
-dType calcKalman::calcR(dType reliability) {
+dType calcKalman::calcR(dType reliability, CALC_POS_TYPE type) {
+    if (CALC_POS_TYPE::FullCentroid == type) {
+        reliability /= 100.f;
+    } else if (CALC_POS_TYPE::SubLS == type) {
+        reliability /= 100.f;
+        qDebug() << reliability;
+    } else if (CALC_POS_TYPE::TwoCenter == type){
+    } else {}
     dType ans = 0.0f;
     if (reliability < 2.5f) {
         ans = 0.05;
@@ -228,7 +235,7 @@ void calcKalman::calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman
 
     x_t_1 = labelPos->Ans[0];
     v_t_1 = {0,0,0};
-    param.R = calcR(labelPos->Reliability[0]);
+    param.R = calcR(labelPos->Reliability[0], labelPos->calcPosType);
     labelKalman->Ans.append(labelPos->Ans[0]);
     labelKalman->Reliability.append(Kx);
     labelKalman->data_R.append(param.R);
@@ -247,7 +254,7 @@ void calcKalman::calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman
         z_x_t_meas = labelPos->Ans[i];
         y_x_tilde = z_x_t_meas - x_hat_t;
         // 4. S = R + HPH
-        param.R = calcR(labelPos->Reliability[i]);
+        param.R = calcR(labelPos->Reliability[i], labelPos->calcPosType);
         S = param.R + Pxx_pri_t;
         // 5. k = PH/S
         Kx = Pxx_pri_t / S;

@@ -23,7 +23,7 @@ public:
     /*************************************************************/
     void refineWylieNLOS(dType *d_history, dType *d_meas, int nSensor,
                          dType *d_predict, int *idx, int &num) const;
-    void refineMultiPointNLOS(dType avgDist_noMax, dType maxDist, dType d_t_1, dType &d_ans) const;
+    void refineMultiPointNLOS(/*IN_OUT*/int *d_t, /*IN*/const int *d_t_1, int nSensor) const;
 
     /*************************************************************/
     enum POS_PRECISION_NLOS {

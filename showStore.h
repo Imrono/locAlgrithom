@@ -17,6 +17,7 @@ struct labelInfo {
     QVector<QVector<locationCoor>> RefinedPoints;
     showTagRelated                 showStyle;
     QString                        name;
+    CALC_POS_TYPE                  calcPosType;
     QString toString() {
         return QString("name:%0, nLines:%1, nAnsPoints:%2")
                 .arg(name, 8).arg(AnsLines.count(), 4).arg(Ans.count(), 4);
@@ -35,6 +36,7 @@ struct labelInfo {
         RawPoints.clear();
         Reliability.clear();
         AnsLines.clear();
+        calcPosType = CALC_POS_TYPE::none_type;
     }
 };
 

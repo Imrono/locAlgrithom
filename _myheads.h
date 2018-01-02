@@ -19,4 +19,12 @@
 #define MEASUR_STR "measure"
 #define KALMAN_STR "kalman"
 
+enum CALC_POS_TYPE {
+    none_type = -1,
+    FullCentroid = 0,
+    SubLS = 1,
+    TwoCenter = 2
+};
+
+
 #endif // MYHEADS_H

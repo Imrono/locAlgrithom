@@ -483,6 +483,7 @@ void calcTagPos::calcPosVectorKang (labelInfo *label) {
 
     label->resetPos();
     distRefined.clear();
+    label->calcPosType = this->calcPosType;
 
     for (int i = 0; i < dist_d->dist.count(); i++) {
         labelDistance tmpDist;

@@ -23,12 +23,6 @@ class calcTagPos
 public:
     QVector<labelDistance> distRefined;
 
-    enum CALC_POS_TYPE {
-        FullCentroid = 0,
-        SubLS = 1,
-        TwoCenter = 2
-    };
-
     explicit calcTagPos() {}
     explicit calcTagPos(const configData *cfg_q, const distanceData *dist_q) {
         this->cfg_d  = cfg_q;
@@ -44,7 +38,7 @@ public:
     static locationCoor calcOnePosFor2Dim(dType dist[], locationCoor loca[]);
 
     // ALL IN ONE
-    CALC_POS_TYPE calcPosType;
+    CALC_POS_TYPE calcPosType{CALC_POS_TYPE::none_type};
 
     locationCoor calcOnePosition(const int *dist, dType &MSE);
 
