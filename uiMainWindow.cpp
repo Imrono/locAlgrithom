@@ -23,6 +23,7 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     qDebug() << distData.toString();
     calcPos.setDistanceData(distData.get_q());
     ui->canvas->setConfigData(cfgData.get_q());
+    calcPos.setNlosJudge(&calcNlos);
 
     // FILE
     connect(ui->actionRead_ini,  SIGNAL(triggered(bool)), this, SLOT(loadIniConfigFile(bool)));
@@ -35,7 +36,9 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     connect(ui->actionSumDist,   SIGNAL(triggered(bool)), this, SLOT(nlosSumDist(bool)));
 
     // POSITION
-    connect(ui->actionSubLS,     SIGNAL(triggered(bool)), this, SLOT(posSubLS(bool)));
+    connect(ui->actionFullCentroid, SIGNAL(triggered(bool)), this, SLOT(posFullCentroid(bool)));
+    connect(ui->actionSubLS,        SIGNAL(triggered(bool)), this, SLOT(posSubLS(bool)));
+    connect(ui->actionTwoCenter,    SIGNAL(triggered(bool)), this, SLOT(posTwoCenter(bool)));
 
 
     // TRACK
@@ -164,36 +167,34 @@ void uiMainWindow::loadLogDistanceFile(bool checked) {
 // NLOS
 void uiMainWindow::nlosWylie(bool checked) {
     Q_UNUSED(checked);
-    calcNlos.isWylie = !calcNlos.isWylie;
-    calcNlos.isMultiPoint = false;
-    ui->actionWylie->setChecked(calcNlos.isWylie);
-    ui->actionMultiPoint->setChecked(calcNlos.isMultiPoint);
-
+    calcNlos.predictNlos = calcTagNLOS::WYLIE;
+    ui->actionWylie->setChecked(true);
+    ui->actionMultiPoint->setChecked(false);
+    qDebug() << "nlosWylie";
 }
 
 void uiMainWindow::nlosMultiPoint(bool checked) {
     Q_UNUSED(checked);
-    calcNlos.isMultiPoint = !calcNlos.isMultiPoint;
-    calcNlos.isWylie = false;
-    ui->actionWylie->setChecked(calcNlos.isWylie);
-    ui->actionMultiPoint->setChecked(calcNlos.isMultiPoint);
-
+    calcNlos.predictNlos = calcTagNLOS::MULTI_POINT;
+    ui->actionWylie->setChecked(false);
+    ui->actionMultiPoint->setChecked(true);
+    qDebug() << "nlosMultiPoint";
 }
 
 void uiMainWindow::nlosRes(bool checked) {
     Q_UNUSED(checked);
-    calcNlos.isRes = !calcNlos.isRes;
-    calcNlos.isSumDist = false;
-    ui->actionRes->setChecked(calcNlos.isRes);
-    ui->actionSumDist->setChecked(calcNlos.isSumDist);
+    calcNlos.precNlos = calcTagNLOS::RESIDUAL;
+    ui->actionRes->setChecked(true);
+    ui->actionSumDist->setChecked(false);
+    qDebug() << "nlosRes";
 }
 
 void uiMainWindow::nlosSumDist(bool checked) {
     Q_UNUSED(checked);
-    calcNlos.isSumDist = !calcNlos.isSumDist;
-    calcNlos.isRes = false;
-    ui->actionRes->setChecked(calcNlos.isRes);
-    ui->actionSumDist->setChecked(calcNlos.isSumDist);
+    calcNlos.precNlos = calcTagNLOS::SUM_DIST;
+    ui->actionRes->setChecked(false);
+    ui->actionSumDist->setChecked(true);
+    qDebug() << "nlosSumDist";
 }
 
 // POSITION
@@ -204,9 +205,14 @@ void uiMainWindow::posFullCentroid(bool checked) {
     ui->actionTwoCenter->setChecked(false);
     calcPos.calcPosType = calcTagPos::FullCentroid;
 
+    store.getLabel(MEASUR_STR)->resetTrack();
+    calcPos.calcPosVectorKang(store.getLabel(MEASUR_STR));
     qDebug() << "posFullCentroid:" << store.getLabel(MEASUR_STR)->toString();
     dType measDist = calcTotalAvgDistanceSquare(store.getLabel(MEASUR_STR)->AnsLines);
     qDebug() << "posFullCentroid: avgDistanceSquare => measDist:" << measDist;
+
+    ui->canvas->setLines(MEASUR_STR, store.getLabel(MEASUR_STR)->AnsLines);
+    update();
 }
 
 void uiMainWindow::posSubLS(bool checked) {
@@ -216,12 +222,16 @@ void uiMainWindow::posSubLS(bool checked) {
     ui->actionTwoCenter->setChecked(false);
     calcPos.calcPosType = calcTagPos::SubLS;
 
+    store.getLabel(MEASUR_STR)->resetTrack();
     //calc.calcPosVector_2(store.getLabel(MEASUR_STR));
     calcPos.calcPosVectorKang(store.getLabel(MEASUR_STR));
 
     qDebug() << "posSubLS:" << store.getLabel(MEASUR_STR)->toString();
     dType measDist = calcTotalAvgDistanceSquare(store.getLabel(MEASUR_STR)->AnsLines);
     qDebug() << "posSubLS: avgDistanceSquare => measDist:" << measDist;
+
+    ui->canvas->setLines(MEASUR_STR, store.getLabel(MEASUR_STR)->AnsLines);
+    update();
 }
 
 void uiMainWindow::posTwoCenter(bool checked) {
@@ -231,9 +241,16 @@ void uiMainWindow::posTwoCenter(bool checked) {
     ui->actionTwoCenter->setChecked(true);
     calcPos.calcPosType = calcTagPos::TwoCenter;
 
+    store.getLabel(MEASUR_STR)->resetTrack();
+    //calc.calcPosVector_2(store.getLabel(MEASUR_STR));
+    calcPos.calcPosVectorKang(store.getLabel(MEASUR_STR));
+
     qDebug() << "posTwoCenter:" << store.getLabel(MEASUR_STR)->toString();
     dType measDist = calcTotalAvgDistanceSquare(store.getLabel(MEASUR_STR)->AnsLines);
     qDebug() << "posTwoCenter: avgDistanceSquare => measDist:" << measDist;
+
+    ui->canvas->setLines(MEASUR_STR, store.getLabel(MEASUR_STR)->AnsLines);
+    update();
 }
 
 // TRACK

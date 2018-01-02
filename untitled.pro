@@ -31,7 +31,6 @@ SOURCES += \
     uiMainWindow.cpp \
     dataSensorIni.cpp \
     showTagRelated.cpp \
-    calcDistanceFilter.cpp \
     calcTargetTracking.cpp \
     dataDistanceLog.cpp \
     calcTagPos.cpp \
@@ -46,7 +45,6 @@ HEADERS += \
     uiCanvas.h \
     dataSensorIni.h \
     showTagRelated.h \
-    calcDistanceFilter.h \
     calcTargetTracking.h \
     dataDistanceLog.h \
     calcTagPos.h \

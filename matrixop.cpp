@@ -159,9 +159,9 @@ void coefficient_B(dType **A, dType **coA, long nRow, long nCol) {
     }
 
     matrixTrans(A, AT, nRow, nCol);
-    qDebug() << "AT_ls:" << nCol << nRow;
-    qDebug() << AT[0][0] << AT[0][1] << AT[0][2]
-             << AT[1][0] << AT[1][1] << AT[1][2];
+    //qDebug() << "AT_ls:" << nCol << nRow;
+    //qDebug() << AT[0][0] << AT[0][1] << AT[0][2]
+    //         << AT[1][0] << AT[1][1] << AT[1][2];
     dType *I = new dType[nCol];
     for (int i = 0; i < nCol; i++) {
         for (int j = 0; j < nCol; j++) {
@@ -171,9 +171,9 @@ void coefficient_B(dType **A, dType **coA, long nRow, long nCol) {
                 I[j] = 0.f;
         }
         matrixMuti(AT, A, ATA, nCol, nRow, nCol);
-        qDebug() << "ATA_ls:" << nCol << nCol;
-        qDebug() << ATA[0][0] << ATA[0][1]
-                 << ATA[1][0] << ATA[1][1];
+        //qDebug() << "ATA_ls:" << nCol << nCol;
+        //qDebug() << ATA[0][0] << ATA[0][1]
+        //         << ATA[1][0] << ATA[1][1];
         //qDebug() << "I" << I[0] << I[1];
         gaussianElimination(ATA, I, tmp[i], nCol);
         //qDebug() << "tmp_ls:" << nCol;

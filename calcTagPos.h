@@ -6,6 +6,7 @@
 #include <QVector>
 #include "datatype.h"
 #include "showStore.h"
+#include "calcTagNLOS.h"
 
 // distance calculate
 dType calcDistanceSquare(const locationCoor &a, const locationCoor &b);
@@ -36,18 +37,16 @@ public:
     ~calcTagPos();
     void setConfigData(const configData *cfg_q);
     void setDistanceData(const distanceData *dist_q);
+    void setNlosJudge(const calcTagNLOS *calcNlos);
 
     QVector<locationCoor> calcPosFromDistance(const int dist[], uint32_t count = 4) const;
     distance_3 calcMin3Loca(int dist[], uint32_t count = 4) const;
-    static locationCoor calcOnePos(dType dist[], locationCoor loca[]);
-    static locationCoor calcOnePos(distance_3 info) {
-        return calcTagPos::calcOnePos(info.dist, info.loca);
-    }
+    static locationCoor calcOnePosFor2Dim(dType dist[], locationCoor loca[]);
 
-    //static locationCoor calcOnePosition(QVector<locationCoor> sensor, QVector<dType> dist);
+    // ALL IN ONE
     CALC_POS_TYPE calcPosType;
 
-    locationCoor calcOnePosition(int idx, dType &MSE);
+    locationCoor calcOnePosition(const int *dist, dType &MSE);
 
     locationCoor calcFullCentroid(const int *dist, dType &MSE);
     locationCoor calcSubLS       (const int *dist, dType &MSE);
@@ -59,8 +58,7 @@ public:
     static void calcSubLS       (const int *distance, const locationCoor *sensor,
                                  dType **A, dType **coA, dType *B, int N,
                                  dType &out_x, dType &out_y, dType &out_MSE);
-    static void calcTwoCenter   (const int *distance, const locationCoor *sensor,
-                                 dType **A, dType **coA, dType *B, int N,
+    static void calcTwoCenter   (const int *distance, const locationCoor *sensor, int N,
                                  dType &out_x, dType &out_y, dType &out_MSE);
 
     // 只有距离突变时，平滑变化最大的距离
@@ -71,7 +69,7 @@ public:
     void calcPosVectorWylie (labelInfo *label);
     void calcPotimizedPosWylie(labelInfo *label);
     void calcPosVectorKang (labelInfo *label);
-    void calcPosVectorFullCentroid (labelInfo *label);
+    void calcPosVectorKang_1 (labelInfo *label);
 
     locationCoor getLoc(int idx) const {
         return cfg_d->sensor[idx];
@@ -80,6 +78,8 @@ public:
 private:
     const configData   *cfg_d {nullptr};
     const distanceData *dist_d{nullptr};
+
+    const calcTagNLOS  *calcNlos{nullptr};
 
     void resetA();
     dType **A_fc{nullptr};
@@ -95,6 +95,8 @@ private:
     int ls_col{0};    //x,y,x or x,y
 
     dType X[3]{0.f};
+
+    int iterCount{1};
 };
 
 #endif // CALCPOS_H

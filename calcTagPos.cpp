@@ -136,6 +136,9 @@ void calcTagPos::setConfigData(const configData *cfg_q) {
 void calcTagPos::setDistanceData(const distanceData *dist_q) {
     this->dist_d = dist_q;
 }
+void calcTagPos::setNlosJudge(const calcTagNLOS *calcNlos) {
+    this->calcNlos = calcNlos;
+}
 
 distance_3 calcTagPos::calcMin3Loca(int dist[], uint32_t count) const {
     distance_3 min_3;
@@ -177,7 +180,7 @@ distance_3 calcTagPos::calcMin3Loca(int dist[], uint32_t count) const {
     return min_3;
 }
 
-locationCoor calcTagPos::calcOnePos(dType dist[], locationCoor loca[]) {
+locationCoor calcTagPos::calcOnePosFor2Dim(dType dist[], locationCoor loca[]) {
     dType b1 = dist[0]*dist[0] - dist[1]*dist[1]
             + (loca[1].x+loca[0].x)*(loca[1].x-loca[0].x)
             + (loca[1].y+loca[0].y)*(loca[1].y-loca[0].y);
@@ -213,7 +216,7 @@ QVector<locationCoor> calcTagPos::calcPosFromDistance(const int dist[], uint32_t
                 info.loca[0] = cfg_d->sensor[i];
                 info.loca[1] = cfg_d->sensor[j];
                 info.loca[2] = cfg_d->sensor[k];
-                locationCoor pos = calcTagPos::calcOnePos(info);
+                locationCoor pos = calcTagPos::calcOnePosFor2Dim(info.dist, info.loca);
                 vectorAns.append(pos);
                 //qDebug() << info.toString() << pos.toString();
             }
@@ -242,7 +245,6 @@ void calcTagPos::calcPosVector_1 (labelInfo *label) {
             dType maxDist = 0.0f;
             dType avgDist_noMax = 0.0f;
             labelDistance tmpDist;
-            labelDistance tmpDist_1;
             for (int j = 0; j < 4; j++) {
                 tmpDist.distance[j] = dist_d->dist[i].distance[j];
             }
@@ -311,7 +313,6 @@ void calcTagPos::calcPosVector_2 (labelInfo *label) {
             dType avgDist_noMax = 0.0f;
             dType totalDistance = 0.0f;
             labelDistance tmpDist;
-            labelDistance tmpDist_1;
             for (int j = 0; j < 4; j++) {
                 tmpDist.distance[j] = dist_d->dist[i].distance[j];
             }
@@ -468,21 +469,21 @@ void calcTagPos::calcPotimizedPosWylie(labelInfo *label) {
     Q_UNUSED(label);
 }
 
+void calcTagPos::calcPosVectorKang_1 (labelInfo *label) {
+
+}
+
 void calcTagPos::calcPosVectorKang (labelInfo *label) {
     if (nullptr == label)
         return;
 
-    struct keyParam {
-        dType factor{1.7f};
-        dType ratio {0.3f};
-        dType threshold {10000.f};
-        int   count{2};
-    } param;
-
+    int nSensor = cfg_d->sensor.count();
     locationCoor tmpX;
-    dType X[2];
+    double mse = 0.f;
 
     label->RawPoints.clear();
+    label->RefinedPoints.clear();
+    distRefined.clear();
     for (int i = 0; i < dist_d->dist.count(); i++) {
         labelDistance tmpDist;
         for (int j = 0; j < 4; j++) {
@@ -490,137 +491,55 @@ void calcTagPos::calcPosVectorKang (labelInfo *label) {
         }
         label->RawPoints.append(calcPosFromDistance(dist_d->dist[i].distance, 4));
 
-        double mse = 0.f;
+        tmpX = calcOnePosition(tmpDist.distance, mse);
         if (i >= 1) {
             /* distance filter BEGIN */
-            dType maxDist = 0.0f;
-            dType avgDist_noMax = 0.0f;
-
             // ITERATION
-            param.count = 2;
+            iterCount = 1;
             do {
-                tmpX = calcSubLS(tmpDist.distance, mse);
-
-                if (mse < param.threshold) {  // MSE小于阈值，直接退出循环
+                if (!calcNlos->posPrecisionNLOS(mse)) {  // MSE小于阈值，直接退出循环
                     break;
                 } else {
-                    --param.count;
-                    if (param.count == 0) {   break;}
-
-                    int maxIdx = -1;
-                    for (int j = 0; j < 4; j++) {
-                        dType diffDist = dType(dist_d->dist[i].distance[j]) - dType(distRefined[i-1].distance[j]);
-                        if (qAbs(maxDist) <= qAbs(diffDist)) {
-                            maxDist = diffDist;
-                            maxIdx = j;
-                        }
-                        avgDist_noMax += diffDist;
-                    }
-                    avgDist_noMax = (avgDist_noMax - maxDist) / 3.0f;
-                    if (maxDist > avgDist_noMax * param.factor) {
-                        tmpDist.distance[maxIdx] = distRefined[i-1].distance[maxIdx]
-                                                 + maxDist * param.ratio
-                                                 + avgDist_noMax * (1.f - param.ratio);
+                    if (iterCount-- == 0) {
+                        break;
+                    } else {
+                        dType ansPredict = 0.f;
+                        int   ansIdx = 0;
+                        int   nAns = 1;
+                        if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined,
+                                                            &ansPredict, &ansIdx, nAns)) {
+                            for (int i = 0; i < nAns; i++) {
+                                tmpDist.distance[ansIdx] = ansPredict;
+                            }
+                            tmpX = calcOnePosition(tmpDist.distance, mse);
+                        } else {}
                     }
                 }
             } while(1);
-
-            // store and update
-            label->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, 4));
-            label->Ans.append(tmpX);
-            label->Reliability.append(mse);
-            label->AnsLines.append(QLineF(label->Ans[i-1].toQPointF(), label->Ans[i].toQPointF()));
-            distRefined.append(tmpDist);
             /* distance filter END */
-        } else {
-            label->RefinedPoints.append(calcPosFromDistance(dist_d->dist[i].distance, 4));
-            distRefined.append(dist_d->dist[i]);
 
-            tmpX = calcSubLS(tmpDist.distance, mse);
+        // store and update
             label->Ans.append(tmpX);
-            label->Reliability.append(0.f);
+            label->AnsLines.append(QLineF(label->Ans[i-1].toQPointF(), label->Ans[i].toQPointF()));
+        } else {
+            label->Ans.append(tmpX);
         }
+        label->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, 4));
+        label->Reliability.append(mse);
+        distRefined.append(dist_d->dist[i]);
     }
 }
 
-void calcTagPos::calcPosVectorFullCentroid (labelInfo *label) {
-    if (nullptr == label)
-        return;
-
-    dType *B = new dType[4];
-    dType *X = new dType[3];
-
-    label->RawPoints.clear();
-    for (int i = 0; i < dist_d->dist.count(); i++) {
-        labelDistance tmpDist_1;
-        label->RawPoints.append(calcPosFromDistance(dist_d->dist[i].distance, 4));
-
-        if (i >= 1) {
-            /* distance filter BEGIN */
-            dType threshold = 0.5f;
-            dType factor = 1.7f;
-            dType ratio  = 0.3f;
-            dType maxDist = 0.0f;
-            dType avgDist_noMax = 0.0f;
-            labelDistance tmpDist;
-            labelDistance tmpDist_1;
-            for (int j = 0; j < 4; j++) {
-                tmpDist.distance[j] = dist_d->dist[i].distance[j];
-            }
-
-            double mse = 0.f;
-
-            B[0] = qPow(tmpDist.distance[0], 2) - qPow(cfg_d->sensor[0].x, 2) - qPow(cfg_d->sensor[0].y, 2);
-            B[1] = qPow(tmpDist.distance[1], 2) - qPow(cfg_d->sensor[1].x, 2) - qPow(cfg_d->sensor[1].y, 2);
-            B[2] = qPow(tmpDist.distance[2], 2) - qPow(cfg_d->sensor[2].x, 2) - qPow(cfg_d->sensor[2].y, 2);
-            B[3] = qPow(tmpDist.distance[3], 2) - qPow(cfg_d->sensor[3].x, 2) - qPow(cfg_d->sensor[3].y, 2);
-
-            leastSquare(A_fc, B, X, 4, 3);
-            mse = calcMSE(A_fc, B, X, 4, 3);;
-
-            label->Ans.append({X[0], X[1], 0.f});
-            label->Reliability.append(mse);
-            label->AnsLines.append(QLineF(label->Ans[i-1].toQPointF(), label->Ans[i].toQPointF()));
-
-            // store and update
-            label->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, 4));
-            distRefined.append(tmpDist);
-            for (int j = 0; j < 4; j++) {
-                tmpDist_1.distance[j] = tmpDist.distance[j];
-            }
-            /* distance filter END */
-        } else {
-            for (int j = 0; j < 4; j++) {
-                tmpDist_1.distance[j] = dist_d->dist[i].distance[j];
-            }
-            label->RefinedPoints.append(calcPosFromDistance(dist_d->dist[i].distance, 4));
-            distRefined.append(dist_d->dist[i]);
-
-            B[0] = qPow(dist_d->dist[i].distance[0], 2) - qPow(cfg_d->sensor[0].x, 2) - qPow(cfg_d->sensor[0].y, 2);
-            B[1] = qPow(dist_d->dist[i].distance[1], 2) - qPow(cfg_d->sensor[1].x, 2) - qPow(cfg_d->sensor[1].y, 2);
-            B[2] = qPow(dist_d->dist[i].distance[2], 2) - qPow(cfg_d->sensor[2].x, 2) - qPow(cfg_d->sensor[2].y, 2);
-            B[3] = qPow(dist_d->dist[i].distance[3], 2) - qPow(cfg_d->sensor[3].x, 2) - qPow(cfg_d->sensor[3].y, 2);
-
-            leastSquare(A_fc, B, X, 4, 3);
-            label->Ans.append({X[0], X[1], 0.f});
-            label->Reliability.append(0.f);
-        }
-    }
-
-    delete B;
-    delete X;
-}
-
-locationCoor calcTagPos::calcOnePosition(int idx, dType &MSE) {
-    dType x = 0.f, y = 0.f;
+locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE) {
     if (FullCentroid == calcPosType) {
-        //calcFullCentroid(idx, x, y, MSE);
+        return calcFullCentroid(dist, MSE);
     } else if (SubLS == calcPosType) {
-        //calcSubLS(idx, x, y, MSE);
+        return calcSubLS(dist, MSE);
     } else if (TwoCenter == calcPosType) {
-        //calcTwoCenter(idx, x, y, MSE);
-    } else {}
-    return {x, y, 0.f};
+        return calcTwoCenter(dist, MSE);
+    } else {
+        return {0.f, 0.f, 0.f};
+    }
 }
 
 void calcTagPos::calcFullCentroid(const int *distance, const locationCoor *sensor,
@@ -631,7 +550,9 @@ void calcTagPos::calcFullCentroid(const int *distance, const locationCoor *senso
         B[i] = qPow(dType(distance[i]), 2) - qPow(sensor[i].x, 2) - qPow(sensor[i].y, 2);
     }
     matrixMuti(coA, B, X, 3, N);
+    //qDebug() << X[0] << X[1] << X[2] << X[0]*X[0] + X[1]*X[1];
 
+    // output
     out_x   = X[0];
     out_y   = X[1];
     out_MSE = calcMSE(A, B, X, N, 3);
@@ -649,15 +570,51 @@ void calcTagPos::calcSubLS(const int *distance, const locationCoor *sensor,
     matrixMuti(coA, B, X, 2, N);
     //qDebug() << "CO:" << X[0] << X[1];
 
+    // output
     out_x   = X[0];
     out_y   = X[1];
     out_MSE = calcMSE(A, B, X, N, 2);
 }
 
-void calcTagPos::calcTwoCenter(const int *distance, const locationCoor *sensor,
-                               dType **A, dType **coA, dType *B, int N,
+void calcTagPos::calcTwoCenter(const int *distance, const locationCoor *sensor, int N,
                                dType &out_x, dType &out_y, dType &out_MSE) {
+    QVector<locationCoor> points;
+    dType dist[3] = {0.f};
+    locationCoor loca[3] = {{0.f, 0.f, 0.f}};
+    locationCoor center = {0.f, 0.f, 0.f};
+    dType avgDist = 0.f;
+    int nPoint = 0;
+    for (int i = 0; i < N - 2; i++) {
+        for (int j = i+1; j < N - 1; j++) {
+            for (int k = j+1; k < N; k++) {
+                dist[0] = dType(distance[i]);
+                dist[1] = dType(distance[j]);
+                dist[2] = dType(distance[k]);
+                loca[0] = sensor[i];
+                loca[1] = sensor[j];
+                loca[2] = sensor[k];
+                locationCoor pos = calcTagPos::calcOnePosFor2Dim(dist, loca);
+                points.append(pos);
+                //qDebug() << info.toString() << pos.toString();
+            }
+        }
+    }
+    nPoint = points.count();
+    // get center
+    for (int i = 0; i < nPoint; i++) {
+        center = center + points[i] / nPoint;
+    }
 
+    // average distance as MSE
+    for(int i = 0; i < nPoint; i++) {
+        avgDist += calcDistance(points[i], center);
+    }
+    avgDist = avgDist/nPoint;
+
+    // output
+    out_x = center.x;
+    out_y = center.y;
+    out_MSE = avgDist;
 }
 
 locationCoor calcTagPos::calcFullCentroid(const int *dist, dType &MSE) {
@@ -675,5 +632,9 @@ locationCoor calcTagPos::calcSubLS(const int *dist, dType &MSE) {
 }
 
 locationCoor calcTagPos::calcTwoCenter(const int *dist, dType &MSE) {
-    return {0.f, 0.f, 0.f};
+    calcTwoCenter(dist, cfg_d->sensor.data(),
+                  cfg_d->sensor.count(), X[0], X[1], MSE);
+
+    //qDebug() << X[0] << X[1];
+    return locationCoor{X[0], X[1], 0.f};
 }
