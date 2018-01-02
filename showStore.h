@@ -29,6 +29,13 @@ struct labelInfo {
         data_y.clear();
         AnsLines.clear();
     }
+    void resetPos() {
+        Ans.clear();
+        RefinedPoints.clear();
+        RawPoints.clear();
+        Reliability.clear();
+        AnsLines.clear();
+    }
 };
 
 class showStore

@@ -481,15 +481,15 @@ void calcTagPos::calcPosVectorKang (labelInfo *label) {
     locationCoor tmpX;
     double mse = 0.f;
 
-    label->RawPoints.clear();
-    label->RefinedPoints.clear();
+    label->resetPos();
     distRefined.clear();
+
     for (int i = 0; i < dist_d->dist.count(); i++) {
         labelDistance tmpDist;
         for (int j = 0; j < 4; j++) {
             tmpDist.distance[j] = dist_d->dist[i].distance[j];
         }
-        label->RawPoints.append(calcPosFromDistance(dist_d->dist[i].distance, 4));
+        label->RawPoints.append(calcPosFromDistance(tmpDist.distance, 4));
 
         tmpX = calcOnePosition(tmpDist.distance, mse);
         if (i >= 1) {
@@ -519,7 +519,7 @@ void calcTagPos::calcPosVectorKang (labelInfo *label) {
         }
         label->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, 4));
         label->Reliability.append(mse);
-        distRefined.append(dist_d->dist[i]);
+        distRefined.append(tmpDist);
     }
 }
 
