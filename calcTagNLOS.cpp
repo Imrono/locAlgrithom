@@ -4,9 +4,8 @@ calcTagNLOS::calcTagNLOS()
 {}
 
 // POINTS_NLOS
-bool calcTagNLOS::pointsPredictNlos(const labelDistance &distCurr, int nSensor,
-                                    const QVector<labelDistance> &distRefined,
-                                    dType *d_predict, int *idx, int &num) const {
+bool calcTagNLOS::pointsPredictNlos(labelDistance &distCurr, int nSensor,
+                                    const QVector<labelDistance> &distRefined) const {
     if (WYLIE == predictNlos) {
         return false;
     } else if (MULTI_POINT == predictNlos) {
@@ -14,29 +13,22 @@ bool calcTagNLOS::pointsPredictNlos(const labelDistance &distCurr, int nSensor,
         if (0 >= idx_t_1) {
             return false;
         } else {
-            return isMultiPointNLOS(distCurr.distance, distRefined[idx_t_1].distance, nSensor,
-                                    d_predict, idx, num);
+            return isMultiPointNLOS(distCurr.distance, distRefined[idx_t_1].distance, nSensor);
         }
     } else {
         return false;
     }
 }
-bool calcTagNLOS::isWylieNLOS(dType **d, int nTime, int nSensor,
-                              dType *d_predict, int *idx, int &num) const {
+bool calcTagNLOS::isWylieNLOS(dType **d, int nTime, int nSensor) const {
     if (0 == nTime || 0 == nSensor) {
         qDebug() << "isWylieNLOS: nTime =" << nTime << ", nSensor =" << nSensor;
         return false;
     }
     return false;
 }
-bool calcTagNLOS::isMultiPointNLOS(const int *d_t, const int *d_t_1, int nSensor,
-                                   dType *d_predict, int *idx, int &num) const {
+bool calcTagNLOS::isMultiPointNLOS(/*IN_OUT*/int *d_t, /*IN*/const int *d_t_1, int nSensor) const {
     if (nSensor == 0) {
         qDebug() << "isMultiPointNLOS: nSensor =" << nSensor;
-        return false;
-    }
-    if (1 != num) {
-        qDebug() << "1 != num, num:" << num;
         return false;
     }
 
@@ -44,7 +36,6 @@ bool calcTagNLOS::isMultiPointNLOS(const int *d_t, const int *d_t_1, int nSensor
     dType avgDist_noMax = 0.0f;
     int maxIdx = -1;
     for (int i = 0; i < nSensor; i++) {
-        d_predict[i] = d_t[i];
         dType diffDist = dType(d_t[i]) - dType(d_t_1[i]);
         if (qAbs(maxDist) <= qAbs(diffDist)) {
             maxDist = diffDist;
@@ -55,8 +46,9 @@ bool calcTagNLOS::isMultiPointNLOS(const int *d_t, const int *d_t_1, int nSensor
     avgDist_noMax = (avgDist_noMax - maxDist) / static_cast<dType>(nSensor-1);
     bool judge = maxDist > avgDist_noMax * multiPointFactor;
     if (judge) {
-        refineMultiPointNLOS(avgDist_noMax, maxDist, d_t_1[maxIdx], *d_predict);
-        idx[0] = maxIdx;
+        dType ansDist;
+        refineMultiPointNLOS(avgDist_noMax, maxDist, d_t_1[maxIdx], ansDist);
+        d_t[maxIdx] = ansDist;
     } else {}
 
     return judge;
@@ -68,7 +60,8 @@ void calcTagNLOS::refineWylieNLOS(dType *d_history, dType *d_meas, int nSensor,
 
 }
 void calcTagNLOS::refineMultiPointNLOS(dType avgDist_noMax, dType maxDist, dType d_t_1, dType &d_ans) const {
-    d_ans = d_t_1 + maxDist * multiPointRatio + avgDist_noMax * (1.f - multiPointRatio);
+    //             predict                                    +     measure
+    d_ans = (d_t_1 + avgDist_noMax) * (1.f - multiPointRatio) + (d_t_1 + maxDist) * multiPointRatio;
 }
 
 /*************************************************************/

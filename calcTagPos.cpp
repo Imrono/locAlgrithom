@@ -503,14 +503,7 @@ void calcTagPos::calcPosVectorKang (labelInfo *label) {
                     if (iterCount-- == 0) {
                         break;
                     } else {
-                        dType ansPredict = 0.f;
-                        int   ansIdx = 0;
-                        int   nAns = 1;
-                        if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined,
-                                                            &ansPredict, &ansIdx, nAns)) {
-                            for (int i = 0; i < nAns; i++) {
-                                tmpDist.distance[ansIdx] = ansPredict;
-                            }
+                        if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
                             tmpX = calcOnePosition(tmpDist.distance, mse);
                         } else {}
                     }

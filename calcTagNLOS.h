@@ -15,13 +15,10 @@ public:
         MULTI_POINT
     };
     POINTS_NLOS predictNlos{POINTS_NONE};
-    bool pointsPredictNlos(const labelDistance &distCurr, int nSensor,
-                           const QVector<labelDistance> &distRefined,
-                           dType *d_predict, int *idx, int &num) const;
-    bool isWylieNLOS(dType **d, int nTime, int nSensor,
-                     dType *d_predict, int *idx, int &num) const ;
-    bool isMultiPointNLOS(const int *d_t, const int *d_t_1, int nSensor,
-                          dType *d_predict, int *idx, int &num) const;
+    bool pointsPredictNlos(labelDistance &distCurr, int nSensor,
+                           const QVector<labelDistance> &distRefined) const;
+    bool isWylieNLOS(dType **d, int nTime, int nSensor) const ;
+    bool isMultiPointNLOS(int *d_t, const int *d_t_1, int nSensor) const;
 
     /*************************************************************/
     void refineWylieNLOS(dType *d_history, dType *d_meas, int nSensor,
