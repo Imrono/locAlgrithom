@@ -114,10 +114,10 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     });
 
     // initial calculate method
-    nlosRes(true);
-    nlosMultiPoint(true);
-    posSubLS(true);
-    trackKalman(true);
+    //nlosRes(true);
+    //nlosMultiPoint(true);
+    //posSubLS(true);
+    //trackKalman(true);
 }
 
 uiMainWindow::~uiMainWindow()
@@ -207,9 +207,12 @@ void uiMainWindow::loadIniConfigFile(bool checked) {
     QString path = QFileDialog::getOpenFileName(this, "Select Config File", ".", "config file(*.ini)");
     qDebug() << "loadIniConfigFile Path:" << path;
     cfgData.loadNewFile(path);
+    qDebug() << "ini File loaded1111";
     calcPos.setConfigData(cfgData.get_q());
+    qDebug() << "ini File loaded2222";
     ui->canvas->setConfigData(cfgData.get_q());
     ui->actionRead_ini->setChecked(true);
+    qDebug() << "ini File loaded";
 }
 void uiMainWindow::loadLogDistanceFile(bool checked) {
     Q_UNUSED(checked);

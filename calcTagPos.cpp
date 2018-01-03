@@ -87,13 +87,20 @@ void calcTagPos::resetA() {
     B_ls = nullptr;
 }
 void calcTagPos::setConfigData(const configData *cfg_q) {
+    if (nullptr == cfg_q) {
+        qDebug() << "nullptr == cfg_q @ calcTagPos::setConfigData";
+        return;
+    }
     this->cfg_d = cfg_q;
+    resetA();
+
     // calculate A, (A^T A)^(-1)*A^T
     ls_row = cfg_d->sensor.count() - 1;
     ls_col = 2;
     fc_row = cfg_d->sensor.count();
     fc_col = 3;
-    resetA();
+    qDebug() << "LS: row=" << ls_row << "col=" << ls_col;
+    qDebug() << "FC: row=" << fc_row << "col=" << fc_col;
 
     // LS PART
     A_ls = new dType *[ls_row];

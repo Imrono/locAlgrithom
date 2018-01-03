@@ -88,7 +88,6 @@ void dataSensorIni::loadNewFile(const QString &fileName) {
         iniSetting.endGroup();
     }
 
-
     // [Alarm]
     AreaCnt = iniSetting.value("/Alarm/AreaCnt").toInt();
     for(int i = 0; i < AreaCnt; i++) {
@@ -118,6 +117,7 @@ void dataSensorIni::loadNewFile(const QString &fileName) {
         q->oper.append(tmp);
         iniSetting.endGroup();
     }
+    qDebug() << toString();
 }
 
 QString dataSensorIni::toString() {

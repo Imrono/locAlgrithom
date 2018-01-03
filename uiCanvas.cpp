@@ -134,9 +134,9 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
         painter.setBrush(QColor(0, 0, 0));
         for (int i = 0; i < this->cfg_d->sensor.count(); i++) {
             painter.setPen(QPen(QColor(0, 0, 0), 2));
-            painter.drawEllipse(sensorShow[i], 5, 5);
+            painter.drawEllipse(sensorShow[i], 6, 6);
             // index the anchor
-            painter.setPen(Qt::blue);
+            painter.setPen(Qt::white);
             QFont font;
             font.setBold(true);
             painter.setFont(font);
