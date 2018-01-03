@@ -133,8 +133,41 @@ void calcTagNLOS::refineMultiPointNLOS(/*IN_OUT*/int *d_t, /*IN*/const int *d_t_
     }
     avgDist_noMax = (avgDist_noMax - maxDist) / static_cast<dType>(nSensor-1);
 
-    d_t[maxIdx] = (d_t_1[maxIdx] + avgDist_noMax) * (1.f - multiPointRatio) // predict
-                + (d_t_1[maxIdx] + maxDist) * multiPointRatio;              // measure
+    //d_t[maxIdx] = (d_t_1[maxIdx] + avgDist_noMax) * (1.f - multiPointRatio) // predict
+    //            + (d_t_1[maxIdx] + maxDist) * multiPointRatio;              // measure
+
+    int &d_t_Kalman = d_t[maxIdx];
+    int d_t_1_Kalman = d_t_1[maxIdx];
+    dType d_hat_t;
+    dType d_meas;
+    dType y_tilde;
+    dType P_t;
+    dType P_pri_t;
+    static dType P_t_1 = 0.1f;
+    dType Q;
+    dType R;
+    dType S;
+    dType K = 1.0f;
+    // 1. x = Hx + Bu
+    d_hat_t = d_t_1_Kalman + avgDist_noMax;
+    // *2. P = FPF + Q
+    Q = 0.1f;
+    P_pri_t = P_t_1 + Q;
+    // 3. y = z - Hx
+    d_meas = d_t_Kalman;
+    y_tilde = d_meas - d_hat_t;
+    // 4. S = R + HPH
+    R = qAbs(maxDist) <= qAbs(avgDist_noMax) * 2.f ? 1.2f : 1.8f;
+    S = R + P_pri_t;
+    // 5. k = PH/S
+    K = P_pri_t / S;
+    // 6. x = x + Ky
+    d_t_Kalman = d_hat_t + y_tilde * K;
+    // *7. P = P - KHP
+    P_t = P_pri_t - K * P_pri_t;
+    // *. update for next
+    d_t_1_Kalman = d_t_Kalman;
+    P_t_1 = P_t;
 }
 
 /*************************************************************/

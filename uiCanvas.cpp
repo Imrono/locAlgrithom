@@ -95,13 +95,13 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     painter.drawRect(geometry());
     // legend
     painter.setPen(tags[MEASUR_STR].getPen());
-    painter.drawText(0, 0, 50, 10, Qt::AlignLeft, MEASUR_STR);
+    painter.drawText(5, 5, 50, 10, Qt::AlignLeft, MEASUR_STR);
 
     painter.setPen(tags[KALMAN_STR].getPen());
-    painter.drawText(0, 12, 50, 10, Qt::AlignLeft, KALMAN_STR);
+    painter.drawText(5, 15, 50, 10, Qt::AlignLeft, KALMAN_STR);
     // count
     painter.setPen(QPen(Qt::black, 1));
-    painter.drawText(0, 24, 50, 10, Qt::AlignLeft, QString("%0").arg(nCount, 4, 10, QChar('0')));
+    painter.drawText(5, 25, 50, 10, Qt::AlignLeft, QString("idx:%0").arg(nCount, 4, 10, QChar('0')));
 
     painter.setPen(QPen(Qt::black, 0, Qt::NoPen));
     // [Alarm]

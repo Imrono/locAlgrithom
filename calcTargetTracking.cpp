@@ -229,7 +229,7 @@ void calcKalman::calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman
     dType Kx = 1.0f;
     dType Kv = 1.0f;
 
-    qDebug() << "T=" << param.T << "Q=" << param.Q;
+    qDebug() << "calcKalmanPosVector:" << "T=" << param.T << "Q=" << param.Q;
 
     labelKalman->resetTrack();
 
