@@ -45,8 +45,10 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     connect(ui->actionKalmanTrack,     SIGNAL(triggered(bool)), this, SLOT(trackKalman(bool)));
     connect(ui->actionkalmanLiteTrack, SIGNAL(triggered(bool)), this, SLOT(trackKalmanLite(bool)));
 
+    /*************************************************************/
     connect(this, SIGNAL(countChanged(int)), ui->canvas, SLOT(followMainWindowCount(int)));
     connect(&timer, SIGNAL(timeout()), this, SLOT(handleTimeout()));
+
     connect(ui->beginTrack, &QPushButton::clicked, this, [this](void) {
         if (timerStarted) {
             timer.stop();
@@ -92,6 +94,24 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
 
         update();
     });
+    connect(ui->showRadius, &QPushButton::clicked, this, [this](void) {
+        if (!ui->canvas->reverseShowRadius()) {
+            ui->allPos->setText(MY_STR("显示半径"));
+        } else {
+            ui->allPos->setText(MY_STR("隐藏半径"));
+        }
+
+        update();
+    });
+    connect(ui->showTrack, &QPushButton::clicked, this, [this](void) {
+        if (!ui->canvas->reverseShowTrack()) {
+            ui->showTrack->setText(MY_STR("显示Track"));
+        } else {
+            ui->showTrack->setText(MY_STR("隐藏Track"));
+        }
+
+        update();
+    });
 
     // initial calculate method
     nlosRes(true);
@@ -122,7 +142,7 @@ void uiMainWindow::handleTimeout() {
 
     locationCoor p_meas = meas->Ans[distCount];
     locationCoor p_kalm = kalm->Ans[distCount];
-    qDebug() << QString("distCount:%0, POSITION(%1,%2,%3)->KALMAN(%4,%5,%6) => d=%7, totDist=%8, R=%9, P=%10"
+    qDebug() << QString("distCount:%0, POS(%1,%2,%3)->KALMAN(%4,%5,%6)=>d=%7, totDist=%8, R=%9, P=%10"
                         ", K=%12")
                 .arg(distCount, 4, 10, QChar('0'))
                 .arg(p_meas.x,4,'g',3).arg(p_meas.y,4,'g',3).arg(p_meas.z,4,'g',3)
@@ -140,6 +160,8 @@ void uiMainWindow::handleTimeout() {
 
     ui->canvas->setPointsRaw(MEASUR_STR, meas->RawPoints[distCount]);
     ui->canvas->setPointsRefined(MEASUR_STR, meas->RefinedPoints[distCount]);
+
+    ui->canvas->setDistance(MEASUR_STR, distData.get_q()->dist[distCount].distance);
 
     ui->raw_0->setText(QString::number(distData.get_q()->dist[distCount].distance[0]));
     ui->raw_1->setText(QString::number(distData.get_q()->dist[distCount].distance[1]));
@@ -260,7 +282,7 @@ void uiMainWindow::posFullCentroid(bool checked) {
     calcPos.calcPosType = CALC_POS_TYPE::FullCentroid;
 
     store.getLabel(MEASUR_STR)->resetTrack();
-    calcPos.calcPosVectorKang(store.getLabel(MEASUR_STR));
+    calcPos.calcPosVector(store.getLabel(MEASUR_STR));
     qDebug() << "posFullCentroid:" << store.getLabel(MEASUR_STR)->toString();
     dType measDist = calcTotalAvgDistanceSquare(store.getLabel(MEASUR_STR)->AnsLines);
     qDebug() << "posFullCentroid: avgDistanceSquare => measDist:" << measDist;
@@ -278,7 +300,7 @@ void uiMainWindow::posSubLS(bool checked) {
 
     store.getLabel(MEASUR_STR)->resetTrack();
     //calc.calcPosVector_2(store.getLabel(MEASUR_STR));
-    calcPos.calcPosVectorKang(store.getLabel(MEASUR_STR));
+    calcPos.calcPosVector(store.getLabel(MEASUR_STR));
 
     qDebug() << "posSubLS:" << store.getLabel(MEASUR_STR)->toString();
     dType measDist = calcTotalAvgDistanceSquare(store.getLabel(MEASUR_STR)->AnsLines);
@@ -297,7 +319,7 @@ void uiMainWindow::posTwoCenter(bool checked) {
 
     store.getLabel(MEASUR_STR)->resetTrack();
     //calc.calcPosVector_2(store.getLabel(MEASUR_STR));
-    calcPos.calcPosVectorKang(store.getLabel(MEASUR_STR));
+    calcPos.calcPosVector(store.getLabel(MEASUR_STR));
 
     qDebug() << "posTwoCenter:" << store.getLabel(MEASUR_STR)->toString();
     dType measDist = calcTotalAvgDistanceSquare(store.getLabel(MEASUR_STR)->AnsLines);

@@ -93,12 +93,18 @@ public:
         for (int i = 0; i < ps.count(); i++)
             pointsRefined.append(ps[i].toQPointF());
     }
+    void setDistance(QVector<int> dist) {
+        distance.clear();
+        for (int i = 0; i < dist.count(); i++)
+            distance.append(dist[i]);
+    }
 
     void drawPoint(QPainter &painter, dType ratio = 1.f) const;
     void drawPointsRaw(QPainter &painter, dType ratio = 1.f) const;
     void drawPointsRefined(QPainter &painter, dType ratio = 1.f) const;
-    void drawLine(QPainter &painte, dType ratio = 1.f) const;
+    void drawLine(QPainter &painter, dType ratio = 1.f) const;
     void drawLines(QPainter &painter, dType ratio = 1.f) const;
+    void drawCircle(QPainter &painter, const QVector<locationCoor> &sensor, dType ratio = 1.f) const;
 
     showTagRelated& operator=(const showTagRelated &sp)
     {
@@ -118,6 +124,8 @@ private:
     QVector<QPointF> pointsRaw;
     QVector<QPointF> pointsRefined;
     QVector<QLineF>  lines;
+
+    QVector<int>     distance;
 
     QPen   painterPen;
     QBrush painterBrush;

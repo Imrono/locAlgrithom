@@ -28,3 +28,11 @@ void showTagRelated::drawLines(QPainter &painter, dType ratio) const {
     for (int i = 0; i < lines.count(); i++)
         painter.drawLine(QLineF{lines[i].p1()*ratio, lines[i].p2()*ratio});
 }
+
+void showTagRelated::drawCircle(QPainter &painter, const QVector<locationCoor> &sensor, dType ratio) const {
+    painter.setPen(QPen(Qt::black, 1));
+    painter.setBrush(Qt::NoBrush);
+    for (int i = 0; i < distance.count(); i++) {
+        painter.drawEllipse(sensor[i].toQPointF() * ratio, distance[i] * ratio, distance[i] * ratio);
+    }
+}

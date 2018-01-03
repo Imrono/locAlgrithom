@@ -34,7 +34,6 @@ public:
     void setNlosJudge(const calcTagNLOS *calcNlos);
 
     QVector<locationCoor> calcPosFromDistance(const int dist[], uint32_t count = 4) const;
-    distance_3 calcMin3Loca(int dist[], uint32_t count = 4) const;
     static locationCoor calcOnePosFor2Dim(dType dist[], locationCoor loca[]);
 
     // ALL IN ONE
@@ -55,15 +54,7 @@ public:
     static void calcTwoCenter   (const int *distance, const locationCoor *sensor, int N,
                                  dType &out_x, dType &out_y, dType &out_MSE);
 
-    // 只有距离突变时，平滑变化最大的距离
-    void calcPosVector_1 (labelInfo *label);
-    // 距离突变且计算位置可信度不高时，平滑变化最大的距离
-    void calcPosVector_2 (labelInfo *label);
-    void calcPotimizedPos(labelInfo *label);
-    void calcPosVectorWylie (labelInfo *label);
-    void calcPotimizedPosWylie(labelInfo *label);
-    void calcPosVectorKang (labelInfo *label);
-    void calcPosVectorKang_1 (labelInfo *label);
+    void calcPosVector (labelInfo *label);
 
     locationCoor getLoc(int idx) const {
         return cfg_d->sensor[idx];

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>750</width>
-    <height>499</height>
+    <width>973</width>
+    <height>650</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <widget class="QPushButton" name="showPath">
     <property name="geometry">
      <rect>
-      <x>620</x>
+      <x>830</x>
       <y>20</y>
       <width>75</width>
       <height>23</height>
@@ -36,8 +36,8 @@
    <widget class="QPushButton" name="beginTrack">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>80</y>
+      <x>830</x>
+      <y>140</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -51,8 +51,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>600</width>
-      <height>450</height>
+      <width>800</width>
+      <height>600</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -65,8 +65,8 @@
    <widget class="QPushButton" name="reset">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>170</y>
+      <x>830</x>
+      <y>230</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -78,8 +78,8 @@
    <widget class="QPushButton" name="next">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>140</y>
+      <x>830</x>
+      <y>200</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -91,7 +91,7 @@
    <widget class="QPushButton" name="allPos">
     <property name="geometry">
      <rect>
-      <x>620</x>
+      <x>830</x>
       <y>50</y>
       <width>75</width>
       <height>23</height>
@@ -104,8 +104,8 @@
    <widget class="QPushButton" name="previous">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>110</y>
+      <x>830</x>
+      <y>170</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -117,8 +117,8 @@
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>240</y>
+      <x>820</x>
+      <y>290</y>
       <width>131</width>
       <height>118</height>
      </rect>
@@ -224,13 +224,49 @@
      </item>
     </layout>
    </widget>
+   <widget class="QPushButton" name="showRadius">
+    <property name="geometry">
+     <rect>
+      <x>830</x>
+      <y>80</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>显示半径</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="showTrack">
+    <property name="geometry">
+     <rect>
+      <x>830</x>
+      <y>110</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>显示Track</string>
+    </property>
+   </widget>
+   <zorder>canvas</zorder>
+   <zorder>showPath</zorder>
+   <zorder>beginTrack</zorder>
+   <zorder>reset</zorder>
+   <zorder>next</zorder>
+   <zorder>allPos</zorder>
+   <zorder>previous</zorder>
+   <zorder>gridLayoutWidget</zorder>
+   <zorder>showRadius</zorder>
+   <zorder>showTrack</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>750</width>
+     <width>973</width>
      <height>23</height>
     </rect>
    </property>

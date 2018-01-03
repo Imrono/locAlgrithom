@@ -150,10 +150,15 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
         tags[KALMAN_STR].drawLines(painter, ratioShow);
     }
 
+    if (isShowRadius) {
+        tags[MEASUR_STR].drawCircle(painter, cfg_d->sensor, ratioShow);
+    }
     tags[MEASUR_STR].drawPoint(painter, ratioShow);
     tags[MEASUR_STR].drawLine(painter, ratioShow);
-    tags[KALMAN_STR].drawPoint(painter, ratioShow);
-    tags[KALMAN_STR].drawLine(painter, ratioShow);
+    if (isShowTrack) {
+        tags[KALMAN_STR].drawPoint(painter, ratioShow);
+        tags[KALMAN_STR].drawLine(painter, ratioShow);
+    }
 
     if (isShowAllPos) {
         tags[MEASUR_STR].drawPointsRaw(painter, ratioShow);

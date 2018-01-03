@@ -28,8 +28,14 @@ public:
     void setPointsRefined(QString name, const QVector<locationCoor> ps) {
         tags[name].setPointsRefined(ps);
     }
-   void setLines(QString name, const QVector<QLineF> &lines) {
+    void setLines(QString name, const QVector<QLineF> &lines) {
         tags[name].setLines(lines);
+    }
+    void setDistance(QString name,  const int *dist) {
+        QVector<int> d;
+        for (int i = 0; i < cfg_d->sensor.count(); i++)
+            d.append(dist[i]);
+        tags[name].setDistance(d);
     }
 
     bool reverseShowPath() {
@@ -39,6 +45,14 @@ public:
     bool reverseShowAllPos() {
         isShowAllPos = !isShowAllPos;
         return isShowAllPos;
+    }
+    bool reverseShowRadius() {
+        isShowRadius = !isShowRadius;
+        return isShowRadius;
+    }
+    bool reverseShowTrack() {
+        isShowTrack = !isShowTrack;
+        return isShowTrack;
     }
 
 public slots:
@@ -64,6 +78,9 @@ private:
 
     bool isShowOper{true};
     QVector<QPolygonF> operShow;
+
+    bool isShowRadius{false};
+    bool isShowTrack{false};
 
     dType ratioShow{1.f};
 
