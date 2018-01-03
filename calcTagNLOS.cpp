@@ -1,14 +1,55 @@
 #include "calcTagNLOS.h"
 #include "matrixop.h"
+#include "QtMath"
 
 calcTagNLOS::calcTagNLOS()
-{}
+{
+    wylie_B = new dType[wylieN];
+    wylie_X = new dType[wylieN];
+    wylie_A_data = new dType[wylieN*(wylieOrder+1)];
+    wylie_A = new dType*[wylieN];
+    wylie_A[0] = wylie_A_data+0*(wylieOrder+1);
+    wylie_A[1] = wylie_A_data+1*(wylieOrder+1);
+    wylie_A[2] = wylie_A_data+2*(wylieOrder+1);
+    wylie_A[3] = wylie_A_data+3*(wylieOrder+1);
+    for (int row = 0; row < wylieN; row++) {
+        for (int col = 0; col < wylieOrder + 1; col ++) {
+            wylie_A[row][col] = qPow(row, col);
+        }
+    }
+    wylieData = new dType[wylieN];
+}
+calcTagNLOS::~calcTagNLOS()
+{
+    delete []wylie_A;
+    delete []wylie_A_data;
+    delete []wylie_X;
+    delete []wylie_B;
+    delete []wylieData;
+}
 
 // POINTS_NLOS
 bool calcTagNLOS::pointsPredictNlos(labelDistance &distCurr, int nSensor,
                                     const QVector<labelDistance> &distRefined) const {
     if (WYLIE == predictNlos) {
-        return false;
+        if (distRefined.count() < wylieN + 1) {
+            qDebug() << "distRefined.count() < wylieN + 1" << distRefined.count() << wylieN;
+            return false;
+        } else {
+            dType L_hat;
+            bool ans = false;
+            for (int i = 0; i < nSensor; i++) {
+                for (int j = 0; j < wylieN; j++) {
+                    wylieData[j] = distRefined[distRefined.count()-1 - wylieN + j].distance[i];
+                }
+                int tmp = distCurr.distance[i];
+                if (isWylieNLOS(distCurr.distance[i], wylieData, L_hat)) {
+                    ans = true;
+                } else {}
+                qDebug() << distRefined.count() << i << "L_hat" << L_hat << tmp << distCurr.distance[i];
+            }
+            return ans;
+        }
     } else if (MULTI_POINT == predictNlos) {
         int idx_t_1 = distRefined.count() - 1;
         if (0 >= idx_t_1) {
@@ -20,78 +61,35 @@ bool calcTagNLOS::pointsPredictNlos(labelDistance &distCurr, int nSensor,
         return false;
     }
 }
-bool calcTagNLOS::isWylieNLOS(dType **d, int nTime, int nSensor) const {
-    if (0 == nTime || 0 == nSensor) {
-        qDebug() << "isWylieNLOS: nTime =" << nTime << ", nSensor =" << nSensor;
+// ONE distance
+bool calcTagNLOS::isWylieNLOS(int &d_t, dType *d, dType &L_hat) const {
+    if (nullptr == d) {
+        qDebug() << "isWylieNLOS: nullptr == d";
         return false;
     }
 
-    dType historyDist[4][4] = {0.0f};
-    int historyCount = 0;
-    dType *B = new dType[4];
-    dType *X = new dType[4];
-    dType *A_data = new dType[12];
-    dType **A = new dType*[4];
-    A[0] = A_data;
-    A[1] = A_data+3;
-    A[2] = A_data+6;
-    A[3] = A_data+9;
-
-    /*
-    labelDistance tmpDist;
-
-    if (i >= nTime) {
-        // 循环4个anchor与tag的测量距离
-        for (int j = 0; j < nSensor; j++) {
-            // 赋初值
-            for (int row = 0; row < 4; row++) {
-                A[row][0] = 1;
-                A[row][1] = row;
-                A[row][2] = row * row;
-                B[row] = historyDist[j][row];
-                X[row] = 0.0f;
-            }
-            // 用最小二乘法，计算距离的插值曲线
-            leastSquare(A, B, X, 4, 3);
-            dType L_hat = X[0] + X[1]*4.f + X[2]*16.f;
-            //dType percent = qAbs((L_hat-dist[i].distance[j])/dist[i].distance[j]);
-            dType sigma = qSqrt((qPow(historyDist[j][0]-X[0], 2)
-                               + qPow(historyDist[j][1]-X[0]-X[1]-X[2], 2)
-                               + qPow(historyDist[j][2]-X[0]-2.f*X[1]-4.f*X[2], 2)
-                               + qPow(historyDist[j][2]-X[0]-3.f*X[1]-9.f*X[2], 2)
-                               + qPow(dist_d->dist[i].distance[j]-L_hat, 2))/5.0f);
-            qDebug() << "i" << i << "X=[" << X[0] << X[1] << X[2] << "], L_hat=" << L_hat
-                     << "meas=" << dist_d->dist[i].distance[j] << "sigma:" << sigma;
-
-            if (sigma < 25) {
-                tmpDist.distance[j] = dist_d->dist[i].distance[j];
-            } else {
-                tmpDist.distance[j] = L_hat * 0.3 + dist_d->dist[i].distance[j] * 0.7;
-            }
-
-            for (int k = 0; k < 3; k++) {
-                historyDist[j][k] = historyDist[j][k+1];
-            }
-            historyDist[j][3] = dType(dist_d->dist[i].distance[j]);
-        }
-        label->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, 4));
-        distRefined.append(tmpDist);
-    } else {
-        for (int j = 0; j < 4; j++) {
-            historyDist[j][historyCount] = dType(dist_d->dist[i].distance[j]);
-        }
-        historyCount ++;
-        label->RefinedPoints.append(calcPosFromDistance(dist_d->dist[i].distance, 4));
-        distRefined.append(dist_d->dist[i]);
+    bool ans = false;
+    for (int row = 0; row < wylieN; row++) {
+        wylie_B[row] = d[row];
+        wylie_X[row] = 0.0f;
     }
-    */
+    // 用最小二乘法，计算距离的插值曲线
+    leastSquare(wylie_A, wylie_B, wylie_X, 4, 3);
+    L_hat = wylie_X[0] + wylie_X[1]*4.f + wylie_X[2]*16.f;
+    dType sigma = qSqrt((qPow(d[0]-wylie_X[0]-0.f*wylie_X[1]-0.f*wylie_X[2], 2)
+                       + qPow(d[1]-wylie_X[0]-1.f*wylie_X[1]-1.f*wylie_X[2], 2)
+                       + qPow(d[2]-wylie_X[0]-2.f*wylie_X[1]-4.f*wylie_X[2], 2)
+                       + qPow(d[3]-wylie_X[0]-3.f*wylie_X[1]-9.f*wylie_X[2], 2)
+                       + qPow(d_t-L_hat, 2))/5.0f);
+    qDebug() << "X=[" << wylie_X[0] << wylie_X[1] << wylie_X[2] << "], L_hat=" << L_hat
+             << "meas=" << d_t << "sigma:" << sigma;
 
-    delete []A;
-    delete []A_data;
-    delete []X;
-    delete []B;
+    if (sigma > wylieThreshold && L_hat <= d_t) {
+        refineWylieNLOS(L_hat, d_t);
+        ans = true;
+    } else {}
 
-    return false;
+    return ans;
 }
 bool calcTagNLOS::isMultiPointNLOS(/*IN_OUT*/int *d_t, /*IN*/const int *d_t_1, int nSensor) const {
     if (nSensor == 0) {
@@ -118,9 +116,8 @@ bool calcTagNLOS::isMultiPointNLOS(/*IN_OUT*/int *d_t, /*IN*/const int *d_t_1, i
 }
 
 /*************************************************************/
-void calcTagNLOS::refineWylieNLOS(dType *d_history, dType *d_meas, int nSensor,
-                                  dType *d_predict, int *idx, int &num) const {
-
+void calcTagNLOS::refineWylieNLOS(dType L_hat, int &distCurr) const {
+    distCurr = L_hat * wylieRatio + distCurr * (1.f - wylieRatio);
 }
 void calcTagNLOS::refineMultiPointNLOS(/*IN_OUT*/int *d_t, /*IN*/const int *d_t_1, int nSensor) const {
     dType maxDist = 0.0f;
@@ -148,7 +145,7 @@ bool calcTagNLOS::posPrecisionNLOS(dType precision) const {
     } else if (SUM_DIST == precNlos) {
         return isSumDistNLOS(precision);
     } else {
-        return false;
+        return true;
     }
 }
 bool calcTagNLOS::isResNLOS(dType res) const {

@@ -92,6 +92,12 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
 
         update();
     });
+
+    // initial calculate method
+    nlosRes(true);
+    nlosMultiPoint(true);
+    posSubLS(true);
+    trackKalman(true);
 }
 
 uiMainWindow::~uiMainWindow()
@@ -140,6 +146,26 @@ void uiMainWindow::handleTimeout() {
     ui->raw_2->setText(QString::number(distData.get_q()->dist[distCount].distance[2]));
     ui->raw_3->setText(QString::number(distData.get_q()->dist[distCount].distance[3]));
 
+    if (distData.get_q()->dist[distCount].distance[0] != calcPos.distRefined[distCount].distance[0]) {
+        ui->refine_0->setStyleSheet("color:red; font-weight:bold");
+    } else {
+        ui->refine_0->setStyleSheet("");
+    }
+    if (distData.get_q()->dist[distCount].distance[1] != calcPos.distRefined[distCount].distance[1]) {
+        ui->refine_1->setStyleSheet("color:red; font-weight:bold");
+    } else {
+        ui->refine_1->setStyleSheet("");
+    }
+    if (distData.get_q()->dist[distCount].distance[2] != calcPos.distRefined[distCount].distance[2]) {
+        ui->refine_2->setStyleSheet("color:red; font-weight:bold");
+    } else {
+        ui->refine_2->setStyleSheet("");
+    }
+    if (distData.get_q()->dist[distCount].distance[3] != calcPos.distRefined[distCount].distance[3]) {
+        ui->refine_3->setStyleSheet("color:red; font-weight:bold");
+    } else {
+        ui->refine_3->setStyleSheet("");
+    }
     ui->refine_0->setText(QString::number(calcPos.distRefined[distCount].distance[0]));
     ui->refine_1->setText(QString::number(calcPos.distRefined[distCount].distance[1]));
     ui->refine_2->setText(QString::number(calcPos.distRefined[distCount].distance[2]));
@@ -175,34 +201,54 @@ void uiMainWindow::loadLogDistanceFile(bool checked) {
 // NLOS
 void uiMainWindow::nlosWylie(bool checked) {
     Q_UNUSED(checked);
-    calcNlos.predictNlos = calcTagNLOS::WYLIE;
-    ui->actionWylie->setChecked(true);
+    if (calcNlos.predictNlos != POINTS_NLOS::WYLIE) {
+        ui->actionWylie->setChecked(true);
+        calcNlos.predictNlos = POINTS_NLOS::WYLIE;
+    } else {
+        ui->actionWylie->setChecked(false);
+        calcNlos.predictNlos = POINTS_NLOS::POINTS_NONE;
+    }
     ui->actionMultiPoint->setChecked(false);
-    qDebug() << "nlosWylie";
+    qDebug() << "nlosWylie :" << calcNlos.predictNlos;
 }
 
 void uiMainWindow::nlosMultiPoint(bool checked) {
     Q_UNUSED(checked);
-    calcNlos.predictNlos = calcTagNLOS::MULTI_POINT;
     ui->actionWylie->setChecked(false);
-    ui->actionMultiPoint->setChecked(true);
-    qDebug() << "nlosMultiPoint";
+    if (calcNlos.predictNlos != POINTS_NLOS::MULTI_POINT) {
+        calcNlos.predictNlos = POINTS_NLOS::MULTI_POINT;
+        ui->actionMultiPoint->setChecked(true);
+    } else {
+        calcNlos.predictNlos = POINTS_NLOS::POINTS_NONE;
+        ui->actionMultiPoint->setChecked(false);
+    }
+    qDebug() << "nlosMultiPoint :" << calcNlos.predictNlos;
 }
 
 void uiMainWindow::nlosRes(bool checked) {
     Q_UNUSED(checked);
-    calcNlos.precNlos = calcTagNLOS::RESIDUAL;
-    ui->actionRes->setChecked(true);
     ui->actionSumDist->setChecked(false);
-    qDebug() << "nlosRes";
+    if (calcNlos.precNlos != POS_PRECISION_NLOS::RESIDUAL) {
+        calcNlos.precNlos = POS_PRECISION_NLOS::RESIDUAL;
+        ui->actionRes->setChecked(true);
+    } else {
+        calcNlos.precNlos = POS_PRECISION_NLOS::POS_PRECISION_NONE;
+        ui->actionRes->setChecked(false);
+    }
+    qDebug() << "nlosRes :" << calcNlos.precNlos;
 }
 
 void uiMainWindow::nlosSumDist(bool checked) {
     Q_UNUSED(checked);
-    calcNlos.precNlos = calcTagNLOS::SUM_DIST;
     ui->actionRes->setChecked(false);
-    ui->actionSumDist->setChecked(true);
-    qDebug() << "nlosSumDist";
+    if (calcNlos.precNlos != POS_PRECISION_NLOS::SUM_DIST) {
+        calcNlos.precNlos = POS_PRECISION_NLOS::SUM_DIST;
+        ui->actionSumDist->setChecked(true);
+    } else {
+        calcNlos.precNlos = POS_PRECISION_NLOS::POS_PRECISION_NONE;
+        ui->actionSumDist->setChecked(false);
+    }
+    qDebug() << "nlosSumDist :" << calcNlos.precNlos;
 }
 
 // POSITION

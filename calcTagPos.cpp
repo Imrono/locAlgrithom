@@ -470,7 +470,7 @@ void calcTagPos::calcPotimizedPosWylie(labelInfo *label) {
 }
 
 void calcTagPos::calcPosVectorKang_1 (labelInfo *label) {
-
+    Q_UNUSED(label);
 }
 
 void calcTagPos::calcPosVectorKang (labelInfo *label) {

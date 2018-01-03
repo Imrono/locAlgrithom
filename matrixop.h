@@ -4,7 +4,7 @@
 
 void matrixSum(dType **a, dType **b, dType **c, const long nRow, const long nCol);
 void matrixMuti(dType **a, dType **b, dType **c, const long naRow, const long naCol_nbRow, const long nbCol);
-void matrixMuti(dType **a, dType *b, dType *c, const long nRow, const long nCol);
+void matrixMuti(dType **a, const dType *b, dType *c, const long nRow, const long nCol);
 void matrixTrans(dType **A, dType **AT, const long nRow, const long nCol);
 
 

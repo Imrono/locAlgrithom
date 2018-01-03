@@ -26,5 +26,21 @@ enum CALC_POS_TYPE {
     TwoCenter = 2
 };
 
+enum POINTS_NLOS {
+    POINTS_NONE = -1,
+    WYLIE,
+    MULTI_POINT
+};
+enum POS_PRECISION_NLOS {
+    POS_PRECISION_NONE = -1,
+    RESIDUAL,
+    SUM_DIST
+};
+
+enum TRACK_METHOD {
+    TRACK_NONE = -1,
+    KALMAN,
+    KALMAN_LITE
+};
 
 #endif // MYHEADS_H

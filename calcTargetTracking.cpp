@@ -42,7 +42,7 @@ dType calcKalman::calcR(dType reliability, CALC_POS_TYPE type) {
         reliability /= 100.f;
     } else if (CALC_POS_TYPE::SubLS == type) {
         reliability /= 100.f;
-        qDebug() << reliability;
+        //qDebug() << "calcKalman::calcR" << reliability;
     } else if (CALC_POS_TYPE::TwoCenter == type){
     } else {}
     dType ans = 0.0f;

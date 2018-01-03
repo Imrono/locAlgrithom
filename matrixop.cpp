@@ -22,7 +22,7 @@ void matrixMuti(dType **a, dType **b, dType **c, const long naRow, const long na
         }
     }
 }
-void matrixMuti(dType **a, dType *b, dType *c, const long nRow, const long nCol) {
+void matrixMuti(dType **a, const dType *b, dType *c, const long nRow, const long nCol) {
     for (long i = 0; i < nRow; i++)
         c[i] = 0.0f;
     for (long i = 0; i < nRow; i++) {
