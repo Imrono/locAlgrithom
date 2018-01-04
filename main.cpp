@@ -1,7 +1,7 @@
 ﻿#include "uiMainWindow.h"
 #include <QApplication>
 #include <QSettings>
-#include "datatype.h"
+#include "dataType.h"
 #include "_myheads.h"
 #include <calcTagPos.h>
 #include "showStore.h"

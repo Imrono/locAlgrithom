@@ -309,6 +309,7 @@
     </property>
     <addaction name="actionRead_ini"/>
     <addaction name="actionRead_dist"/>
+    <addaction name="actionRead_picture"/>
    </widget>
    <addaction name="menu_3"/>
    <addaction name="menuNLOS"/>
@@ -429,6 +430,11 @@
    </property>
    <property name="text">
     <string>Read distance</string>
+   </property>
+  </action>
+  <action name="actionRead_picture">
+   <property name="text">
+    <string>Read picture</string>
    </property>
   </action>
  </widget>

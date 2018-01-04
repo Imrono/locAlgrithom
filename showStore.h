@@ -4,7 +4,7 @@
 #include <QVector>
 #include <QMap>
 #include "showTagRelated.h"
-#include "datatype.h"
+#include "dataType.h"
 
 struct labelInfo {
     QVector<locationCoor>          Ans;

@@ -2,7 +2,7 @@
 #define KALMANCALC_H
 #include "_myheads.h"
 #include <QVector>
-#include "datatype.h"
+#include "dataType.h"
 #include "showStore.h"
 #include <QDebug>
 

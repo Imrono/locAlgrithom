@@ -3,7 +3,7 @@
 #include "_myheads.h"
 #include <QSettings>
 #include <QVector>
-#include "datatype.h"
+#include "dataType.h"
 
 #define my2Str(xyz, idx)    QString("%0%1").arg(xyz).arg(idx)
 
@@ -12,8 +12,9 @@ struct configData {
     QVector<QVector<locationCoor>> stop;
     QVector<QVector<locationCoor>> alarm;
     QVector<QVector<locationCoor>> oper;
+    bool isInitialized{false};
 
-    void reset() {
+    void clear() {
         sensor.clear();
         stop.clear();
         alarm.clear();

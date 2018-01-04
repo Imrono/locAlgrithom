@@ -16,18 +16,23 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     store.appendLabel(KALMAN_STR, showTagRelated(4, QPen(Qt::gray, 2), QBrush(Qt::darkGreen)));
 
     // DATA
-    cfgData.loadNewFile("D:\\code\\kelmanLocationData\\configExample.ini");
+    //cfgData.loadNewFile("D:\\code\\kelmanLocationData\\configExample.ini");
+    cfgData.loadNewFile("D:\\code\\kelmanLocationData\\aaa.ini");
     qDebug() << cfgData.toString();
     calcPos.setConfigData(cfgData.get_q());
-    distData.loadNewFile("D:\\code\\kelmanLocationData\\201712111515.log");
+    //distData.loadNewFile_1("D:\\code\\kelmanLocationData\\201712111515.log");
+    distData.loadNewFile_2("D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705181600.log");
     qDebug() << distData.toString();
     calcPos.setDistanceData(distData.get_q());
     ui->canvas->setConfigData(cfgData.get_q());
     calcPos.setNlosJudge(&calcNlos);
 
+    checkData();
+
     // FILE
-    connect(ui->actionRead_ini,  SIGNAL(triggered(bool)), this, SLOT(loadIniConfigFile(bool)));
-    connect(ui->actionRead_dist, SIGNAL(triggered(bool)), this, SLOT(loadLogDistanceFile(bool)));
+    connect(ui->actionRead_ini,     SIGNAL(triggered(bool)), this, SLOT(loadIniConfigFile(bool)));
+    connect(ui->actionRead_dist,    SIGNAL(triggered(bool)), this, SLOT(loadLogDistanceFile(bool)));
+    connect(ui->actionRead_picture, SIGNAL(triggered(bool)), this, SLOT(loadPictureFile(bool)));
 
     // NLOS
     connect(ui->actionWylie,     SIGNAL(triggered(bool)), this, SLOT(nlosWylie(bool)));
@@ -39,7 +44,6 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     connect(ui->actionFullCentroid, SIGNAL(triggered(bool)), this, SLOT(posFullCentroid(bool)));
     connect(ui->actionSubLS,        SIGNAL(triggered(bool)), this, SLOT(posSubLS(bool)));
     connect(ui->actionTwoCenter,    SIGNAL(triggered(bool)), this, SLOT(posTwoCenter(bool)));
-
 
     // TRACK
     connect(ui->actionKalmanTrack,     SIGNAL(triggered(bool)), this, SLOT(trackKalman(bool)));
@@ -96,9 +100,9 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     });
     connect(ui->showRadius, &QPushButton::clicked, this, [this](void) {
         if (!ui->canvas->reverseShowRadius()) {
-            ui->allPos->setText(MY_STR("显示半径"));
+            ui->showRadius->setText(MY_STR("显示半径"));
         } else {
-            ui->allPos->setText(MY_STR("隐藏半径"));
+            ui->showRadius->setText(MY_STR("隐藏半径"));
         }
 
         update();
@@ -114,15 +118,45 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     });
 
     // initial calculate method
-    //nlosRes(true);
-    //nlosMultiPoint(true);
-    //posSubLS(true);
-    //trackKalman(true);
+    nlosRes(true);
+    nlosMultiPoint(true);
+    posSubLS(true);
+    trackKalman(true);
 }
 
 uiMainWindow::~uiMainWindow()
 {
     delete ui;
+}
+
+void uiMainWindow::checkData() {
+    qDebug() << "cfgData.get_q() =" << cfgData.get_q()->isInitialized
+             << "distData.get_q() =" << distData.get_q()->isInitialized;
+    if (!cfgData.get_q()->isInitialized || !distData.get_q()->isInitialized) {
+        ui->actionWylie->setDisabled(true);
+        ui->actionMultiPoint->setDisabled(true);
+        ui->actionRes->setDisabled(true);
+        ui->actionSumDist->setDisabled(true);
+
+        ui->actionFullCentroid->setDisabled(true);
+        ui->actionSubLS->setDisabled(true);
+        ui->actionTwoCenter->setDisabled(true);
+
+        ui->actionKalmanTrack->setDisabled(true);
+        ui->actionkalmanLiteTrack->setDisabled(true);
+    } else {
+        ui->actionWylie->setEnabled(true);
+        ui->actionMultiPoint->setEnabled(true);
+        ui->actionRes->setEnabled(true);
+        ui->actionSumDist->setEnabled(true);
+
+        ui->actionFullCentroid->setEnabled(true);
+        ui->actionSubLS->setEnabled(true);
+        ui->actionTwoCenter->setEnabled(true);
+
+        ui->actionKalmanTrack->setEnabled(true);
+        ui->actionkalmanLiteTrack->setEnabled(true);
+    }
 }
 
 void uiMainWindow::paintEvent(QPaintEvent *event) {
@@ -207,19 +241,27 @@ void uiMainWindow::loadIniConfigFile(bool checked) {
     QString path = QFileDialog::getOpenFileName(this, "Select Config File", ".", "config file(*.ini)");
     qDebug() << "loadIniConfigFile Path:" << path;
     cfgData.loadNewFile(path);
-    qDebug() << "ini File loaded1111";
     calcPos.setConfigData(cfgData.get_q());
-    qDebug() << "ini File loaded2222";
     ui->canvas->setConfigData(cfgData.get_q());
     ui->actionRead_ini->setChecked(true);
-    qDebug() << "ini File loaded";
+    checkData();
 }
 void uiMainWindow::loadLogDistanceFile(bool checked) {
     Q_UNUSED(checked);
     QString path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "distance file(*.log)");
     qDebug() << "loadLogDistanceFile Path:" << path;
-    distData.loadNewFile(path);
+    distData.clear();
+    distData.loadNewFile_1(path);
     calcPos.setDistanceData(distData.get_q());
+    ui->actionRead_dist->setChecked(true);
+    qDebug() << distData.toString();
+    checkData();
+}
+void uiMainWindow::loadPictureFile(bool checked) {
+    Q_UNUSED(checked);
+    QString path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "picture file(*.*)");
+    qDebug() << "loadPictureFile Path:" << path;
+    ui->canvas->loadPicture(path);
     ui->actionRead_dist->setChecked(true);
 }
 

@@ -37,7 +37,6 @@ SOURCES += \
     calcTagNLOS.cpp
 
 HEADERS += \
-        datatype.h \
     showStore.h \
     matrixOp.h \
     _myheads.h \
@@ -48,7 +47,8 @@ HEADERS += \
     calcTargetTracking.h \
     dataDistanceLog.h \
     calcTagPos.h \
-    calcTagNLOS.h
+    calcTagNLOS.h \
+    dataType.h
 
 FORMS += \
     mainwindow.ui

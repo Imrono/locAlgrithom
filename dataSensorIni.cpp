@@ -58,7 +58,7 @@ void dataSensorIni::loadNewFile(const QString &fileName) {
 
     QSettings iniSetting{fileName, QSettings::IniFormat};
     this->fileName = fileName;
-    q->reset();
+    q->clear();
 
     int Cnt = 0;
     int AreaCnt = 0;
@@ -117,6 +117,7 @@ void dataSensorIni::loadNewFile(const QString &fileName) {
         q->oper.append(tmp);
         iniSetting.endGroup();
     }
+    q->isInitialized = true;
     qDebug() << toString();
 }
 

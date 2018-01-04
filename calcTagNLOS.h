@@ -1,7 +1,7 @@
 #ifndef IDENTIFYNLOS_H
 #define IDENTIFYNLOS_H
 #include "_myheads.h"
-#include "datatype.h"
+#include "dataType.h"
 
 class calcTagNLOS
 {

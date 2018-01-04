@@ -4,7 +4,7 @@
 #include "dataSensorIni.h"
 #include "dataDistanceLog.h"
 #include <QVector>
-#include "datatype.h"
+#include "dataType.h"
 #include "showStore.h"
 #include "calcTagNLOS.h"
 

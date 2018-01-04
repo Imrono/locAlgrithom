@@ -1,7 +1,7 @@
 #ifndef UI_CANVAS_H
 #define UI_CANVAS_H
 #include "_myheads.h"
-#include "datatype.h"
+#include "dataType.h"
 #include "dataSensorIni.h"
 #include "showTagRelated.h"
 
@@ -55,6 +55,8 @@ public:
         return isShowTrack;
     }
 
+    void loadPicture(QString path);
+
 public slots:
     void followMainWindowCount(int cnt);
 
@@ -91,6 +93,7 @@ private:
 
     void paintEvent(QPaintEvent *event);
     void resizeEvent(QResizeEvent *event);
+    QImage backgroundImg;
 
     QPointF actual2Show(const locationCoor &p) {
         return QPointF(p.x * ratioShow, p.y * ratioShow);

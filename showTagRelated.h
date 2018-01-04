@@ -4,7 +4,7 @@
 #include <QPainter>
 #include <QColor>
 #include <QDebug>
-#include "datatype.h"
+#include "dataType.h"
 
 class showTagRelated
 {

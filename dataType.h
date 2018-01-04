@@ -4,10 +4,55 @@
 #include <QPoint>
 #include <QDateTime>
 
+struct oneLogData_1 {
+    QDateTime time;
+    int distance;
+    int sensorIdx;
+    int status;
+
+    QString toString() {
+        return QString("[%0] sensorIdx:%2, distance:%3, status:%4")
+                .arg(time.toString("yyyy/MM/dd hh:mm:ss:zzz"))
+                .arg(sensorIdx, 3, 10, QChar('0'))
+                .arg(distance,  6, 10, QChar('0'))
+                .arg(status,    2, 10, QChar('0'));
+    }
+};
+struct oneLogData_2 {
+    QDateTime time;
+    QVector<int> distance;
+    QString toString() {
+        QString ans = QString("[%0]").arg(time.toString("yyyy/MM/dd hh:mm:ss:zzz"));
+        for (int i = 0; i < distance.count(); i++) {
+            ans += QString("{%0,%1}").arg(i).arg(distance[i], 6, 10, QChar('0'));
+        }
+        return ans;
+    }
+};
+
+struct oneTag_1 {
+    oneTag_1(int idx) : tagIdx{idx} {}
+    oneTag_1() {}
+
+    int tagIdx;
+    QVector<oneLogData_1> distData;
+
+    QString toString() {
+        return QString("tagIdx:%0").arg(tagIdx, 5, QChar('0'));
+    }
+};
+struct oneTag_2 {
+    oneTag_2(int idx) : tagIdx{idx} {}
+    oneTag_2() {}
+
+    int tagIdx;
+    QVector<oneLogData_2> distData;
+};
+
 struct labelDistance {
-    int distance[4];
-    uint32_t status[4];
-    QDateTime time[4];
+    int distance[6];
+    uint32_t status[6];
+    QDateTime time[6];
 
     static labelDistance diffDist(const labelDistance &a, const labelDistance &b) {
         labelDistance ans;

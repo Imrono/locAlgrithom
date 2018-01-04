@@ -90,6 +90,7 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
+
     // 画canvas的边框
     painter.setPen(QPen(Qt::gray, 5));
     painter.drawRect(geometry());
@@ -128,6 +129,12 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     }
     painter.drawPath(operPath);
 
+    // 画背景
+    if (!backgroundImg.isNull()) {
+        QRect rect(0,0,this->width(),this->height());
+        painter.drawImage(rect, backgroundImg);
+    }
+
     // [Sensor]
     if (isShowSensor) {
         painter.drawText(0, 100, 50, 10, Qt::AlignLeft, QString("%0").arg(this->width()));
@@ -164,4 +171,26 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
         tags[MEASUR_STR].drawPointsRaw(painter, ratioShow);
         tags[MEASUR_STR].drawPointsRefined(painter, ratioShow);
     }
+}
+
+void uiCanvas::loadPicture(QString path) {
+    backgroundImg.load(path);
+
+    // 白色变透明
+    backgroundImg = backgroundImg.convertToFormat(QImage::Format_ARGB32);
+    union myrgb
+    {
+        uint rgba;
+        uchar rgba_bits[4];
+    };
+    myrgb* mybits =(myrgb*) backgroundImg.bits();
+    int len = backgroundImg.width()*backgroundImg.height();
+    while(len-- > 0)
+    {
+        // 要是白色(255, 255, 255)则改为透明色
+        mybits->rgba_bits[3] = (mybits->rgba == 0xFFFFFFFF) ? 0 : 255;
+        mybits++;
+    }
+
+    update();
 }

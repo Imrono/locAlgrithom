@@ -5,7 +5,7 @@
 #include <QPixmap>
 #include <QTimer>
 #include <QAction>
-#include "datatype.h"
+#include "dataType.h"
 
 #include "dataSensorIni.h"
 #include "dataDistanceLog.h"
@@ -47,11 +47,13 @@ private:
     dataDistanceLog distData;
 
     void paintEvent(QPaintEvent *event);
+    void checkData();
 
 private slots:
     // FILE
     void loadIniConfigFile(bool checked);
     void loadLogDistanceFile(bool checked);
+    void loadPictureFile(bool checked);
 
     // NLOS
     void nlosWylie(bool checked);
