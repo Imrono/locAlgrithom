@@ -29,8 +29,8 @@ calcTagNLOS::~calcTagNLOS()
 }
 
 // POINTS_NLOS
-bool calcTagNLOS::pointsPredictNlos(labelDistance &distCurr, int nSensor,
-                                    const QVector<labelDistance> &distRefined) const {
+bool calcTagNLOS::pointsPredictNlos(dist4Calc &distCurr, int nSensor,
+                                    const QVector<dist4Calc> &distRefined) const {
     if (WYLIE == predictNlos) {
         if (distRefined.count() < wylieN + 1) {
             qDebug() << "distRefined.count() < wylieN + 1" << distRefined.count() << wylieN;

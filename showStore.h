@@ -6,36 +6,64 @@
 #include "showTagRelated.h"
 #include "dataType.h"
 
-struct labelInfo {
+struct storeTagInfo;
+struct storeMethodInfo {
+    storeMethodInfo() {}
+    storeMethodInfo(const QString &name, storeTagInfo *parent) {
+        methodName = name;
+        parentTag  = parent;
+    }
+
+    storeTagInfo *parentTag{nullptr};
+    QString methodName;
+    bool isMethodActive{false};
     QVector<locationCoor>          Ans;
+    QVector<QLineF>                AnsLines;
+    // data[0]
+    // meas: Reliability; kalman: R
+    QVector<dType>                 data[5];
+    void clear() {
+        Ans.clear();
+        AnsLines.clear();
+        for (int i = 0; i < 5; i++)
+            data[i].clear();
+    }
+};
+
+struct storeTagInfo {
+    int tagId{-1};
+    bool isTagActive{true};
+    QMap<QString, storeMethodInfo> methodInfo;
+
     QVector<dType>                 Reliability; //1.meas：长度之和；2.kalman：卡尔曼增益K
     QVector<dType>                 data_R;
     QVector<dType>                 data_P;
     QVector<dType>                 data_y;
-    QVector<QLineF>                AnsLines;
+
     QVector<QVector<locationCoor>> RawPoints;
     QVector<QVector<locationCoor>> RefinedPoints;
-    showTagRelated                 showStyle;
-    QString                        name;
+
     CALC_POS_TYPE                  calcPosType;
     QString toString() {
-        return QString("name:%0, nLines:%1, nAnsPoints:%2")
-                .arg(name, 8).arg(AnsLines.count(), 4).arg(Ans.count(), 4);
+        QString ans = QString("tagId:%0. ").arg(tagId, 3);
+        foreach (storeMethodInfo i, methodInfo) {
+            ans += QString("{%0|point Num: %1., line Num: %2|} ")
+                    .arg(i.methodName)
+                    .arg(i.Ans.count())
+                    .arg(i.AnsLines.count());
+        }
+        return ans;
     }
-    void resetTrack() {
-        Ans.clear();
-        Reliability.clear();
-        data_R.clear();
-        data_P.clear();
-        data_y.clear();
-        AnsLines.clear();
+    void reset(const QString &method) {
+        if (methodInfo.contains(method)) {
+            methodInfo[method].Ans.clear();
+            methodInfo[method].AnsLines.clear();
+        }
     }
-    void resetPos() {
-        Ans.clear();
-        RefinedPoints.clear();
+    void clear() {
+        methodInfo.clear();
         RawPoints.clear();
-        Reliability.clear();
-        AnsLines.clear();
+        RefinedPoints.clear();
         calcPosType = CALC_POS_TYPE::none_type;
     }
 };
@@ -45,45 +73,17 @@ class showStore
 public:
     showStore();
 
-    QMap<QString, int> name2idx;
+    void addNewTagInfo(int tagId);
+    storeTagInfo * getTagInfo(int tagId);
+    void addNewMethodInfo(int tagId, const QString &method);
 
-    void appendLabel(const QString &name);
-    void appendLabel(const QString &name, const showTagRelated &showStyle);
-    void appendLabel(labelInfo *label);
-    labelInfo * getLabel(int idx);
-    labelInfo * getLabel(const QString &name) {
-        return getLabel(name2idx[name]);
-    }
+    void addRawPoints(int tagId, QVector<locationCoor> points);
+    void clearRawPoints(int tagId);
 
-    void setName(int idx, const QString &name);
-    void setShowStyle(int idx, showTagRelated showStyle);
+    void addAnsPoint(int tagId, const QString &method, locationCoor p);
+    void clearAnsPoints(int tagId, const QString &method);
 
-    void addRawPoints(int idx, QVector<locationCoor> points);
-    void addRawPoints(const QString &name, QVector<locationCoor> points) {
-        addRawPoints(name2idx[name], points);
-    }
-
-    void clearRawPoints(int idx);
-
-    void addAnsPoint(int idx, locationCoor p);
-    void addAnsPoint(const QString &name, locationCoor p) {
-        addAnsPoint(name2idx[name], p);
-    }
-
-    QVector<locationCoor> getAnsPointVector(int idx);
-    QVector<locationCoor> getAnsPointVector(const QString &name) {
-        return getAnsPointVector(name2idx[name]);
-    }
-
-    locationCoor getAnsPoint(int idx, int pointIdx);
-    locationCoor getAnsPoint(const QString &name, int pointIdx) {
-        return getAnsPoint(name2idx[name], pointIdx);
-    }
-
-    void clearAnsPoints(int idx);
-
-private:
-    QVector<labelInfo *> labels;
+    QMap<int, storeTagInfo *> tags;
 };
 
 #endif // SHOWSTORE_H

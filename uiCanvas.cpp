@@ -4,10 +4,6 @@
 
 uiCanvas::uiCanvas(QWidget *parent) : QWidget(parent)
 {
-    tags.insert(MEASUR_STR, showTagRelated {5, QPen(Qt::blue , 2), QBrush(Qt::magenta),
-                                               QPen(Qt::black, 1), QBrush(Qt::magenta)});
-    tags.insert(KALMAN_STR, showTagRelated {5, QPen(Qt::gray , 2), QBrush(Qt::darkGreen)});
-
     widthCanvasOld = width();
     heightCanvasOld = height();
     ratioShow = static_cast<dType>(width()) / widthActual;
@@ -17,7 +13,7 @@ void uiCanvas::followMainWindowCount(int cnt) {
     nCount = cnt;
 }
 
-void uiCanvas::actualData2showData() {
+void uiCanvas::cfg_actualData2showData() {
     if (nullptr == cfg_d) {
         qDebug() << "d == nullptr";
         return;
@@ -66,9 +62,16 @@ void uiCanvas::setConfigData(const configData *d) {
         return;
 
     this->cfg_d = d;
-    actualData2showData();
+    cfg_actualData2showData();
 
     update();
+}
+void uiCanvas::setDistanceData(const distanceData *dist_q) {
+    this->dist_d = dist_q;
+    foreach (const oneTag &tag, dist_d->tagsData) {
+        if (!tags.contains(tag.tagId))
+            tags.insert(tag.tagId, showTagRelated{tag.tagId});
+    }
 }
 
 void uiCanvas::resizeEvent(QResizeEvent *event) {
@@ -77,7 +80,7 @@ void uiCanvas::resizeEvent(QResizeEvent *event) {
 
     if (widthCanvasOld != width() || heightCanvasOld != height()) {
         ratioShow = static_cast<dType>(width()) / widthActual;
-        actualData2showData();
+        cfg_actualData2showData();
     }
     widthCanvasOld = width();
     heightCanvasOld = height();
@@ -95,11 +98,11 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     painter.setPen(QPen(Qt::gray, 5));
     painter.drawRect(geometry());
     // legend
-    painter.setPen(tags[MEASUR_STR].getPen());
-    painter.drawText(5, 5, 50, 10, Qt::AlignLeft, MEASUR_STR);
+    //painter.setPen(tags[MEASUR_STR].getPen());
+    //painter.drawText(5, 5, 50, 10, Qt::AlignLeft, MEASUR_STR);
 
-    painter.setPen(tags[KALMAN_STR].getPen());
-    painter.drawText(5, 15, 50, 10, Qt::AlignLeft, KALMAN_STR);
+    //painter.setPen(tags[KALMAN_STR].getPen());
+    //painter.drawText(5, 15, 50, 10, Qt::AlignLeft, KALMAN_STR);
     // count
     painter.setPen(QPen(Qt::black, 1));
     painter.drawText(5, 25, 50, 10, Qt::AlignLeft, QString("idx:%0").arg(nCount, 4, 10, QChar('0')));
@@ -153,23 +156,25 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
 
     // real time Point at TOP
     if (isShowPath) {
-        tags[MEASUR_STR].drawLines(painter, ratioShow);
-        tags[KALMAN_STR].drawLines(painter, ratioShow);
+        foreach(const showTagRelated &tag, tags) {
+            tag.drawLines(painter, ratioShow);
+        }
     }
 
-    if (isShowRadius) {
-        tags[MEASUR_STR].drawCircle(painter, cfg_d->sensor, ratioShow);
-    }
-    tags[MEASUR_STR].drawPoint(painter, ratioShow);
-    tags[MEASUR_STR].drawLine(painter, ratioShow);
-    if (isShowTrack) {
-        tags[KALMAN_STR].drawPoint(painter, ratioShow);
-        tags[KALMAN_STR].drawLine(painter, ratioShow);
-    }
+    foreach (showTagRelated tag, tags) {
+        if (isShowRadius) {
+            tag.drawCircle(painter, cfg_d->sensor, ratioShow);
+        }
+        tag.drawPoint(painter, ratioShow);
+        tag.drawLine(painter, ratioShow);
 
-    if (isShowAllPos) {
-        tags[MEASUR_STR].drawPointsRaw(painter, ratioShow);
-        tags[MEASUR_STR].drawPointsRefined(painter, ratioShow);
+        if (isShowTrack) {
+        }
+
+        if (isShowAllPos) {
+            tag.drawPointsRaw(painter, ratioShow);
+            tag.drawPointsRefined(painter, ratioShow);
+        }
     }
 }
 

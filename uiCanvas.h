@@ -3,6 +3,7 @@
 #include "_myheads.h"
 #include "dataType.h"
 #include "dataSensorIni.h"
+#include "dataDistanceLog.h"
 #include "showTagRelated.h"
 
 #include <QWidget>
@@ -15,27 +16,28 @@ public:
     uiCanvas(QWidget *parent = 0);
 
     void setConfigData(const configData *cfg_d);
+    void setDistanceData(const distanceData *dist_q);
 
-    void setPosition(QString name, const QPointF &p) {
-        tags[name].setPosition(p);
+    void setPosition(int tagIdx, const QString &methodName, const QPointF &p) {
+        tags[tagIdx].setPosition(methodName, p);
     }
-    void setLine(QString name, const QLineF &l) {
-        tags[name].setLine(l);
+    void setLine(int tagIdx, const QString &methodName, const QLineF &l) {
+        tags[tagIdx].setLine(methodName, l);
     }
-    void setPointsRaw(QString name, const QVector<locationCoor> ps) {
-        tags[name].setPointsRaw(ps);
+    void setPointsRaw(int tagIdx, const QString &methodName, const QVector<locationCoor> ps) {
+        tags[tagIdx].setPointsRaw(methodName, ps);
     }
-    void setPointsRefined(QString name, const QVector<locationCoor> ps) {
-        tags[name].setPointsRefined(ps);
+    void setPointsRefined(int tagIdx, const QString &methodName, const QVector<locationCoor> ps) {
+        tags[tagIdx].setPointsRefined(methodName, ps);
     }
-    void setLines(QString name, const QVector<QLineF> &lines) {
-        tags[name].setLines(lines);
+    void setLines(int tagIdx, const QString &methodName, const QVector<QLineF> &lines) {
+        tags[tagIdx].setLines(methodName, lines);
     }
-    void setDistance(QString name,  const int *dist) {
+    void setDistance(int tagIdx,  const int *dist) {
         QVector<int> d;
         for (int i = 0; i < cfg_d->sensor.count(); i++)
             d.append(dist[i]);
-        tags[name].setDistance(d);
+        tags[tagIdx].setDistance(d);
     }
 
     bool reverseShowPath() {
@@ -67,7 +69,8 @@ private:
     dType widthActual{4000.f};
     dType heightActual{3000.f};
 
-    const configData *cfg_d{nullptr};
+    const configData   *cfg_d {nullptr};
+    const distanceData *dist_d{nullptr};
 
     bool isShowSensor{true};
     QVector<QPointF> sensorShow;
@@ -86,7 +89,7 @@ private:
 
     dType ratioShow{1.f};
 
-    QMap<QString, showTagRelated> tags;
+    QMap<int, showTagRelated> tags;
     bool isShowPath{false};
     bool isShowAllPos{false};
     int nCount{0};
@@ -96,9 +99,9 @@ private:
     QImage backgroundImg;
 
     QPointF actual2Show(const locationCoor &p) {
-        return QPointF(p.x * ratioShow, p.y * ratioShow);
+        return p.toQPointF() * ratioShow;
     }
-    void actualData2showData();
+    void cfg_actualData2showData();
 };
 
 #endif // UI_CANVAS_H

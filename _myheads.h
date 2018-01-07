@@ -26,6 +26,10 @@ enum CALC_POS_TYPE {
     TwoCenter = 2
 };
 
+#define METHOD_FULL_CENTROID_STR "{method:FullCentroid}"
+#define METHOD_SUB_LS_STR        "{method:SubLS}"
+#define METHOD_TWO_CENTER_STR    "{method:TwoCenter}"
+
 enum POINTS_NLOS {
     POINTS_NONE = -1,
     WYLIE,
@@ -41,6 +45,19 @@ enum TRACK_METHOD {
     TRACK_NONE = -1,
     KALMAN,
     KALMAN_LITE
+};
+
+#define METHOD_KALMAN_STR      "{method:KalmanTrack}"
+#define METHOD_KALMAN_LITE_STR "{method:LiteKalmanTrack}"
+
+enum SHOW_SHAPE {
+    radius,
+    triangle,
+    square,
+    pentagram,
+    hexagram,
+    pentagon,
+    hexagon,
 };
 
 #endif // MYHEADS_H

@@ -21,7 +21,7 @@ dType calcTotalAvgDistanceSquare(QVector<QLineF> &lines, int discount = 10);
 class calcTagPos
 {
 public:
-    QVector<labelDistance> distRefined;
+    QVector<dist4Calc> distRefined;
 
     explicit calcTagPos() {}
     explicit calcTagPos(const configData *cfg_q, const distanceData *dist_q) {
@@ -54,7 +54,7 @@ public:
     static void calcTwoCenter   (const int *distance, const locationCoor *sensor, int N,
                                  dType &out_x, dType &out_y, dType &out_MSE);
 
-    void calcPosVector (labelInfo *label);
+    void calcPosVector (storeTagInfo *label);
 
     locationCoor getLoc(int idx) const {
         return cfg_d->sensor[idx];

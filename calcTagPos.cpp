@@ -193,54 +193,59 @@ QVector<locationCoor> calcTagPos::calcPosFromDistance(const int dist[], uint32_t
     return vectorAns;
 }
 
-void calcTagPos::calcPosVector (labelInfo *label) {
-    if (nullptr == label)
+void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
+    if (nullptr == tagInfo)
         return;
 
     int nSensor = cfg_d->sensor.count();
     locationCoor tmpX;
     double mse = 0.f;
 
-    label->resetPos();
+    tagInfo->reset(MEASUR_STR);
     distRefined.clear();
-    label->calcPosType = this->calcPosType;
+    tagInfo->calcPosType = this->calcPosType;
 
-    for (int i = 0; i < dist_d->dist.count(); i++) {
-        labelDistance tmpDist;
-        for (int j = 0; j < 4; j++) {
-            tmpDist.distance[j] = dist_d->dist[i].distance[j];
-        }
-        label->RawPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
+    foreach (oneTag tag, dist_d->tagsData) {
+        for (int i = 0; i < tag.distData.count(); i++) {
+            dist4Calc tmpDist;
+            for (int j = 0; j < tag.distData[i].distance.count(); j++) {
+                tmpDist.distance[j] = tag.distData[i].distance[j];
+            }
+            tagInfo->RawPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
 
-        tmpX = calcOnePosition(tmpDist.distance, mse);
-        if (i >= 1) {
-            /* distance filter BEGIN */
-            // ITERATION
-            iterCount = 1;
-            do {
-                if (!calcNlos->posPrecisionNLOS(mse)) {  // MSE小于阈值，直接退出循环
-                    break;
-                } else {
-                    if (iterCount-- == 0) {
+            tmpX = calcOnePosition(tmpDist.distance, mse);
+            if (i >= 1) {
+                /* distance filter BEGIN */
+                // ITERATION
+                iterCount = 1;
+                do {
+                    if (!calcNlos->posPrecisionNLOS(mse)) {  // MSE小于阈值，直接退出循环
                         break;
                     } else {
-                        if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
-                            tmpX = calcOnePosition(tmpDist.distance, mse);
-                        } else {}
+                        if (iterCount-- == 0) {
+                            break;
+                        } else {
+                            if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
+                                tmpX = calcOnePosition(tmpDist.distance, mse);
+                            } else {}
+                        }
                     }
-                }
-            } while(1);
-            /* distance filter END */
+                } while(1);
+                /* distance filter END */
 
-        // store and update
-            label->Ans.append(tmpX);
-            label->AnsLines.append(QLineF(label->Ans[i-1].toQPointF(), label->Ans[i].toQPointF()));
-        } else {
-            label->Ans.append(tmpX);
+            // store and update
+                tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
+                tagInfo->methodInfo[MEASUR_STR].AnsLines
+                        .append(QLineF(tagInfo->methodInfo[MEASUR_STR].Ans[i-1].toQPointF(),
+                                       tagInfo->methodInfo[MEASUR_STR].Ans[i].toQPointF()));
+            } else {
+                tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
+            }
+            tagInfo->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
+            tagInfo->Reliability.append(mse);
+            tagInfo->methodInfo[MEASUR_STR].data[0].append(mse);
+            distRefined.append(tmpDist);
         }
-        label->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
-        label->Reliability.append(mse);
-        distRefined.append(tmpDist);
     }
 }
 

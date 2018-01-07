@@ -69,18 +69,20 @@ dType calcKalman::calcR(QPoint v_t, QPoint v_t_1) {
     return calcKalman::calcR(locationCoor(v_t), locationCoor(v_t_1));
 }
 
-void calcKalman::calcKalmanPosVectorLite(labelInfo *labelPos, labelInfo *labelKalman) {
-    if (nullptr == labelPos) {
-        qDebug() << "calcKalman::calcKalmanPosVector labelPos == nullptr";
-        return;
-    }
-    if (nullptr == labelKalman) {
-        qDebug() << "calcKalman::calcKalmanPosVector labelKalman == nullptr";
-        return;
-    }
-    if (0 == labelPos->Ans.count()) {
+void calcKalman::calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo) {
+    if (0 == tagMeasInfo.Ans.count()) {
         qDebug() << "calcKalman::calcKalmanPosVector number MeasPos = 0";
         return;
+    }
+    CALC_POS_TYPE calcPosType;
+    if (METHOD_FULL_CENTROID_STR == tagMeasInfo.methodName) {
+        calcPosType = CALC_POS_TYPE::FullCentroid;
+    } else if (METHOD_SUB_LS_STR == tagMeasInfo.methodName) {
+        calcPosType = CALC_POS_TYPE::SubLS;
+    } else if (METHOD_TWO_CENTER_STR == tagMeasInfo.methodName){
+        calcPosType = CALC_POS_TYPE::TwoCenter;
+    } else {
+        calcPosType = CALC_POS_TYPE::none_type;
     }
 
     // sample interval
@@ -116,20 +118,20 @@ void calcKalman::calcKalmanPosVectorLite(labelInfo *labelPos, labelInfo *labelKa
 
     qDebug() << "T=" << T << "Q=" << Q;
 
-    labelKalman->resetTrack();
+    tagKalmanInfo.clear();
 
-    x_t_1 = labelPos->Ans[0];
+    x_t_1 = tagMeasInfo.Ans[0];
     v_t_1 = {0,0,0};
     Px_t_1 = 0.3f;
     Pv_t_1 = 0.3f;
-    R_x = calcKalman::calcR(labelPos->Reliability[0]);
+    R_x = calcKalman::calcR(tagMeasInfo.data[0][0], calcPosType);
     R_x_1 = R_x;
-    labelKalman->Ans.append(labelPos->Ans[0]);
-    labelKalman->Reliability.append(K_x);
-    labelKalman->data_R.append(R_x);
-    labelKalman->data_P.append(Px_t_1);
+    tagKalmanInfo.Ans.append(tagMeasInfo.Ans[0]);
+    tagKalmanInfo.data[0].append(K_x);
+    tagKalmanInfo.data[1].append(R_x);
+    tagKalmanInfo.data[2].append(Px_t_1);
 
-    for(int i = 1; i < labelPos->Ans.count(); i++) {
+    for(int i = 1; i < tagMeasInfo.Ans.count(); i++) {
         // 1. x = Hx + Bu
         x_hat_t = x_t_1 + (v_t_1 * T);
         v_hat_t = v_t_1;
@@ -137,12 +139,12 @@ void calcKalman::calcKalmanPosVectorLite(labelInfo *labelPos, labelInfo *labelKa
         Px_t = Px_t_1 + Pv_t_1 * T * T + Q;
         Pv_t = Pv_t_1 + Q/T/T*4.f;
         // 3. y = z - Hx
-        z_x_meas = labelPos->Ans[i];
+        z_x_meas = tagMeasInfo.Ans[i];
         y_x_tilde = z_x_meas - x_hat_t;
-        z_v_meas = (labelPos->Ans[i] - labelPos->Ans[i-1]) / T;
+        z_v_meas = (tagMeasInfo.Ans[i] - tagMeasInfo.Ans[i-1]) / T;
         y_v_tilde = z_v_meas - v_hat_t;
         // 4. S = R + HPH
-        R_x = calcR(labelPos->Reliability[i]);
+        R_x = calcR(tagMeasInfo.data[0][i], calcPosType);
         S_x = R_x + Px_t;
         R_v = (R_x + R_x_1) / (T * T);
         S_v = R_v + Pv_t;
@@ -157,11 +159,11 @@ void calcKalman::calcKalmanPosVectorLite(labelInfo *labelPos, labelInfo *labelKa
         Px_t_1 = Px_t - Px_t * K_x;
         Pv_t_1 = Pv_t - Pv_t * K_v;
 
-        labelKalman->Ans.append(x_t);
-        labelKalman->AnsLines.append(QLine{x_t_1.toQPoint(), x_t.toQPoint()});
-        labelKalman->Reliability.append(K_x);
-        labelKalman->data_R.append(R_x);
-        labelKalman->data_P.append(Px_t);
+        tagKalmanInfo.Ans.append(x_t);
+        tagKalmanInfo.AnsLines.append(QLine{x_t_1.toQPoint(), x_t.toQPoint()});
+        tagKalmanInfo.data[0].append(K_x);
+        tagKalmanInfo.data[1].append(R_x);
+        tagKalmanInfo.data[2].append(Px_t);
         /*
         qDebug() << QString("i=%0, sigmaA2_t_1=%1, P_t_1=%2, P_t=%3, K=%4, dist_x=%5, dist_v=%6, Q=%7")
                     .arg(i, 4, 10, QChar('0'))
@@ -180,18 +182,20 @@ void calcKalman::calcKalmanPosVectorLite(labelInfo *labelPos, labelInfo *labelKa
     }
 }
 
-void calcKalman::calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman) {
-    if (nullptr == labelPos) {
-        qDebug() << "calcKalman::calcKalmanPosVector labelPos == nullptr";
-        return;
-    }
-    if (nullptr == labelKalman) {
-        qDebug() << "calcKalman::calcKalmanPosVector labelKalman == nullptr";
-        return;
-    }
-    if (0 == labelPos->Ans.count()) {
+void calcKalman::calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo) {
+    if (0 == tagMeasInfo.Ans.count()) {
         qDebug() << "calcKalman::calcKalmanPosVector number MeasPos = 0";
         return;
+    }
+    CALC_POS_TYPE calcPosType;
+    if (METHOD_FULL_CENTROID_STR == tagMeasInfo.methodName) {
+        calcPosType = CALC_POS_TYPE::FullCentroid;
+    } else if (METHOD_SUB_LS_STR == tagMeasInfo.methodName) {
+        calcPosType = CALC_POS_TYPE::SubLS;
+    } else if (METHOD_TWO_CENTER_STR == tagMeasInfo.methodName){
+        calcPosType = CALC_POS_TYPE::TwoCenter;
+    } else {
+        calcPosType = CALC_POS_TYPE::none_type;
     }
 
     struct keyParam {
@@ -231,18 +235,18 @@ void calcKalman::calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman
 
     qDebug() << "calcKalmanPosVector:" << "T=" << param.T << "Q=" << param.Q;
 
-    labelKalman->resetTrack();
+    tagKalmanInfo.clear();
 
-    x_t_1 = labelPos->Ans[0];
+    x_t_1 = tagMeasInfo.Ans[0];
     v_t_1 = {0,0,0};
-    param.R = calcR(labelPos->Reliability[0], labelPos->calcPosType);
-    labelKalman->Ans.append(labelPos->Ans[0]);
-    labelKalman->Reliability.append(Kx);
-    labelKalman->data_R.append(param.R);
-    labelKalman->data_P.append(Pxx_t_1);
-    labelKalman->data_y.append(Pxx_t_1);
+    param.R = calcR(tagMeasInfo.data[0][0], calcPosType);
+    tagKalmanInfo.Ans.append(tagMeasInfo.Ans[0]);
+    tagKalmanInfo.data[0].append(Kx);
+    tagKalmanInfo.data[1].append(param.R);
+    tagKalmanInfo.data[2].append(Pxx_t_1);
+    tagKalmanInfo.data[3].append(Pxx_t_1);
 
-    for(int i = 1; i < labelPos->Ans.count(); i++) {
+    for(int i = 1; i < tagMeasInfo.Ans.count(); i++) {
         // 1. x = Hx + Bu <= H = [1, T]
         x_hat_t = x_t_1 + (v_t_1 * param.T);
         v_hat_t = v_t_1;
@@ -251,10 +255,10 @@ void calcKalman::calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman
         Pxv_pri_t = Pxv_t_1 + param.T*Pvv_t_1 + param.Q/param.T*2.f;
         Pvv_pri_t = Pvv_t_1 + param.Q/param.T/param.T*4.f;
         // 3. y = z - Hx
-        z_x_t_meas = labelPos->Ans[i];
+        z_x_t_meas = tagMeasInfo.Ans[i];
         y_x_tilde = z_x_t_meas - x_hat_t;
         // 4. S = R + HPH
-        param.R = calcR(labelPos->Reliability[i], labelPos->calcPosType);
+        param.R = calcR(tagMeasInfo.data[0][i], calcPosType);
         S = param.R + Pxx_pri_t;
         // 5. k = PH/S
         Kx = Pxx_pri_t / S;
@@ -265,12 +269,12 @@ void calcKalman::calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman
         // *7. P = P - KHP
         calcMatrixMulit_KP(Kx, Kv, Pxx_pri_t, Pxv_pri_t, Pvv_pri_t, Pxx_t, Pxv_t, Pvv_t);
 
-        labelKalman->Ans.append(x_t);
-        labelKalman->AnsLines.append(QLine{x_t_1.toQPoint(), x_t.toQPoint()});
-        labelKalman->Reliability.append(Kx);
-        labelKalman->data_R.append(param.R);
-        labelKalman->data_P.append(Pxx_t);
-        labelKalman->data_y.append(y_x_tilde.x*y_x_tilde.x + y_x_tilde.y*y_x_tilde.y + y_x_tilde.z*y_x_tilde.z);
+        tagKalmanInfo.Ans.append(x_t);
+        tagKalmanInfo.AnsLines.append(QLine{x_t_1.toQPoint(), x_t.toQPoint()});
+        tagKalmanInfo.data[0].append(Kx);
+        tagKalmanInfo.data[1].append(param.R);
+        tagKalmanInfo.data[2].append(Pxx_t);
+        tagKalmanInfo.data[3].append(y_x_tilde.x*y_x_tilde.x + y_x_tilde.y*y_x_tilde.y + y_x_tilde.z*y_x_tilde.z);
 
         /*
         qDebug() << QString("i=%0, P_t_1=%1, P_t=%2, R_t=%3, Kx=%4, dist_x=%5, dist_v=%6, Q=%7")

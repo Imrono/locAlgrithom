@@ -11,8 +11,8 @@ public:
 
     /*************************************************************/
     POINTS_NLOS predictNlos{POINTS_NLOS::POINTS_NONE};
-    bool pointsPredictNlos(labelDistance &distCurr, int nSensor,
-                           const QVector<labelDistance> &distRefined) const;
+    bool pointsPredictNlos(dist4Calc &distCurr, int nSensor,
+                           const QVector<dist4Calc> &distRefined) const;
     bool isWylieNLOS(int &d_t, dType *d, dType &L_hat) const ;
     bool isMultiPointNLOS(int *d_t, const int *d_t_1, int nSensor) const;
 

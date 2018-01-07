@@ -4,33 +4,24 @@
 #include "dataType.h"
 #include <QVector>
 
+struct oneLogData {
+    QDateTime time;
+    QVector<int> distance;
+    QString toString();
+};
+
+struct oneTag {
+    oneTag(int tagId) : tagId{tagId} {}
+    oneTag() {}
+
+    int tagId;
+    QVector<oneLogData> distData;
+};
+
 struct distanceData {
-    QVector<labelDistance> dist;
-    QVector<oneTag_1> tagsData_1;
-    QVector<oneTag_2> tagsData_2;
+    //QVector<labelDistance> dist;
+    QMap<int, oneTag> tagsData;
     bool isInitialized{false};
-
-    int findTagByIdx_1(int idx) {
-        for (int i = 0; i < tagsData_1.count(); i++) {
-            if (tagsData_1[i].tagIdx == idx) {
-                return i;
-            } else {}
-        }
-        oneTag_1 tag(idx);
-        tagsData_1.append(tag);
-        return tagsData_1.count()-1;
-    }
-
-    int findTagByIdx_2(int idx) {
-        for (int i = 0; i < tagsData_2.count(); i++) {
-            if (tagsData_2[i].tagIdx == idx) {
-                return i;
-            } else {}
-        }
-        oneTag_2 tag(idx);
-        tagsData_2.append(tag);
-        return tagsData_2.count()-1;
-    }
 };
 
 class dataDistanceLog
@@ -54,6 +45,8 @@ public:
     }
 
     void composeMeasData();
+
+    int maxDataCount{0};
 
 private:
     QString fileName;

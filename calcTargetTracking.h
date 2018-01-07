@@ -21,8 +21,8 @@ class calcKalman
 public:
     calcKalman();
 
-    static void calcKalmanPosVectorLite(labelInfo *labelPos, labelInfo *labelKalman);
-    static void calcKalmanPosVector(labelInfo *labelPos, labelInfo *labelKalman);
+    static void calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo);
+    static void calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo);
     static void calcMatrixMulit_KP(const dType Kx, const dType Kv,
                                    const dType Pxx_pri_t, const dType Pxv_pri_t, const dType Pvv_pri_t,
                                    dType &Pxx_t, dType &Pxv_t, dType &Pvv_t);

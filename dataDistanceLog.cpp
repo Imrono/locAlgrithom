@@ -2,13 +2,18 @@
 #include <QFile>
 #include <QDebug>
 
+QString oneLogData::toString() {
+    QString ans = QString("[%0]").arg(time.toString("yyyy/MM/dd hh:mm:ss:zzz"));
+    for (int i = 0; i < distance.count(); i++) {
+        ans += QString("{%0,%1}").arg(i).arg(distance[i], 6, 10, QChar('0'));
+    }
+    return ans;
+}
+
+/*************************************************************/
 dataDistanceLog::dataDistanceLog()
 {
     q = new distanceData;
-
-    // [2017/05/18 16:00:29:725] | 192.168.200.200| (000203):[001606,001290,001174,001323,002599,002284]
-    // [002736-000312-000000]=>[002732-000317-000000] [03] [0-0]
-    rx.setPattern("\\[(.*)\\] \\|\\s(.*)\\| \\((\\d{6})\\):\\[(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6})\\]");
 }
 
 dataDistanceLog::~dataDistanceLog() {
@@ -22,10 +27,14 @@ void dataDistanceLog::loadNewFile_1(const QString &fileName) {
         return;
     }
     this->fileName = fileName;
+    //qDebug() << "#BEGIN ANALYZE# dataDistanceLog::loadNewFile_1 $> fileName" << fileName;
 
-    oneLogData_1 tmpLogData;
-    labelDistance tmpDist;
+    // [2017/05/18 15:59:58:033] | 192.168.200.200| 00205-005-002426-00
+    rx.setPattern("\\[(.*)\\] \\|\\s(.*)\\| (\\d{5})-(\\d{3})-(\\d{6})-(\\d{2})");
+
+    oneLogData tmpLogData;
     int count = 0;
+    bool started = false;
     while(!file.atEnd()) {
         QByteArray line = file.readLine();
         QString str(line);
@@ -34,37 +43,40 @@ void dataDistanceLog::loadNewFile_1(const QString &fileName) {
         int pos = rx.indexIn(str);
         if (pos > -1 && 6 == rx.captureCount()) {
             QString dateStr = rx.cap(1);
-            QString idexStr = rx.cap(3);
-            QString sensStr = rx.cap(4);
+            int tagId    = rx.cap(3).toInt();
+            int sensorId = rx.cap(4).toInt();
             QString distStr = rx.cap(5);
             QString statStr = rx.cap(6);
+            Q_UNUSED(statStr);
 
-            int tmpLoc = sensStr.toInt();
-            tmpDist.distance[tmpLoc] = distStr.toInt();
-            tmpDist.status[tmpLoc] = statStr.toInt();
-            tmpDist.time[tmpLoc] = QDateTime::fromString(dateStr, "yyyy/MM/dd hh:mm:ss:zzz");
+            if (0 == sensorId) {
+                started = true;
+                tmpLogData.distance.clear();
+            }
 
-            int idxVector = q->findTagByIdx_1(idexStr.toInt());
-            tmpLogData.time      = QDateTime::fromString(dateStr, "yyyy/MM/dd hh:mm:ss:zzz");
-            tmpLogData.distance  = distStr.toInt();
-            tmpLogData.sensorIdx = sensStr.toInt();
-            tmpLogData.status    = statStr.toInt();
-            q->tagsData_1[idxVector].distData.append(tmpLogData);
-            //qDebug() << tmpLogData.toString();
+            tmpLogData.time = QDateTime::fromString(dateStr, "yyyy/MM/dd hh:mm:ss:zzz");
+            tmpLogData.distance.append(distStr.toInt());
 
-            if(3 == tmpLoc) {
-                if (count < 1) {
-                    count ++;
-                    continue;
-                } else {
-                    count ++;
-                    q->dist.append(tmpDist);
+            if (3 == sensorId && started) {
+                //started = false;
+                if (!q->tagsData.contains(tagId)) {
+                    q->tagsData.insert(tagId, oneTag(tagId));
                 }
+                q->tagsData[tagId].distData.append(tmpLogData);
+                //qDebug() << "dataDistanceLog::loadNewFile_1 $>" << count << tagId << q->tagsData.count() << tmpLogData.toString();
+                count ++;
             }
         }
     }
     q->isInitialized = true;
 
+    foreach (oneTag tag, q->tagsData) {
+        if (tag.distData.count() > maxDataCount)
+            maxDataCount = tag.distData.count();
+    }
+
+    //qDebug() << "#END ANALYZE# dataDistanceLog::loadNewFile_1 $> maxDataCount" << maxDataCount
+    //         << "; tags Count" << q->tagsData.count();
     composeMeasData();
 }
 
@@ -75,26 +87,30 @@ void dataDistanceLog::loadNewFile_2(const QString &fileName) {
         return;
     }
     this->fileName = fileName;
+    // [2017/05/18 16:00:29:725] | 192.168.200.200| (000203):[001606,001290,001174,001323,002599,002284]
+    // [002736-000312-000000]=>[002732-000317-000000] [03] [0-0]
+    rx.setPattern("\\[(.*)\\] \\|\\s(.*)\\| \\((\\d{6})\\):\\[(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6})\\]");
 
+    int tagId = -1;
     while(!file.atEnd()) {
-        oneLogData_2 tmpLogData;
+        oneLogData tmpLogData;
 
         QByteArray line = file.readLine();
         QString str(line);
-
         //qDebug() << str;
+
         int pos = rx.indexIn(str);
         if (pos > -1 && 9 == rx.captureCount()) {
-            int idxVector = q->findTagByIdx_2(rx.cap(3).toInt());
             tmpLogData.time = QDateTime::fromString(rx.cap(1), "yyyy/MM/dd hh:mm:ss:zzz");
+            tagId           = rx.cap(3).toInt();
             tmpLogData.distance.append(rx.cap(4).toInt());
             tmpLogData.distance.append(rx.cap(5).toInt());
             tmpLogData.distance.append(rx.cap(6).toInt());
             tmpLogData.distance.append(rx.cap(7).toInt());
             tmpLogData.distance.append(rx.cap(8).toInt());
             tmpLogData.distance.append(rx.cap(9).toInt());
-            q->tagsData_2[idxVector].distData.append(tmpLogData);
-            qDebug() << q->tagsData_2[idxVector].tagIdx << tmpLogData.toString();
+            q->tagsData[tagId].distData.append(tmpLogData);
+            qDebug() << q->tagsData[tagId].tagId << tmpLogData.toString();
         }
     }
     q->isInitialized = true;
@@ -105,11 +121,14 @@ void dataDistanceLog::composeMeasData() {
 }
 
 QString dataDistanceLog::toString() {
-    QString ans = QString("dataDistanceLog $> fileName:%0, q->dist.count():%1, tags:%2 $> ")
-            .arg(fileName).arg(q->dist.count())
-            .arg(q->tagsData_1.count());
-    for (int i = 0; i < q->tagsData_1.count(); i++) {
-        ans += QString("idx:%0, count:%1; ").arg(q->tagsData_1[i].tagIdx).arg(q->tagsData_1[i].distData.count());
+    QString ans = QString("dataDistanceLog::toString $> fileName:%0, tags:%1 | ")
+            .arg(fileName)
+            .arg(q->tagsData.count());
+
+    QMapIterator<int, oneTag> iter(q->tagsData);
+    while (iter.hasNext()) {
+        iter.next();
+        ans += QString("{tagId:%0, count:%1}").arg(iter.key()).arg(iter.value().distData.count());
     }
     return ans;
 }
