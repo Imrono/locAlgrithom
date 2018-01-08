@@ -34,7 +34,9 @@ SOURCES += \
     calcTargetTracking.cpp \
     dataDistanceLog.cpp \
     calcTagPos.cpp \
-    calcTagNLOS.cpp
+    calcTagNLOS.cpp \
+    uiUsrInfoBtn.cpp \
+    uiUsrFrame.cpp
 
 HEADERS += \
     showStore.h \
@@ -48,7 +50,9 @@ HEADERS += \
     dataDistanceLog.h \
     calcTagPos.h \
     calcTagNLOS.h \
-    dataType.h
+    dataType.h \
+    uiUsrInfoBtn.h \
+    uiUsrFrame.h
 
 FORMS += \
     mainwindow.ui
@@ -58,3 +62,6 @@ FORMS += \
 #win32-msvc*:QMAKE_CXXFLAGS += /wd"4819"
 win64-msvc*:QMAKE_CXXFLAGS += /wd"4819"
 win32-msvc*:QMAKE_CXXFLAGS += /wd"4819"
+
+RESOURCES += \
+    resource.qrc

@@ -60,4 +60,11 @@ enum SHOW_SHAPE {
     hexagon,
 };
 
+enum USR_STATUS {
+    HAS_NONE_DATA = -1,
+    HAS_DISTANCE_DATA,
+    HAS_MEASURE_DATA,
+    HAS_TRACK_DATA
+};
+
 #endif // MYHEADS_H

@@ -99,8 +99,8 @@ void calcTagPos::setConfigData(const configData *cfg_q) {
     ls_col = 2;
     fc_row = cfg_d->sensor.count();
     fc_col = 3;
-    qDebug() << "LS: row=" << ls_row << "col=" << ls_col;
-    qDebug() << "FC: row=" << fc_row << "col=" << fc_col;
+    qDebug() << "[@calcTagPos::setConfigData] LS: row=" << ls_row << "col=" << ls_col;
+    qDebug() << "[@calcTagPos::setConfigData] FC: row=" << fc_row << "col=" << fc_col;
 
     // LS PART
     A_ls = new dType *[ls_row];
@@ -115,14 +115,14 @@ void calcTagPos::setConfigData(const configData *cfg_q) {
     for (int i = 0; i < ls_col; i++) {
         A_ls_inverse_AT[i] = new dType[ls_row];
     }
-    qDebug() << "A_ls:" << ls_row << ls_col;
-    qDebug() << A_ls[0][0] << A_ls[0][1]
-             << A_ls[1][0] << A_ls[1][1]
-             << A_ls[2][0] << A_ls[2][1];
+    qDebug() << "[@calcTagPos::setConfigData] A_ls:" << ls_row << ls_col;
+    //qDebug() << A_ls[0][0] << A_ls[0][1]
+    //         << A_ls[1][0] << A_ls[1][1]
+    //         << A_ls[2][0] << A_ls[2][1];
     coefficient_B(A_ls, A_ls_inverse_AT, ls_row, ls_col);
-    qDebug() << "A_ls_inverse_AT:" << ls_col << ls_row;
-    qDebug() << A_ls_inverse_AT[0][0] << A_ls_inverse_AT[0][1] << A_ls_inverse_AT[0][2]
-             << A_ls_inverse_AT[1][0] << A_ls_inverse_AT[1][1] << A_ls_inverse_AT[1][2];
+    qDebug() << "[@calcTagPos::setConfigData] A_ls_inverse_AT:" << ls_col << ls_row;
+    //qDebug() << A_ls_inverse_AT[0][0] << A_ls_inverse_AT[0][1] << A_ls_inverse_AT[0][2]
+    //         << A_ls_inverse_AT[1][0] << A_ls_inverse_AT[1][1] << A_ls_inverse_AT[1][2];
 
     // FC PART
     A_fc = new dType *[fc_row];
@@ -205,47 +205,46 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
     distRefined.clear();
     tagInfo->calcPosType = this->calcPosType;
 
-    foreach (oneTag tag, dist_d->tagsData) {
-        for (int i = 0; i < tag.distData.count(); i++) {
-            dist4Calc tmpDist;
-            for (int j = 0; j < tag.distData[i].distance.count(); j++) {
-                tmpDist.distance[j] = tag.distData[i].distance[j];
-            }
-            tagInfo->RawPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
+    const oneTag &tagDists = dist_d->tagsData[tagInfo->tagId];
+    for (int i = 0; i < tagDists.distData.count(); i++) {
+        dist4Calc tmpDist;
+        for (int j = 0; j < tagDists.distData[i].distance.count(); j++) {
+            tmpDist.distance[j] = tagDists.distData[i].distance[j];
+        }
+        tagInfo->RawPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
 
-            tmpX = calcOnePosition(tmpDist.distance, mse);
-            if (i >= 1) {
-                /* distance filter BEGIN */
-                // ITERATION
-                iterCount = 1;
-                do {
-                    if (!calcNlos->posPrecisionNLOS(mse)) {  // MSE小于阈值，直接退出循环
+        tmpX = calcOnePosition(tmpDist.distance, mse);
+        if (i >= 1) {
+            /* distance filter BEGIN */
+            // ITERATION
+            iterCount = 1;
+            do {
+                if (!calcNlos->posPrecisionNLOS(mse)) {  // MSE小于阈值，直接退出循环
+                    break;
+                } else {
+                    if (iterCount-- == 0) {
                         break;
                     } else {
-                        if (iterCount-- == 0) {
-                            break;
-                        } else {
-                            if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
-                                tmpX = calcOnePosition(tmpDist.distance, mse);
-                            } else {}
-                        }
+                        if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
+                            tmpX = calcOnePosition(tmpDist.distance, mse);
+                        } else {}
                     }
-                } while(1);
-                /* distance filter END */
+                }
+            } while(1);
+            /* distance filter END */
 
-            // store and update
-                tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
-                tagInfo->methodInfo[MEASUR_STR].AnsLines
-                        .append(QLineF(tagInfo->methodInfo[MEASUR_STR].Ans[i-1].toQPointF(),
-                                       tagInfo->methodInfo[MEASUR_STR].Ans[i].toQPointF()));
-            } else {
-                tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
-            }
-            tagInfo->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
-            tagInfo->Reliability.append(mse);
-            tagInfo->methodInfo[MEASUR_STR].data[0].append(mse);
-            distRefined.append(tmpDist);
+        // store and update
+            tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
+            tagInfo->methodInfo[MEASUR_STR].AnsLines
+                    .append(QLineF(tagInfo->methodInfo[MEASUR_STR].Ans[i-1].toQPointF(),
+                                   tagInfo->methodInfo[MEASUR_STR].Ans[i].toQPointF()));
+        } else {
+            tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
         }
+        tagInfo->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
+        tagInfo->Reliability.append(mse);
+        tagInfo->methodInfo[MEASUR_STR].data[0].append(mse);
+        distRefined.append(tmpDist);
     }
 }
 

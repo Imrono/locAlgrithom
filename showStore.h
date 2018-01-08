@@ -47,7 +47,7 @@ struct storeTagInfo {
     QString toString() {
         QString ans = QString("tagId:%0. ").arg(tagId, 3);
         foreach (storeMethodInfo i, methodInfo) {
-            ans += QString("{%0|point Num: %1., line Num: %2|} ")
+            ans += QString("{%0|point Num: %1, line Num: %2|} ")
                     .arg(i.methodName)
                     .arg(i.Ans.count())
                     .arg(i.AnsLines.count());

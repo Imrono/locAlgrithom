@@ -9,23 +9,29 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    distCountShow = new QLabel(this);
+    statusBar()->addWidget(distCountShow);
+    distCountShow->setText(QString("distCount: %0").arg(0, 4, 10, QChar('0')));
 
     // CFG DATA
-    cfgData.loadNewFile("D:\\code\\kelmanLocationData\\configExample.ini");
-    //cfgData.loadNewFile("D:\\code\\kelmanLocationData\\aaa.ini");
+    //cfgData.loadNewFile("D:\\code\\kelmanLocationData\\configExample.ini");
+    cfgData.loadNewFile("D:\\code\\kelmanLocationData\\aaa.ini");
     qDebug() << cfgData.toString();
     calcPos.setConfigData(cfgData.get_q());
     ui->canvas->setConfigData(cfgData.get_q());
+    ui->canvas->syncWithUiFrame(ui->UsrFrm);
 
     // DIST DATA
-    distData.loadNewFile_1("D:\\code\\kelmanLocationData\\201712111515.log");
-    //distData.loadNewFile_2("D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705181600.log");
+    //distData.loadNewFile_1("D:\\code\\kelmanLocationData\\201712111515.log");
+    distData.loadNewFile_2("D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705181600.log");
     qDebug() << "[@uiMainWindow::uiMainWindow]" << distData.toString();
     foreach (oneTag tag, distData.get_q()->tagsData) {
         store.addNewTagInfo(tag.tagId);
+        ui->UsrFrm->addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
     }
     calcPos.setDistanceData(distData.get_q());
     ui->canvas->setDistanceData(distData.get_q());
+    ui->canvas->syncWithUiFrame(ui->UsrFrm);
 
     // SET NLOS FOR calcPos
     calcPos.setNlosJudge(&calcNlos);
@@ -35,6 +41,7 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     // FILE
     connect(ui->actionRead_ini,     SIGNAL(triggered(bool)), this, SLOT(loadIniConfigFile(bool)));
     connect(ui->actionRead_dist,    SIGNAL(triggered(bool)), this, SLOT(loadLogDistanceFile(bool)));
+    connect(ui->actionRead_dist_2,  SIGNAL(triggered(bool)), this, SLOT(loadLogDistanceFile_2(bool)));
     connect(ui->actionRead_picture, SIGNAL(triggered(bool)), this, SLOT(loadPictureFile(bool)));
 
     // NLOS
@@ -53,7 +60,6 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     connect(ui->actionkalmanLiteTrack, SIGNAL(triggered(bool)), this, SLOT(trackKalmanLite(bool)));
 
     /*************************************************************/
-    connect(this, SIGNAL(countChanged(int)), ui->canvas, SLOT(followMainWindowCount(int)));
     connect(&timer, SIGNAL(timeout()), this, SLOT(handleTimeout()));
 
     connect(ui->beginTrack, &QPushButton::clicked, this, [this](void) {
@@ -67,23 +73,13 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
         timerStarted = !timerStarted;
     });
     connect(ui->showPath, &QPushButton::clicked, this, [this](void) {
-        QFont font;
-        font.setBold(true);
-        font.setWeight(75);
-        ui->showPath->setFont(font);
+        ui->showPath->setStyleSheet("font-weight: bold;");
         if (!ui->canvas->reverseShowPath()) {
             ui->showPath->setText(MY_STR("显示路径"));
         } else {
             ui->showPath->setText(MY_STR("隐藏路径"));
-            foreach (storeTagInfo *info, store.tags) {
-                qDebug() << "showPath:" << info->tagId
-                         << info->methodInfo[MEASUR_STR].AnsLines.count()
-                         << info->methodInfo[KALMAN_STR].AnsLines.count();
-                ui->canvas->setLines(info->tagId, MEASUR_STR, info->methodInfo[MEASUR_STR].AnsLines);
-                ui->canvas->setLines(info->tagId, KALMAN_STR, info->methodInfo[KALMAN_STR].AnsLines);
-            }
         }
-
+        handleTimeout(false);
         update();
     });
     connect(ui->reset, &QPushButton::clicked, this, [this](void) {
@@ -125,11 +121,15 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
         update();
     });
 
+    connect(ui->UsrFrm, SIGNAL(oneUsrBtnClicked_siganl(int, bool)), this, SLOT(oneUsrBtnClicked(int, bool)));
+
     // initial calculate method
     nlosRes(true);
     nlosMultiPoint(true);
     posSubLS(true);
     trackKalman(true);
+
+    handleTimeout(false);
 }
 
 uiMainWindow::~uiMainWindow()
@@ -174,21 +174,40 @@ void uiMainWindow::paintEvent(QPaintEvent *event) {
     painter.setRenderHint(QPainter::Antialiasing, true);
 }
 
-void uiMainWindow::handleTimeout() {
-    distCount = distCount < 0 ? 0 : distCount;
-    distCount++;    //为了保证qDebug与paintEvent显示一致，先distCount++，实际从1开始。
-    emit countChanged(distCount);
+void uiMainWindow::oneUsrBtnClicked(int tagId, bool isShowable) {
+    Q_UNUSED(tagId);
+    Q_UNUSED(isShowable);
+    ui->canvas->syncWithUiFrame(ui->UsrFrm);
+    handleTimeout(false);
+}
+
+void uiMainWindow::handleTimeout(bool isUpdateCount) {
+    distCount = distCount < 1 ? 1 : distCount;
+    if (isUpdateCount) {
+        distCount++;    //为了保证qDebug与paintEvent显示一致，先distCount++，实际从1开始。
+    }
+    distCountShow->setText(QString("distCount: %0").arg(distCount, 4, 10, QChar('0')));
 
     foreach (oneTag tag, distData.get_q()->tagsData) {
-        storeTagInfo *oneTagInfo = store.getTagInfo(tag.tagId);
+        if (ui->UsrFrm->isShowable(tag.tagId)) {
+            storeTagInfo *oneTagInfo = store.getTagInfo(tag.tagId);
 
-        ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
-        ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
+            ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
+            ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
 
-        ui->canvas->setPointsRaw(tag.tagId, MEASUR_STR, oneTagInfo->RawPoints[distCount]);
-        ui->canvas->setPointsRefined(tag.tagId, MEASUR_STR, oneTagInfo->RefinedPoints[distCount]);
+            ui->canvas->setPosition(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].Ans[distCount].toQPointF());
+            ui->canvas->setLine(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].AnsLines[distCount-1]);
 
-        ui->canvas->setDistance(tag.tagId, distData.get_q()->tagsData[tag.tagId].distData[distCount].distance.data());
+            ui->canvas->setPointsRaw(tag.tagId, MEASUR_STR, oneTagInfo->RawPoints[distCount]);
+            ui->canvas->setPointsRefined(tag.tagId, MEASUR_STR, oneTagInfo->RefinedPoints[distCount]);
+
+            ui->canvas->setDistance(tag.tagId, distData.get_q()->tagsData[tag.tagId].distData[distCount].distance.data());
+
+            ui->canvas->setLines(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines);
+            ui->canvas->setLines(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].AnsLines);
+        } else {
+            ui->canvas->clearData(tag.tagId);
+        }
     }
 
 //    ui->raw_0->setText(QString::number(distData.get_q()->dist[distCount].distance[0]));
@@ -244,11 +263,56 @@ void uiMainWindow::loadLogDistanceFile(bool checked) {
     Q_UNUSED(checked);
     QString path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "distance file(*.log)");
     qDebug() << "loadLogDistanceFile Path:" << path;
+
+    // CLEAR LEGACY
+    foreach (storeTagInfo *info, store.tags) {
+        info->clear();
+        delete info;
+    }
+    store.tags.clear();
     distData.clear();
+    ui->UsrFrm->removeAll();
+    ui->canvas->removeAll();
+
     distData.loadNewFile_1(path);
+    foreach (oneTag tag, distData.get_q()->tagsData) {
+        store.addNewTagInfo(tag.tagId);
+        ui->UsrFrm->addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
+    }
     calcPos.setDistanceData(distData.get_q());
+    ui->canvas->syncWithUiFrame(ui->UsrFrm);
+
     ui->actionRead_dist->setChecked(true);
+    ui->actionRead_dist_2->setChecked(false);
     qDebug() << "[@uiMainWindow::loadLogDistanceFile]" << distData.toString();
+    checkData();
+}
+void uiMainWindow::loadLogDistanceFile_2(bool checked) {
+    Q_UNUSED(checked);
+    QString path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "distance file(*.log)");
+    qDebug() << "loadLogDistanceFile_2 Path:" << path;
+
+    // CLEAR LEGACY
+    foreach (storeTagInfo *info, store.tags) {
+        info->clear();
+        delete info;
+    }
+    store.tags.clear();
+    distData.clear();
+    ui->UsrFrm->removeAll();
+    ui->canvas->removeAll();
+
+    distData.loadNewFile_2(path);
+    foreach (oneTag tag, distData.get_q()->tagsData) {
+        store.addNewTagInfo(tag.tagId);
+        ui->UsrFrm->addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
+    }
+    calcPos.setDistanceData(distData.get_q());
+    ui->canvas->syncWithUiFrame(ui->UsrFrm);
+
+    ui->actionRead_dist->setChecked(false);
+    ui->actionRead_dist_2->setChecked(true);
+    qDebug() << "[@uiMainWindow::loadLogDistanceFile_2]" << distData.toString();
     checkData();
 }
 void uiMainWindow::loadPictureFile(bool checked) {
@@ -323,6 +387,7 @@ void uiMainWindow::posFullCentroid(bool checked) {
     foreach (storeTagInfo *info, store.tags) {
         info->reset(MEASUR_STR);
         calcPos.calcPosVector(store.getTagInfo(info->tagId));
+        ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
 
         qDebug() << "posFullCentroid:" << info->toString();
         dType measDist = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
@@ -342,20 +407,18 @@ void uiMainWindow::posSubLS(bool checked) {
     calcPos.calcPosType = CALC_POS_TYPE::SubLS;
 
     foreach (storeTagInfo *info, store.tags) {
-        qDebug() << "posSubLS: tmp " << info->tagId << info->methodInfo.count();
         if (info->methodInfo.contains(MEASUR_STR)) {
             info->reset(MEASUR_STR);
         } else {
             info->methodInfo.insert(MEASUR_STR, storeMethodInfo(METHOD_SUB_LS_STR, info));
         }
         info->methodInfo[MEASUR_STR].methodName = METHOD_SUB_LS_STR;
-        qDebug() << "posSubLS: tmp1 " << info->tagId << info->methodInfo.count() << info->methodInfo[MEASUR_STR].AnsLines.count();
         calcPos.calcPosVector(info);
-        qDebug() << "posSubLS: tmp2 " << info->tagId << info->methodInfo.count() << info->methodInfo[MEASUR_STR].AnsLines.count();
+        ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
 
-        qDebug() << "posSubLS:" << info->toString();
+        qDebug() << "[@posSubLS]" << info->toString();
         dType measDist = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
-        qDebug() << "posSubLS: avgDistanceSquare => measDist:" << measDist << info->methodInfo[MEASUR_STR].AnsLines.count();
+        qDebug() << "[@posSubLS] avgDistanceSquare => measDist:" << measDist << info->methodInfo[MEASUR_STR].AnsLines.count();
 
         ui->canvas->setLines(info->tagId, MEASUR_STR, info->methodInfo[MEASUR_STR].AnsLines);
     }
@@ -373,6 +436,7 @@ void uiMainWindow::posTwoCenter(bool checked) {
     foreach (storeTagInfo *info, store.tags) {
         info->reset(MEASUR_STR);
         calcPos.calcPosVector(store.getTagInfo(info->tagId));
+        ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
 
         qDebug() << "posTwoCenter:" << info->toString();
         dType measDist = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);

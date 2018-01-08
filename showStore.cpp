@@ -20,7 +20,7 @@ storeTagInfo *showStore::getTagInfo(int tagId) {
     }
 }
 void addNewMethodInfo(int tagId, const QString &method) {
-
+    // TODO
 }
 
 void showStore::addRawPoints(int tagId, QVector<locationCoor> points) {

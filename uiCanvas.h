@@ -1,13 +1,13 @@
 #ifndef UI_CANVAS_H
 #define UI_CANVAS_H
 #include "_myheads.h"
+#include <QWidget>
+
 #include "dataType.h"
 #include "dataSensorIni.h"
 #include "dataDistanceLog.h"
 #include "showTagRelated.h"
-
-#include <QWidget>
-#include <QDebug>
+#include "uiUsrFrame.h"
 
 class uiCanvas : public QWidget
 {
@@ -17,27 +17,48 @@ public:
 
     void setConfigData(const configData *cfg_d);
     void setDistanceData(const distanceData *dist_q);
+    void syncWithUiFrame(uiUsrFrame *frm);
 
-    void setPosition(int tagIdx, const QString &methodName, const QPointF &p) {
-        tags[tagIdx].setPosition(methodName, p);
+    void setPosition(int tagId, const QString &methodName, const QPointF &p) {
+        if (tags.contains(tagId)) {
+            tags[tagId].setPosition(methodName, p);
+        }
     }
-    void setLine(int tagIdx, const QString &methodName, const QLineF &l) {
-        tags[tagIdx].setLine(methodName, l);
+    void setLine(int tagId, const QString &methodName, const QLineF &l) {
+        if (tags.contains(tagId)) {
+            tags[tagId].setLine(methodName, l);
+        }
     }
-    void setPointsRaw(int tagIdx, const QString &methodName, const QVector<locationCoor> ps) {
-        tags[tagIdx].setPointsRaw(methodName, ps);
+    void setPointsRaw(int tagId, const QString &methodName, const QVector<locationCoor> ps) {
+        if (tags.contains(tagId)) {
+            tags[tagId].setPointsRaw(methodName, ps);
+        }
     }
-    void setPointsRefined(int tagIdx, const QString &methodName, const QVector<locationCoor> ps) {
-        tags[tagIdx].setPointsRefined(methodName, ps);
+    void setPointsRefined(int tagId, const QString &methodName, const QVector<locationCoor> ps) {
+        if (tags.contains(tagId)) {
+            tags[tagId].setPointsRefined(methodName, ps);
+        }
     }
-    void setLines(int tagIdx, const QString &methodName, const QVector<QLineF> &lines) {
-        tags[tagIdx].setLines(methodName, lines);
+    void setLines(int tagId, const QString &methodName, const QVector<QLineF> &lines) {
+        if (tags.contains(tagId)) {
+            tags[tagId].setLines(methodName, lines);
+        }
     }
-    void setDistance(int tagIdx,  const int *dist) {
-        QVector<int> d;
-        for (int i = 0; i < cfg_d->sensor.count(); i++)
-            d.append(dist[i]);
-        tags[tagIdx].setDistance(d);
+    void setDistance(int tagId,  const int *dist) {
+        if (tags.contains(tagId)) {
+            QVector<int> d;
+            for (int i = 0; i < cfg_d->sensor.count(); i++)
+                d.append(dist[i]);
+            tags[tagId].setDistance(d);
+        }
+    }
+    void clearData(int tagId) {
+        if (tags.contains(tagId)) {
+            tags[tagId].clearData();
+        }
+    }
+    void removeAll() {
+        tags.clear();
     }
 
     bool reverseShowPath() {
@@ -58,9 +79,6 @@ public:
     }
 
     void loadPicture(QString path);
-
-public slots:
-    void followMainWindowCount(int cnt);
 
 private:
     int widthCanvasOld{0};

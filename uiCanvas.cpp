@@ -9,10 +9,6 @@ uiCanvas::uiCanvas(QWidget *parent) : QWidget(parent)
     ratioShow = static_cast<dType>(width()) / widthActual;
 }
 
-void uiCanvas::followMainWindowCount(int cnt) {
-    nCount = cnt;
-}
-
 void uiCanvas::cfg_actualData2showData() {
     if (nullptr == cfg_d) {
         qDebug() << "d == nullptr";
@@ -68,10 +64,28 @@ void uiCanvas::setConfigData(const configData *d) {
 }
 void uiCanvas::setDistanceData(const distanceData *dist_q) {
     this->dist_d = dist_q;
-    foreach (const oneTag &tag, dist_d->tagsData) {
-        if (!tags.contains(tag.tagId))
-            tags.insert(tag.tagId, showTagRelated{tag.tagId});
+}
+
+void uiCanvas::syncWithUiFrame(uiUsrFrame *frm) {
+    QList<int> showableTags = frm->getShowableTags();
+    for (auto it = tags.begin(); it != tags.end();) {
+        if (showableTags.contains(it.key())) {
+            ++it;
+        } else {
+            qDebug() << "[@uiCanvas::syncWithUiFrame] erase showTagRelated tagId:" << it.key();
+            it = tags.erase(it);
+            showTagRelated::decreaseColorCount();
+        }
     }
+
+    foreach (int tagId, showableTags) {
+        if (!tags.contains(tagId)) {
+            qDebug() << "[@uiCanvas::syncWithUiFrame] insert showTagRelated tagId:" << tagId;
+            tags.insert(tagId, showTagRelated{tagId});
+        }
+    }
+
+    qDebug() << "[@uiCanvas::syncWithUiFrame] current tags count:" << tags.count();
 }
 
 void uiCanvas::resizeEvent(QResizeEvent *event) {
@@ -103,9 +117,6 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
 
     //painter.setPen(tags[KALMAN_STR].getPen());
     //painter.drawText(5, 15, 50, 10, Qt::AlignLeft, KALMAN_STR);
-    // count
-    painter.setPen(QPen(Qt::black, 1));
-    painter.drawText(5, 25, 50, 10, Qt::AlignLeft, QString("idx:%0").arg(nCount, 4, 10, QChar('0')));
 
     painter.setPen(QPen(Qt::black, 0, Qt::NoPen));
     // [Alarm]

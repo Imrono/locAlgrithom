@@ -109,8 +109,12 @@ void dataDistanceLog::loadNewFile_2(const QString &fileName) {
             tmpLogData.distance.append(rx.cap(7).toInt());
             tmpLogData.distance.append(rx.cap(8).toInt());
             tmpLogData.distance.append(rx.cap(9).toInt());
+            if (!q->tagsData.contains(tagId)) {
+                oneTag tmpTag(tagId);
+                q->tagsData.insert(tagId, tmpTag);
+            }
             q->tagsData[tagId].distData.append(tmpLogData);
-            qDebug() << q->tagsData[tagId].tagId << tmpLogData.toString();
+            //qDebug() << q->tagsData[tagId].tagId << tmpLogData.toString();
         }
     }
     q->isInitialized = true;
@@ -128,7 +132,7 @@ QString dataDistanceLog::toString() {
     QMapIterator<int, oneTag> iter(q->tagsData);
     while (iter.hasNext()) {
         iter.next();
-        ans += QString("{tagId:%0, count:%1}").arg(iter.key()).arg(iter.value().distData.count());
+        ans += QString("{tagId:%0,count:%1}").arg(iter.key()).arg(iter.value().distData.count());
     }
     return ans;
 }

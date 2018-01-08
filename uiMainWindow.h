@@ -5,6 +5,7 @@
 #include <QPixmap>
 #include <QTimer>
 #include <QAction>
+#include <QLabel>
 #include "dataType.h"
 
 #include "dataSensorIni.h"
@@ -30,15 +31,13 @@ public:
 
     showStore store;
 
-signals:
-    void countChanged(int cnt);
-
 private:
     Ui::MainWindow *ui;
     QTimer timer;
     bool timerStarted;
 
     int distCount{0};
+    QLabel *distCountShow{nullptr};
 
     calcTagPos calcPos;
     calcTagNLOS calcNlos;
@@ -53,6 +52,7 @@ private slots:
     // FILE
     void loadIniConfigFile(bool checked);
     void loadLogDistanceFile(bool checked);
+    void loadLogDistanceFile_2(bool checked);
     void loadPictureFile(bool checked);
 
     // NLOS
@@ -71,7 +71,8 @@ private slots:
     void trackKalmanLite(bool checked);
 
 private slots:
-    void handleTimeout();
+    void handleTimeout(bool isUpdateCount = true);
+    void oneUsrBtnClicked(int tagId, bool isShowable);
 };
 
 #endif // MAINWINDOW_H
