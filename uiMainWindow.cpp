@@ -190,6 +190,7 @@ void uiMainWindow::handleTimeout(bool isUpdateCount) {
     foreach (oneTag tag, distData.get_q()->tagsData) {
         if (ui->UsrFrm->isShowable(tag.tagId)) {
             storeTagInfo *oneTagInfo = store.getTagInfo(tag.tagId);
+            if (!oneTagInfo->isTagPosInitialed) continue;
 
             ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
             //ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
@@ -246,6 +247,8 @@ void uiMainWindow::handleTimeout(bool isUpdateCount) {
 // FILE
 void uiMainWindow::loadIniConfigFile(bool checked) {
     Q_UNUSED(checked);
+    int nSensorKeep = cfgData.get_q()->sensor.count();
+    bool isInitKeep = cfgData.get_q()->isInitialized;
     QString path = QFileDialog::getOpenFileName(this, "Select Config File", ".", "config file(*.ini)");
     qDebug() << "loadIniConfigFile Path:" << path;
     cfgData.loadNewFile(path);
@@ -253,6 +256,11 @@ void uiMainWindow::loadIniConfigFile(bool checked) {
     ui->canvas->setConfigData(cfgData.get_q());
     ui->actionRead_ini->setChecked(true);
     checkData();
+
+    if (isInitKeep && nSensorKeep != cfgData.get_q()->sensor.count()) {
+        qDebug() << "[@uiMainWindow::loadIniConfigFile] nSensor changed, need to reload distance file";
+        loadLogDistanceFile_2(true);
+    }
 }
 void uiMainWindow::loadLogDistanceFile(bool checked) {
     Q_UNUSED(checked);
@@ -377,6 +385,7 @@ void uiMainWindow::posFullCentroid(bool checked) {
         info->addOrResetMethodInfo(MEASUR_STR, METHOD_FULL_CENTROID_STR);
         calcPos.calcPosVector(store.getTagInfo(info->tagId));
         ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+        info->isTagPosInitialed = true;
 
         qDebug() << "posFullCentroid:" << info->toString();
         dType measDist = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
@@ -384,8 +393,7 @@ void uiMainWindow::posFullCentroid(bool checked) {
 
         ui->canvas->setLines(info->tagId, MEASUR_STR, info->methodInfo[MEASUR_STR].AnsLines);
     }
-
-    update();
+    handleTimeout(false);
 }
 
 void uiMainWindow::posSubLS(bool checked) {
@@ -399,6 +407,7 @@ void uiMainWindow::posSubLS(bool checked) {
         info->addOrResetMethodInfo(MEASUR_STR, METHOD_SUB_LS_STR);
         calcPos.calcPosVector(info);
         ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+        info->isTagPosInitialed = true;
 
         qDebug() << "[@posSubLS]" << info->toString();
         dType measDist = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
@@ -406,8 +415,7 @@ void uiMainWindow::posSubLS(bool checked) {
 
         ui->canvas->setLines(info->tagId, MEASUR_STR, info->methodInfo[MEASUR_STR].AnsLines);
     }
-
-    update();
+    handleTimeout(false);
 }
 
 void uiMainWindow::posTwoCenter(bool checked) {
@@ -421,6 +429,7 @@ void uiMainWindow::posTwoCenter(bool checked) {
         info->addOrResetMethodInfo(MEASUR_STR, METHOD_TWO_CENTER_STR);
         calcPos.calcPosVector(store.getTagInfo(info->tagId));
         ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+        info->isTagPosInitialed = true;
 
         qDebug() << "posTwoCenter:" << info->toString();
         dType measDist = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
@@ -428,8 +437,7 @@ void uiMainWindow::posTwoCenter(bool checked) {
 
         ui->canvas->setLines(info->tagId, MEASUR_STR, info->methodInfo[MEASUR_STR].AnsLines);
     }
-
-    update();
+    handleTimeout(false);
 }
 
 // TRACK
@@ -449,7 +457,7 @@ void uiMainWindow::trackKalman(bool checked) {
 
         ui->canvas->setLines(info->tagId, KALMAN_STR, info->methodInfo[KALMAN_STR].AnsLines);
     }
-    update();
+    handleTimeout(false);
 }
 void uiMainWindow::trackKalmanLite(bool checked) {
     Q_UNUSED(checked);
@@ -467,6 +475,5 @@ void uiMainWindow::trackKalmanLite(bool checked) {
 
         ui->canvas->setLines(info->tagId, KALMAN_STR, info->methodInfo[KALMAN_STR].AnsLines);
     }
-
-    update();
+    handleTimeout(false);
 }

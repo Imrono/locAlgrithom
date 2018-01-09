@@ -58,6 +58,11 @@ public:
         }
     }
     void removeAll() {
+        for (auto it = tags.begin(); it != tags.end();) {
+            qDebug() << "[@uiCanvas::removeAll] erase showTagRelated tagId:" << it.key();
+            showTagRelated::eraseTagId(it.key());
+            it = tags.erase(it);
+        }
         tags.clear();
     }
 

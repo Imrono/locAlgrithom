@@ -33,7 +33,7 @@ struct storeMethodInfo {
 
 struct storeTagInfo {
     int tagId{-1};
-    bool isTagActive{true};
+    bool isTagPosInitialed{false};
     QMap<QString, storeMethodInfo> methodInfo;
 
     QVector<dType>                 Reliability; //1.meas：长度之和；2.kalman：卡尔曼增益K
