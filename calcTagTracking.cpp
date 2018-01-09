@@ -1,4 +1,4 @@
-﻿#include "calcTargetTracking.h"
+﻿#include "calcTagTracking.h"
 #include "calcTagPos.h"
 #include <QtMath>
 #include <QDebug>
@@ -86,7 +86,7 @@ void calcKalman::calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMeth
     }
 
     // sample interval
-    dType T = 0.8f;
+    dType T;
     // predict
     locationCoor x_hat_t;
     locationCoor v_hat_t;
@@ -116,7 +116,7 @@ void calcKalman::calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMeth
     dType K_x = 1.0f;
     dType K_v = 1.0f;
 
-    qDebug() << "T=" << T << "Q=" << Q;
+    qDebug() << "[@calcKalmanPosVectorLite]" << "Q=" << Q;
 
     tagKalmanInfo.clear();
 
@@ -130,8 +130,12 @@ void calcKalman::calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMeth
     tagKalmanInfo.data[0].append(K_x);
     tagKalmanInfo.data[1].append(R_x);
     tagKalmanInfo.data[2].append(Px_t_1);
+    tagKalmanInfo.time.append(tagMeasInfo.time[0]);
 
     for(int i = 1; i < tagMeasInfo.Ans.count(); i++) {
+        tagKalmanInfo.time.append(tagMeasInfo.time[i]);
+        T = dType(tagMeasInfo.time[i].toMSecsSinceEpoch() - tagMeasInfo.time[i-1].toMSecsSinceEpoch()) / 1000.f;
+
         // 1. x = Hx + Bu
         x_hat_t = x_t_1 + (v_t_1 * T);
         v_hat_t = v_t_1;
@@ -201,9 +205,9 @@ void calcKalman::calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethodIn
     struct keyParam {
         dType R{0.0f};
         dType Q{0.01f};
-        dType T{0.8f};    // sample interval
     } param;
 
+    dType T;
     // predict
     locationCoor x_hat_t;
     locationCoor v_hat_t;
@@ -233,7 +237,7 @@ void calcKalman::calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethodIn
     dType Kx = 1.0f;
     dType Kv = 1.0f;
 
-    qDebug() << "calcKalmanPosVector:" << "T=" << param.T << "Q=" << param.Q;
+    qDebug() << "[@calcKalmanPosVector]" << "Q=" << param.Q;
 
     tagKalmanInfo.clear();
 
@@ -245,15 +249,18 @@ void calcKalman::calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethodIn
     tagKalmanInfo.data[1].append(param.R);
     tagKalmanInfo.data[2].append(Pxx_t_1);
     tagKalmanInfo.data[3].append(Pxx_t_1);
+    tagKalmanInfo.time.append(tagMeasInfo.time[0]);
 
     for(int i = 1; i < tagMeasInfo.Ans.count(); i++) {
+        tagKalmanInfo.time.append(tagMeasInfo.time[i]);
+        T = dType(tagMeasInfo.time[i].toMSecsSinceEpoch() - tagMeasInfo.time[i-1].toMSecsSinceEpoch()) / 1000.f;
         // 1. x = Hx + Bu <= H = [1, T]
-        x_hat_t = x_t_1 + (v_t_1 * param.T);
+        x_hat_t = x_t_1 + (v_t_1 * T);
         v_hat_t = v_t_1;
         // *2. P = FPF + Q
-        Pxx_pri_t = Pxx_t_1 + 2.f*param.T*Pxv_t_1 + param.T*param.T*Pvv_t_1 + param.Q;
-        Pxv_pri_t = Pxv_t_1 + param.T*Pvv_t_1 + param.Q/param.T*2.f;
-        Pvv_pri_t = Pvv_t_1 + param.Q/param.T/param.T*4.f;
+        Pxx_pri_t = Pxx_t_1 + 2.f*T*Pxv_t_1 + T*T*Pvv_t_1 + param.Q;
+        Pxv_pri_t = Pxv_t_1 + T*Pvv_t_1 + param.Q/T*2.f;
+        Pvv_pri_t = Pvv_t_1 + param.Q/T/T*4.f;
         // 3. y = z - Hx
         z_x_t_meas = tagMeasInfo.Ans[i];
         y_x_tilde = z_x_t_meas - x_hat_t;

@@ -17,6 +17,7 @@ struct storeMethodInfo {
     storeTagInfo *parentTag{nullptr};
     QString methodName;
     bool isMethodActive{false};
+    QVector<QDateTime>             time;
     QVector<locationCoor>          Ans;
     QVector<QLineF>                AnsLines;
     // data[0]

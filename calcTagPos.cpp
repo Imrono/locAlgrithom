@@ -1,7 +1,7 @@
 ﻿#include "calcTagPos.h"
 #include <QtMath>
 #include <QDebug>
-#include "matrixop.h"
+#include "calcLibMatrixOp.h"
 
 calcTagPos::~calcTagPos() {
     resetA();
@@ -201,6 +201,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
         } else {
             tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
         }
+        tagInfo->methodInfo[MEASUR_STR].time.append(tagDists.distData[i].time);
         tagInfo->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
         tagInfo->Reliability.append(mse);
         tagInfo->methodInfo[MEASUR_STR].data[0].append(mse);

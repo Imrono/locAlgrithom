@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <QFileDialog>
-#include "calcTargetTracking.h"
+#include "calcTagTracking.h"
 
 uiMainWindow::uiMainWindow(QWidget *parent) :
     QMainWindow(parent), timerStarted(false),
@@ -14,17 +14,17 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     distCountShow->setText(QString("distCount: %0").arg(0, 4, 10, QChar('0')));
 
     // CFG DATA
-    //cfgData.loadNewFile("D:\\code\\kelmanLocationData\\configExample.ini");
-    cfgData.loadNewFile("D:\\code\\kelmanLocationData\\aaa.ini");
+    cfgData.loadNewFile("D:\\code\\kelmanLocationData\\configExample.ini");
+    //cfgData.loadNewFile("D:\\code\\kelmanLocationData\\aaa.ini");
     qDebug() << cfgData.toString();
     calcPos.setConfigData(cfgData.get_q());
     ui->canvas->setConfigData(cfgData.get_q());
     ui->canvas->syncWithUiFrame(ui->UsrFrm);
 
     // DIST DATA
-    //distData.loadNewFile_1("D:\\code\\kelmanLocationData\\201712111515.log");
+    distData.loadNewFile_1("D:\\code\\kelmanLocationData\\201712111515.log");
     //distData.loadNewFile_2("D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705181600.log");
-    distData.loadNewFile_2("D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705191135.log");
+    //distData.loadNewFile_2("D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705191135.log");
     qDebug() << "[@uiMainWindow::uiMainWindow]" << distData.toString();
     foreach (oneTag tag, distData.get_q()->tagsData) {
         store.addNewTagInfo(tag.tagId);
@@ -192,11 +192,11 @@ void uiMainWindow::handleTimeout(bool isUpdateCount) {
             storeTagInfo *oneTagInfo = store.getTagInfo(tag.tagId);
 
             ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
+            //ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
+
             ui->canvas->setPosition(tag.tagId, KALMAN_STR, tag.distData[distCount].p_t.toQPointF());
             //qDebug() << calcDistance(tag.distData[distCount].p_t.toQPointF(),
             //                         oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
-
-            //ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
 
             //ui->canvas->setPosition(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].Ans[distCount].toQPointF());
             //ui->canvas->setLine(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].AnsLines[distCount-1]);

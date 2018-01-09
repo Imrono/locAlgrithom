@@ -41,20 +41,20 @@ SOURCES += \
 
 HEADERS += \
     showStore.h \
-    matrixOp.h \
     _myheads.h \
     uiMainWindow.h \
     uiCanvas.h \
     dataSensorIni.h \
     showTagRelated.h \
-    calcTargetTracking.h \
     dataDistanceLog.h \
     calcTagPos.h \
     calcTagNLOS.h \
     dataType.h \
     uiUsrInfoBtn.h \
     uiUsrFrame.h \
-    calcDistance.h
+    calcTagTracking.h \
+    calcLibDistance.h \
+    calcLibMatrixOp.h
 
 FORMS += \
     mainwindow.ui

@@ -78,7 +78,6 @@ void dataDistanceLog::loadNewFile_1(const QString &fileName) {
 
     //qDebug() << "#END ANALYZE# dataDistanceLog::loadNewFile_1 $> maxDataCount" << maxDataCount
     //         << "; tags Count" << q->tagsData.count();
-    composeMeasData();
 }
 
 void dataDistanceLog::loadNewFile_2(const QString &fileName) {

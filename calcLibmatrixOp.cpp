@@ -1,4 +1,4 @@
-﻿#include "matrixop.h"
+﻿#include "calcLibMatrixOp.h"
 #include <QtMath>
 #include <QDebug>
 
