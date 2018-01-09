@@ -3,49 +3,6 @@
 #include <QDebug>
 #include "matrixop.h"
 
-dType calcDistanceSquare(const locationCoor &a, const locationCoor &b) {
-    dType ans = (a.x - b.x) * (a.x - b.x)
-              + (a.y - b.y) * (a.y - b.y)
-              + (a.z - b.z) * (a.z - b.z);
-    return ans;
-}
-dType calcDistanceSquare(const QPointF &a, const QPointF &b) {
-    dType ans = (a.x() - b.x()) * (a.x() - b.x())
-              + (a.y() - b.y()) * (a.y() - b.y());
-    return ans;
-}
-dType calcDistance(const locationCoor &a, const locationCoor &b) {
-    dType ans = (a.x - b.x) * (a.x - b.x)
-              + (a.y - b.y) * (a.y - b.y)
-              + (a.z - b.z) * (a.z - b.z);
-    ans = qSqrt(ans);
-    return ans;
-}
-dType calcDistance(const QPointF &a, const QPointF &b) {
-    return calcDistance({dType(a.x()), dType(a.y()), 0}, {dType(b.x()), dType(b.y()), 0});
-}
-dType calcTotalDistance(QVector<QLineF> &lines, int discount) {
-    dType ans = 0.0f;
-    for(int i = discount; i < lines.count(); i++) {
-        ans += calcDistance(lines[i].p1(), lines[i].p2());
-    }
-    return ans;
-}
-dType calcTotalAvgDistance(QVector<QLineF> &lines, int discount) {
-    return calcTotalDistance(lines, discount)/(lines.count()-dType(discount));
-}
-dType calcTotalDistanceSquare(QVector<QLineF> &lines, int discount) {
-    dType ans = 0.0f;
-    for(int i = discount; i < lines.count(); i++) {
-        ans += calcDistanceSquare(lines[i].p1(), lines[i].p2());
-    }
-    return ans;
-}
-dType calcTotalAvgDistanceSquare(QVector<QLineF> &lines, int discount) {
-    return calcTotalDistanceSquare(lines, discount)/(lines.count()-dType(discount));
-}
-
-/***********************************************************************/
 calcTagPos::~calcTagPos() {
     resetA();
 }
@@ -115,14 +72,15 @@ void calcTagPos::setConfigData(const configData *cfg_q) {
     for (int i = 0; i < ls_col; i++) {
         A_ls_inverse_AT[i] = new dType[ls_row];
     }
-    qDebug() << "[@calcTagPos::setConfigData] A_ls:" << ls_row << ls_col;
-    //qDebug() << A_ls[0][0] << A_ls[0][1]
-    //         << A_ls[1][0] << A_ls[1][1]
-    //         << A_ls[2][0] << A_ls[2][1];
+    qDebug() << "[@calcTagPos::setConfigData] A_ls => row:" << ls_row <<  "col:" << ls_col;
+    for (int i = 0; i < ls_row; i++) {
+        qDebug() << A_ls[i][0] << A_ls[i][1];
+    }
     coefficient_B(A_ls, A_ls_inverse_AT, ls_row, ls_col);
-    qDebug() << "[@calcTagPos::setConfigData] A_ls_inverse_AT:" << ls_col << ls_row;
-    //qDebug() << A_ls_inverse_AT[0][0] << A_ls_inverse_AT[0][1] << A_ls_inverse_AT[0][2]
-    //         << A_ls_inverse_AT[1][0] << A_ls_inverse_AT[1][1] << A_ls_inverse_AT[1][2];
+    qDebug() << "[@calcTagPos::setConfigData] A_ls_inverse_AT: => row:" << ls_col <<  "col:" << ls_row;
+    for (int i = 0; i < ls_row; i++) {
+        qDebug() << A_ls_inverse_AT[0][i] << A_ls_inverse_AT[1][i];
+    }
 
     // FC PART
     A_fc = new dType *[fc_row];
@@ -207,16 +165,19 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
 
     const oneTag &tagDists = dist_d->tagsData[tagInfo->tagId];
     for (int i = 0; i < tagDists.distData.count(); i++) {
-        dist4Calc tmpDist;
+        dist4Calc tmpDist = {{0,0,0,0,0,0}};
         for (int j = 0; j < tagDists.distData[i].distance.count(); j++) {
             tmpDist.distance[j] = tagDists.distData[i].distance[j];
         }
         tagInfo->RawPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
 
+        qDebug() << i << tmpDist.toStringDist();
         tmpX = calcOnePosition(tmpDist.distance, mse);
+        qDebug() << tmpX.toString() << mse;
         if (i >= 1) {
             /* distance filter BEGIN */
             // ITERATION
+            /*
             iterCount = 1;
             do {
                 if (!calcNlos->posPrecisionNLOS(mse)) {  // MSE小于阈值，直接退出循环
@@ -231,6 +192,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
                     }
                 }
             } while(1);
+            */
             /* distance filter END */
 
         // store and update
@@ -279,6 +241,7 @@ void calcTagPos::calcFullCentroid(const int *distance, const locationCoor *senso
 void calcTagPos::calcSubLS(const int *distance, const locationCoor *sensor,
                            dType **A, dType **coA, dType *B, int N,
                            dType &out_x, dType &out_y, dType &out_MSE) {
+    //qDebug() << N;
     dType X[2] = {0.f};
     for (int i = 0; i < N; i++) {
         B[i] = qPow(dType(distance[i+1]), 2) - qPow(dType(distance[0]), 2) +
@@ -286,6 +249,7 @@ void calcTagPos::calcSubLS(const int *distance, const locationCoor *sensor,
                qPow(sensor[0].y, 2) - qPow(sensor[i+1].y, 2);
     }
     matrixMuti(coA, B, X, 2, N);
+    //qDebug() << "CO:" << B[0] << B[1] << B[2] << B[3] << B[4];
     //qDebug() << "CO:" << X[0] << X[1];
 
     // output

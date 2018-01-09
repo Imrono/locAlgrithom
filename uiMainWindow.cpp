@@ -23,7 +23,8 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
 
     // DIST DATA
     //distData.loadNewFile_1("D:\\code\\kelmanLocationData\\201712111515.log");
-    distData.loadNewFile_2("D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705181600.log");
+    //distData.loadNewFile_2("D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705181600.log");
+    distData.loadNewFile_2("D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705191135.log");
     qDebug() << "[@uiMainWindow::uiMainWindow]" << distData.toString();
     foreach (oneTag tag, distData.get_q()->tagsData) {
         store.addNewTagInfo(tag.tagId);
@@ -193,10 +194,14 @@ void uiMainWindow::handleTimeout(bool isUpdateCount) {
             storeTagInfo *oneTagInfo = store.getTagInfo(tag.tagId);
 
             ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
-            ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
+            ui->canvas->setPosition(tag.tagId, KALMAN_STR, tag.distData[distCount].p_t.toQPointF());
+            qDebug() << calcDistance(tag.distData[distCount].p_t.toQPointF(),
+                                     oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
 
-            ui->canvas->setPosition(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].Ans[distCount].toQPointF());
-            ui->canvas->setLine(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].AnsLines[distCount-1]);
+            //ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
+
+            //ui->canvas->setPosition(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].Ans[distCount].toQPointF());
+            //ui->canvas->setLine(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].AnsLines[distCount-1]);
 
             ui->canvas->setPointsRaw(tag.tagId, MEASUR_STR, oneTagInfo->RawPoints[distCount]);
             ui->canvas->setPointsRefined(tag.tagId, MEASUR_STR, oneTagInfo->RefinedPoints[distCount]);
@@ -205,10 +210,33 @@ void uiMainWindow::handleTimeout(bool isUpdateCount) {
 
             ui->canvas->setLines(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines);
             ui->canvas->setLines(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].AnsLines);
+
+            switch (tag.distData[distCount].distance.count()) {
+            case 6:ui->raw_5->setText(QString::number(tag.distData[distCount].distance[5]));
+            case 5:ui->raw_4->setText(QString::number(tag.distData[distCount].distance[4]));
+            case 4:ui->raw_3->setText(QString::number(tag.distData[distCount].distance[3]));
+            case 3:ui->raw_2->setText(QString::number(tag.distData[distCount].distance[2]));
+            case 2:ui->raw_1->setText(QString::number(tag.distData[distCount].distance[1]));
+            case 1:ui->raw_0->setText(QString::number(tag.distData[distCount].distance[0]));
+            default:
+                break;
+            }
+
+            switch (tag.distData[distCount].distance.count()) {
+            case 6:ui->refine_5->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[5])));
+            case 5:ui->refine_4->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[4])));
+            case 4:ui->refine_3->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[3])));
+            case 3:ui->refine_2->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[2])));
+            case 2:ui->refine_1->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[1])));
+            case 1:ui->refine_0->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[0])));
+            default:
+                break;
+            }
         } else {
             ui->canvas->clearData(tag.tagId);
         }
     }
+
 
 //    ui->raw_0->setText(QString::number(distData.get_q()->dist[distCount].distance[0]));
 //    ui->raw_1->setText(QString::number(distData.get_q()->dist[distCount].distance[1]));
@@ -265,11 +293,7 @@ void uiMainWindow::loadLogDistanceFile(bool checked) {
     qDebug() << "loadLogDistanceFile Path:" << path;
 
     // CLEAR LEGACY
-    foreach (storeTagInfo *info, store.tags) {
-        info->clear();
-        delete info;
-    }
-    store.tags.clear();
+    store.clear();
     distData.clear();
     ui->UsrFrm->removeAll();
     ui->canvas->removeAll();
@@ -280,6 +304,7 @@ void uiMainWindow::loadLogDistanceFile(bool checked) {
         ui->UsrFrm->addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
     }
     calcPos.setDistanceData(distData.get_q());
+    ui->canvas->setDistanceData(distData.get_q());
     ui->canvas->syncWithUiFrame(ui->UsrFrm);
 
     ui->actionRead_dist->setChecked(true);
@@ -293,11 +318,7 @@ void uiMainWindow::loadLogDistanceFile_2(bool checked) {
     qDebug() << "loadLogDistanceFile_2 Path:" << path;
 
     // CLEAR LEGACY
-    foreach (storeTagInfo *info, store.tags) {
-        info->clear();
-        delete info;
-    }
-    store.tags.clear();
+    store.clear();
     distData.clear();
     ui->UsrFrm->removeAll();
     ui->canvas->removeAll();
@@ -308,6 +329,7 @@ void uiMainWindow::loadLogDistanceFile_2(bool checked) {
         ui->UsrFrm->addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
     }
     calcPos.setDistanceData(distData.get_q());
+    ui->canvas->setDistanceData(distData.get_q());
     ui->canvas->syncWithUiFrame(ui->UsrFrm);
 
     ui->actionRead_dist->setChecked(false);

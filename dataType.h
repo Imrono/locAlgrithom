@@ -19,7 +19,7 @@ struct dist4Calc {
     }
 
     QString toStringDist() const {
-        return QString("{%0,%1,%2,%3,%4,%5,%6}")
+	return QString("{%0,%1,%2,%3,%4,%5}")
                 .arg(distance[0],4,10,QChar('0'))
                 .arg(distance[1],4,10,QChar('0'))
                 .arg(distance[2],4,10,QChar('0'))

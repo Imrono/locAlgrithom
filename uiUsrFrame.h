@@ -20,6 +20,9 @@ public:
     bool isShowable(int tagId);
     QList<int> getShowableTags();
 
+    void setBtnColorA(int tagId, const QColor &color);
+    void clrBtnColorA(int tagId);
+
 signals:
     void oneUsrBtnClicked_siganl(int tagId, bool isShowable);
 

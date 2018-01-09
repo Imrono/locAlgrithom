@@ -1,4 +1,5 @@
 #include "uiUsrInfoBtn.h"
+#include <QPainter>
 
 uiUsrInfoBtn::uiUsrInfoBtn(int tagId, QWidget *parent) :
     tagId{tagId}, QToolButton(parent) {
@@ -64,5 +65,18 @@ void uiUsrInfoBtn::syncShowable() {
         setStyleSheet("background-color:GhostWhite;");
     } else {
         setStyleSheet("background-color:DimGray;");
+    }
+}
+
+void uiUsrInfoBtn::paintEvent(QPaintEvent *event) {
+    QToolButton::paintEvent(event);
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    painter.setPen(QPen(Qt::NoPen));
+    painter.setBrush(QBrush(colorA));
+    if (isShowable) {
+        painter.drawEllipse(QPointF{5.f, 5.f}, 3, 3);
     }
 }

@@ -75,6 +75,22 @@ QList<int> uiUsrFrame::getShowableTags() {
     return ans;
 }
 
+void uiUsrFrame::setBtnColorA(int tagId, const QColor &color) {
+    for (int i = 0; i < usrBtns.count(); i++) {
+        if (usrBtns[i]->getTagId() == tagId) {
+            usrBtns[i]->setColorA(color);
+        }
+    }
+}
+
+void uiUsrFrame::clrBtnColorA(int tagId) {
+    for (int i = 0; i < usrBtns.count(); i++) {
+        if (usrBtns[i]->getTagId() == tagId) {
+            usrBtns[i]->clrColorA();
+        }
+    }
+}
+
 void uiUsrFrame::oneUsrBtnClicked_slot(int tagId) {
     for (int i = 0; i < usrBtns.count(); i++) {
         if (usrBtns[i]->getTagId() == tagId) {

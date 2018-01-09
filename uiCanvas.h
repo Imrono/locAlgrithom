@@ -2,7 +2,7 @@
 #define UI_CANVAS_H
 #include "_myheads.h"
 #include <QWidget>
-
+#include <QMouseEvent>
 #include "dataType.h"
 #include "dataSensorIni.h"
 #include "dataDistanceLog.h"
@@ -103,6 +103,8 @@ private:
     QVector<QPolygonF> operShow;
 
     bool isShowRadius{false};
+    bool isShowRadiusBold{false};
+    int  boldRadiusIdx{-1};
     bool isShowTrack{false};
 
     dType ratioShow{1.f};
@@ -114,6 +116,8 @@ private:
 
     void paintEvent(QPaintEvent *event);
     void resizeEvent(QResizeEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
     QImage backgroundImg;
 
     QPointF actual2Show(const locationCoor &p) {

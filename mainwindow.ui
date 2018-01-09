@@ -332,7 +332,6 @@
      <enum>QFrame::Raised</enum>
     </property>
    </widget>
-   <zorder>canvas</zorder>
    <zorder>showPath</zorder>
    <zorder>beginTrack</zorder>
    <zorder>reset</zorder>
@@ -343,6 +342,7 @@
    <zorder>showRadius</zorder>
    <zorder>showTrack</zorder>
    <zorder>UsrFrm</zorder>
+   <zorder>canvas</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

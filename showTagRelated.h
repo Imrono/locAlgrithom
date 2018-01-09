@@ -47,6 +47,8 @@ public:
 
 /******************************************************************/
     void addMethod(const QString &name);
+    void setTagView();
+    oneTagView getTagView() { return tagView;}
 
 /******************************************************************/
     void setPosition(const QString &name, const QPointF &p) {
@@ -111,10 +113,10 @@ public:
     void drawLine(QPainter &painter, dType ratio = 1.f) const;
     void drawLines(QPainter &painter, dType ratio = 1.f) const;
     void drawCircle(QPainter &painter, const QVector<locationCoor> &sensor, dType ratio = 1.f) const;
+    void drawCircleBold(QPainter &painter, const locationCoor &sensor, int distIdx, dType ratio = 1.f) const;
 
     //showTagRelated& operator=(const showTagRelated &sp);
     static void resetColorCount() {tagsViewDataBase.count = 0;}
-    static void decreaseColorCount() {tagsViewDataBase.count --;}
 
 private:
     QMap<QString, showTagOneMethod> oneTagMethod;
@@ -128,8 +130,10 @@ private:
     oneTagView tagView;
 
 /******************************************************************/
+private:
     static QMap<int, oneTagView> tagViewData;
     static tagsView              tagsViewDataBase;
+public:
     static void recordTagId(int tagId);
     static void eraseTagId(int tagId);
 };

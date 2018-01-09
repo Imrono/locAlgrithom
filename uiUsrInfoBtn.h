@@ -14,6 +14,9 @@ public:
     int  getTagId()    { return tagId;}
     bool getShowable() { return isShowable;}
     void setShowable(bool in) { isShowable = in; syncShowable();}
+
+    void setColorA(const QColor &color) {colorA = color; isColorA_ready = true;}
+    void clrColorA() {isColorA_ready = false;}
 signals:
     void oneUsrBtnClicked(int tagId);
 
@@ -23,6 +26,10 @@ private:
 
     int tagId;
     bool isShowable{true};
+
+    void paintEvent(QPaintEvent *event);
+    QColor colorA;
+    bool isColorA_ready{false};
 };
 
 #endif // UIUSRINFOBTN_H

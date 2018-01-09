@@ -7,6 +7,7 @@ QString oneLogData::toString() {
     for (int i = 0; i < distance.count(); i++) {
         ans += QString("{%0,%1}").arg(i).arg(distance[i], 6, 10, QChar('0'));
     }
+    ans += (p_t_1.toString() + p_t.toString());
     return ans;
 }
 
@@ -89,7 +90,9 @@ void dataDistanceLog::loadNewFile_2(const QString &fileName) {
     this->fileName = fileName;
     // [2017/05/18 16:00:29:725] | 192.168.200.200| (000203):[001606,001290,001174,001323,002599,002284]
     // [002736-000312-000000]=>[002732-000317-000000] [03] [0-0]
-    rx.setPattern("\\[(.*)\\] \\|\\s(.*)\\| \\((\\d{6})\\):\\[(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6})\\]");
+    rx.setPattern("\\[(.*)\\] \\|\\s(.*)\\| \\((\\d{6})\\):"
+                  "\\[(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6})\\] "
+                  "\\[(\\d{6})-(\\d{6})-(\\d{6})\\]=>\\[(\\d{6})-(\\d{6})-(\\d{6})\\]");
 
     int tagId = -1;
     while(!file.atEnd()) {
@@ -100,7 +103,7 @@ void dataDistanceLog::loadNewFile_2(const QString &fileName) {
         //qDebug() << str;
 
         int pos = rx.indexIn(str);
-        if (pos > -1 && 9 == rx.captureCount()) {
+        if (pos > -1 && 15 == rx.captureCount()) {
             tmpLogData.time = QDateTime::fromString(rx.cap(1), "yyyy/MM/dd hh:mm:ss:zzz");
             tagId           = rx.cap(3).toInt();
             tmpLogData.distance.append(rx.cap(4).toInt());
@@ -109,6 +112,12 @@ void dataDistanceLog::loadNewFile_2(const QString &fileName) {
             tmpLogData.distance.append(rx.cap(7).toInt());
             tmpLogData.distance.append(rx.cap(8).toInt());
             tmpLogData.distance.append(rx.cap(9).toInt());
+            tmpLogData.p_t_1.x = rx.cap(10).toInt();
+            tmpLogData.p_t_1.y = rx.cap(11).toInt();
+            tmpLogData.p_t_1.z = rx.cap(12).toInt();
+            tmpLogData.p_t.x = rx.cap(13).toInt();
+            tmpLogData.p_t.y = rx.cap(14).toInt();
+            tmpLogData.p_t.z = rx.cap(15).toInt();
             if (!q->tagsData.contains(tagId)) {
                 oneTag tmpTag(tagId);
                 q->tagsData.insert(tagId, tmpTag);

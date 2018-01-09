@@ -1,6 +1,7 @@
 ﻿#include "uiCanvas.h"
 #include <QPainter>
 #include <QPainterPath>
+#include <QtMath>
 
 uiCanvas::uiCanvas(QWidget *parent) : QWidget(parent)
 {
@@ -73,8 +74,9 @@ void uiCanvas::syncWithUiFrame(uiUsrFrame *frm) {
             ++it;
         } else {
             qDebug() << "[@uiCanvas::syncWithUiFrame] erase showTagRelated tagId:" << it.key();
+            frm->clrBtnColorA(it.key());
+            showTagRelated::eraseTagId(it.key());
             it = tags.erase(it);
-            showTagRelated::decreaseColorCount();
         }
     }
 
@@ -82,6 +84,9 @@ void uiCanvas::syncWithUiFrame(uiUsrFrame *frm) {
         if (!tags.contains(tagId)) {
             qDebug() << "[@uiCanvas::syncWithUiFrame] insert showTagRelated tagId:" << tagId;
             tags.insert(tagId, showTagRelated{tagId});
+            showTagRelated::recordTagId(tagId);
+            tags[tagId].setTagView();
+            frm->setBtnColorA(tagId, tags[tagId].getTagView().color[0]);
         }
     }
 
@@ -176,6 +181,10 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
         if (isShowRadius) {
             tag.drawCircle(painter, cfg_d->sensor, ratioShow);
         }
+        if (isShowRadiusBold) {
+            tag.drawCircleBold(painter, cfg_d->sensor[boldRadiusIdx], boldRadiusIdx, ratioShow);
+        }
+
         tag.drawPoint(painter, ratioShow);
         tag.drawLine(painter, ratioShow);
 
@@ -187,6 +196,31 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
             tag.drawPointsRefined(painter, ratioShow);
         }
     }
+}
+
+void uiCanvas::mousePressEvent(QMouseEvent *event) {
+    dType x = event->x();
+    dType y = event->y();
+
+    isShowRadiusBold = false;
+    boldRadiusIdx = -1;
+    for (int i = 0; i < cfg_d->sensor.count(); i++) {
+        dType d = qSqrt(qPow(x - actual2Show(cfg_d->sensor[i]).x(), 2)
+                      + qPow(y - actual2Show(cfg_d->sensor[i]).y(), 2));
+        qDebug() << i << cfg_d->sensor[i].toQPointF() << x << y << d;
+        if (d < 16) {
+            isShowRadiusBold = true;
+            boldRadiusIdx = i;
+            break;
+        }
+    }
+    update();
+}
+void uiCanvas::mouseReleaseEvent(QMouseEvent *event) {
+    Q_UNUSED(event);
+    isShowRadiusBold = false;
+    boldRadiusIdx = -1;
+    update();
 }
 
 void uiCanvas::loadPicture(QString path) {

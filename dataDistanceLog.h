@@ -7,6 +7,8 @@
 struct oneLogData {
     QDateTime time;
     QVector<int> distance;
+    locationCoor p_t_1;
+    locationCoor p_t;
     QString toString();
 };
 

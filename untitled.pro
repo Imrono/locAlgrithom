@@ -36,7 +36,8 @@ SOURCES += \
     calcTagPos.cpp \
     calcTagNLOS.cpp \
     uiUsrInfoBtn.cpp \
-    uiUsrFrame.cpp
+    uiUsrFrame.cpp \
+    calcDistance.cpp
 
 HEADERS += \
     showStore.h \
@@ -52,7 +53,8 @@ HEADERS += \
     calcTagNLOS.h \
     dataType.h \
     uiUsrInfoBtn.h \
-    uiUsrFrame.h
+    uiUsrFrame.h \
+    calcDistance.h
 
 FORMS += \
     mainwindow.ui

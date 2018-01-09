@@ -53,6 +53,11 @@ void showTagRelated::addMethod(const QString &name) {
         qWarning() << "showTagRelated::addMethod $>" << name << "is Already exist";
     }
 }
+void showTagRelated::setTagView() {
+    if (tagViewData.contains(tagId)) {
+        tagView = tagViewData[tagId];
+    }
+}
 
 void showTagRelated::drawPoint(QPainter &painter, dType ratio) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
@@ -100,4 +105,11 @@ void showTagRelated::drawCircle(QPainter &painter, const QVector<locationCoor> &
     for (int i = 0; i < distance.count(); i++) {
         painter.drawEllipse(sensor[i].toQPointF() * ratio, distance[i] * ratio, distance[i] * ratio);
     }
+}
+
+void showTagRelated::drawCircleBold(QPainter &painter, const locationCoor &sensor,
+                                    int distIdx, dType ratio) const {
+    painter.setPen(QPen(Qt::black, 3));
+    painter.setBrush(Qt::NoBrush);
+    painter.drawEllipse(sensor.toQPointF() * ratio, distance[distIdx] * ratio, distance[distIdx] * ratio);
 }

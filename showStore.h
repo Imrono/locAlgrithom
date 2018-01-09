@@ -83,6 +83,14 @@ public:
     void addAnsPoint(int tagId, const QString &method, locationCoor p);
     void clearAnsPoints(int tagId, const QString &method);
 
+    void clear() {
+        foreach (storeTagInfo *info, tags) {
+            info->clear();
+            delete info;
+        }
+        tags.clear();
+    }
+
     QMap<int, storeTagInfo *> tags;
 };
 

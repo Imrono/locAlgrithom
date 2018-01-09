@@ -159,6 +159,10 @@ void coefficient_B(dType **A, dType **coA, long nRow, long nCol) {
     }
 
     matrixTrans(A, AT, nRow, nCol);
+    qDebug() << "[coefficient_B] AT => row:" << nCol <<  "col:" << nRow;
+    for (int i = 0; i < nCol; i++) {
+	qDebug() << AT[i][0] << AT[i][1] << AT[i][2] << AT[i][3] << AT[i][4];
+    }
     //qDebug() << "AT_ls:" << nCol << nRow;
     //qDebug() << AT[0][0] << AT[0][1] << AT[0][2]
     //         << AT[1][0] << AT[1][1] << AT[1][2];
