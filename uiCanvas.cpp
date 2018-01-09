@@ -207,7 +207,6 @@ void uiCanvas::mousePressEvent(QMouseEvent *event) {
     for (int i = 0; i < cfg_d->sensor.count(); i++) {
         dType d = qSqrt(qPow(x - actual2Show(cfg_d->sensor[i]).x(), 2)
                       + qPow(y - actual2Show(cfg_d->sensor[i]).y(), 2));
-        qDebug() << i << cfg_d->sensor[i].toQPointF() << x << y << d;
         if (d < 16) {
             isShowRadiusBold = true;
             boldRadiusIdx = i;

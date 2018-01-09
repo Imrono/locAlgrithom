@@ -84,15 +84,16 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
         update();
     });
     connect(ui->reset, &QPushButton::clicked, this, [this](void) {
-        distCount = 0;
-        handleTimeout();
+        distCount = 1;
+        handleTimeout(false);
     });
     connect(ui->previous, &QPushButton::clicked, this, [this](void) {
-        distCount -= 2;     //handleTimeout()里有distCount++，所以这里-2
-        handleTimeout();
+        distCount --;
+        handleTimeout(false);
     });
     connect(ui->next, &QPushButton::clicked, this, [this](void) {
-        handleTimeout();
+        distCount ++;
+        handleTimeout(false);
     });
     connect(ui->allPos, &QPushButton::clicked, this, [this](void) {
         if (!ui->canvas->reverseShowAllPos()) {
@@ -100,7 +101,6 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
         } else {
             ui->allPos->setText(MY_STR("隐藏所有点"));
         }
-
         update();
     });
     connect(ui->showRadius, &QPushButton::clicked, this, [this](void) {
@@ -109,7 +109,6 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
         } else {
             ui->showRadius->setText(MY_STR("隐藏半径"));
         }
-
         update();
     });
     connect(ui->showTrack, &QPushButton::clicked, this, [this](void) {
@@ -118,7 +117,6 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
         } else {
             ui->showTrack->setText(MY_STR("隐藏Track"));
         }
-
         update();
     });
 
@@ -195,8 +193,8 @@ void uiMainWindow::handleTimeout(bool isUpdateCount) {
 
             ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
             ui->canvas->setPosition(tag.tagId, KALMAN_STR, tag.distData[distCount].p_t.toQPointF());
-            qDebug() << calcDistance(tag.distData[distCount].p_t.toQPointF(),
-                                     oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
+            //qDebug() << calcDistance(tag.distData[distCount].p_t.toQPointF(),
+            //                         oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
 
             //ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
 
@@ -236,37 +234,6 @@ void uiMainWindow::handleTimeout(bool isUpdateCount) {
             ui->canvas->clearData(tag.tagId);
         }
     }
-
-
-//    ui->raw_0->setText(QString::number(distData.get_q()->dist[distCount].distance[0]));
-//    ui->raw_1->setText(QString::number(distData.get_q()->dist[distCount].distance[1]));
-//    ui->raw_2->setText(QString::number(distData.get_q()->dist[distCount].distance[2]));
-//    ui->raw_3->setText(QString::number(distData.get_q()->dist[distCount].distance[3]));
-
-//    if (distData.get_q()->dist[distCount].distance[0] != calcPos.distRefined[distCount].distance[0]) {
-//        ui->refine_0->setStyleSheet("color:red; font-weight:bold");
-//    } else {
-//        ui->refine_0->setStyleSheet("");
-//    }
-//    if (distData.get_q()->dist[distCount].distance[1] != calcPos.distRefined[distCount].distance[1]) {
-//        ui->refine_1->setStyleSheet("color:red; font-weight:bold");
-//    } else {
-//        ui->refine_1->setStyleSheet("");
-//    }
-//    if (distData.get_q()->dist[distCount].distance[2] != calcPos.distRefined[distCount].distance[2]) {
-//        ui->refine_2->setStyleSheet("color:red; font-weight:bold");
-//    } else {
-//        ui->refine_2->setStyleSheet("");
-//    }
-//    if (distData.get_q()->dist[distCount].distance[3] != calcPos.distRefined[distCount].distance[3]) {
-//        ui->refine_3->setStyleSheet("color:red; font-weight:bold");
-//    } else {
-//        ui->refine_3->setStyleSheet("");
-//    }
-//    ui->refine_0->setText(QString::number(calcPos.distRefined[distCount].distance[0]));
-//    ui->refine_1->setText(QString::number(calcPos.distRefined[distCount].distance[1]));
-//    ui->refine_2->setText(QString::number(calcPos.distRefined[distCount].distance[2]));
-//    ui->refine_3->setText(QString::number(calcPos.distRefined[distCount].distance[3]));
 
     update();
 
@@ -407,7 +374,7 @@ void uiMainWindow::posFullCentroid(bool checked) {
     calcPos.calcPosType = CALC_POS_TYPE::FullCentroid;
 
     foreach (storeTagInfo *info, store.tags) {
-        info->reset(MEASUR_STR);
+        info->addOrResetMethodInfo(MEASUR_STR, METHOD_FULL_CENTROID_STR);
         calcPos.calcPosVector(store.getTagInfo(info->tagId));
         ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
 
@@ -429,12 +396,7 @@ void uiMainWindow::posSubLS(bool checked) {
     calcPos.calcPosType = CALC_POS_TYPE::SubLS;
 
     foreach (storeTagInfo *info, store.tags) {
-        if (info->methodInfo.contains(MEASUR_STR)) {
-            info->reset(MEASUR_STR);
-        } else {
-            info->methodInfo.insert(MEASUR_STR, storeMethodInfo(METHOD_SUB_LS_STR, info));
-        }
-        info->methodInfo[MEASUR_STR].methodName = METHOD_SUB_LS_STR;
+        info->addOrResetMethodInfo(MEASUR_STR, METHOD_SUB_LS_STR);
         calcPos.calcPosVector(info);
         ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
 
@@ -456,7 +418,7 @@ void uiMainWindow::posTwoCenter(bool checked) {
     calcPos.calcPosType = CALC_POS_TYPE::TwoCenter;
 
     foreach (storeTagInfo *info, store.tags) {
-        info->reset(MEASUR_STR);
+        info->addOrResetMethodInfo(MEASUR_STR, METHOD_TWO_CENTER_STR);
         calcPos.calcPosVector(store.getTagInfo(info->tagId));
         ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
 
@@ -477,13 +439,7 @@ void uiMainWindow::trackKalman(bool checked) {
     ui->actionkalmanLiteTrack->setChecked(false);
 
     foreach (storeTagInfo *info, store.tags) {
-        if (info->methodInfo.contains(KALMAN_STR)) {
-            info->reset(KALMAN_STR);
-        } else {
-            info->methodInfo.insert(KALMAN_STR, storeMethodInfo(METHOD_KALMAN_STR, info));
-        }
-        info->methodInfo[KALMAN_STR].methodName = METHOD_KALMAN_STR;
-
+        info->addOrResetMethodInfo(KALMAN_STR, METHOD_KALMAN_STR);
         calcKalman::calcKalmanPosVector(info->methodInfo[MEASUR_STR], info->methodInfo[KALMAN_STR]);
 
         qDebug() << info->toString();
@@ -501,7 +457,7 @@ void uiMainWindow::trackKalmanLite(bool checked) {
     ui->actionkalmanLiteTrack->setChecked(true);
 
     foreach (storeTagInfo *info, store.tags) {
-        info->clear();
+        info->addOrResetMethodInfo(KALMAN_STR, METHOD_KALMAN_LITE_STR);
         calcKalman::calcKalmanPosVectorLite(info->methodInfo[KALMAN_STR], info->methodInfo[MEASUR_STR]);
 
         qDebug() << info->toString();

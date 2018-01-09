@@ -1,5 +1,20 @@
 ﻿#include "showStore.h"
 
+void storeTagInfo::addOrResetMethodInfo(const QString &methodType, const QString &method) {
+    if (!methodInfo.contains(methodType)) {
+        methodInfo.insert(methodType, storeMethodInfo(method, this));
+    } else {
+        reset(methodType, method);
+    }
+}
+void storeTagInfo::reset(const QString &methodType, const QString &method) {
+    if (methodInfo.contains(methodType)) {
+        methodInfo[methodType].Ans.clear();
+        methodInfo[methodType].AnsLines.clear();
+        methodInfo[methodType].methodName = method;
+    }
+}
+
 showStore::showStore()
 {
 }
@@ -18,9 +33,6 @@ storeTagInfo *showStore::getTagInfo(int tagId) {
     } else {
         return nullptr;
     }
-}
-void addNewMethodInfo(int tagId, const QString &method) {
-    // TODO
 }
 
 void showStore::addRawPoints(int tagId, QVector<locationCoor> points) {

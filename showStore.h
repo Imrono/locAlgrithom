@@ -54,18 +54,15 @@ struct storeTagInfo {
         }
         return ans;
     }
-    void reset(const QString &method) {
-        if (methodInfo.contains(method)) {
-            methodInfo[method].Ans.clear();
-            methodInfo[method].AnsLines.clear();
-        }
-    }
+
     void clear() {
         methodInfo.clear();
         RawPoints.clear();
         RefinedPoints.clear();
         calcPosType = CALC_POS_TYPE::none_type;
     }
+    void addOrResetMethodInfo(const QString &methodType, const QString &method);
+    void reset(const QString &methodType, const QString &method);
 };
 
 class showStore
@@ -75,7 +72,6 @@ public:
 
     void addNewTagInfo(int tagId);
     storeTagInfo * getTagInfo(int tagId);
-    void addNewMethodInfo(int tagId, const QString &method);
 
     void addRawPoints(int tagId, QVector<locationCoor> points);
     void clearRawPoints(int tagId);

@@ -155,11 +155,9 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
     if (nullptr == tagInfo)
         return;
 
-    int nSensor = cfg_d->sensor.count();
     locationCoor tmpX;
     double mse = 0.f;
 
-    tagInfo->reset(MEASUR_STR);
     distRefined.clear();
     tagInfo->calcPosType = this->calcPosType;
 
@@ -171,9 +169,9 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
         }
         tagInfo->RawPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
 
-        qDebug() << i << tmpDist.toStringDist();
+        //qDebug() << i << tmpDist.toStringDist();
         tmpX = calcOnePosition(tmpDist.distance, mse);
-        qDebug() << tmpX.toString() << mse;
+        //qDebug() << tmpX.toString() << mse;
         if (i >= 1) {
             /* distance filter BEGIN */
             // ITERATION

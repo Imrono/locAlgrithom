@@ -26,18 +26,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     showStore.cpp \
-    matrixOp.cpp \
     uiCanvas.cpp \
     uiMainWindow.cpp \
     dataSensorIni.cpp \
     showTagRelated.cpp \
-    calcTargetTracking.cpp \
     dataDistanceLog.cpp \
     calcTagPos.cpp \
     calcTagNLOS.cpp \
     uiUsrInfoBtn.cpp \
     uiUsrFrame.cpp \
-    calcDistance.cpp
+    calcTagTracking.cpp \
+    calcLibmatrixOp.cpp \
+    calcLibDistance.cpp
 
 HEADERS += \
     showStore.h \
