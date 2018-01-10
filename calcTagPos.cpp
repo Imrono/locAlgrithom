@@ -173,6 +173,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
     if (nullptr == tagInfo)
         return;
 
+    int nSensor = cfg_d->sensor.count();
     locationCoor tmpX;
     double mse = 0.f;
 
@@ -186,13 +187,12 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
         }
         tagInfo->RawPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
 
-        qDebug() << "[" << i << "]" << tmpDist.toStringDist();
+        //qDebug() << "[" << i << "]" << tmpDist.toStringDist();
         tmpX = calcOnePosition(tmpDist.distance, mse);
         //qDebug() << tmpX.toString() << mse;
         if (i >= 1) {
             /* distance filter BEGIN */
-            // ITERATION
-            /*
+            // ITERATIO
             iterCount = 1;
             do {
                 if (!calcNlos->posPrecisionNLOS(mse)) {  // MSE小于阈值，直接退出循环
@@ -207,7 +207,6 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
                     }
                 }
             } while(1);
-            */
             /* distance filter END */
 
         // store and update
@@ -337,7 +336,7 @@ void calcTagPos::calcTaylorSeries(const int *distance, const locationCoor *senso
 
     int count = 0;
     while (mse > 10000.f && count < 30 && dMse > 1000.f) {
-        qDebug() << count << "calcTaylorSeries" << mse << dMse;
+        //qDebug() << count << "calcTaylorSeries" << mse << dMse;
         for (int i = 0; i < N; i++) {
             tmpD = qSqrt(qPow(X[0] - sensor[i].x, 2) + qPow(X[1] - sensor[i].y, 2));
             A_taylor[i][0] = (X[0] - sensor[i].x) / tmpD;
@@ -357,7 +356,7 @@ void calcTagPos::calcTaylorSeries(const int *distance, const locationCoor *senso
 
         count ++;
     };
-    qDebug() << count << "#calcTaylorSeries#" << mse << dMse;
+    //qDebug() << count << "#calcTaylorSeries#" << mse << dMse;
 
     // output
     out_x   = X[0];

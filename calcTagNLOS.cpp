@@ -178,7 +178,7 @@ bool calcTagNLOS::posPrecisionNLOS(dType precision) const {
     } else if (SUM_DIST == precNlos) {
         return isSumDistNLOS(precision);
     } else {
-        return true;
+        return false;
     }
 }
 bool calcTagNLOS::isResNLOS(dType res) const {

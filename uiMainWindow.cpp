@@ -124,8 +124,8 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     connect(ui->UsrFrm, SIGNAL(oneUsrBtnClicked_siganl(int, bool)), this, SLOT(oneUsrBtnClicked(int, bool)));
 
     // initial calculate method
-    nlosRes(true);
-    nlosMultiPoint(true);
+    //nlosRes(true);
+    //nlosMultiPoint(true);
     posSubLS(true);
     trackKalman(true);
 
@@ -199,7 +199,7 @@ void uiMainWindow::handleTimeout(bool isUpdateCount) {
             ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
             //qDebug() << calcDistance(tag.distData[distCount].p_t.toQPointF(),
             //                         oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
-
+            qDebug() << "[@handleTimeout]" << tag.tagId << MEASUR_STR << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
             //ui->canvas->setPosition(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].Ans[distCount].toQPointF());
             //ui->canvas->setLine(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].AnsLines[distCount-1]);
 
