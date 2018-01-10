@@ -1,14 +1,14 @@
-﻿#include "calcTagTracking.h"
+﻿#include "calcTagTrack.h"
 #include "calcTagPos.h"
 #include <QtMath>
 #include <QDebug>
 
-calcKalman::calcKalman()
+calcTagTrack::calcTagTrack()
 {
 
 }
 
-void calcKalman::calcMatrixMulit_KP(const dType Kx, const dType Kv,
+void calcTagTrack::calcMatrixMulit_KP(const dType Kx, const dType Kv,
                                const dType Pxx_pri_t, const dType Pxv_pri_t, const dType Pvv_pri_t,
                                dType &Pxx_t, dType &Pxv_t, dType &Pvv_t) {
     /*
@@ -21,7 +21,7 @@ void calcKalman::calcMatrixMulit_KP(const dType Kx, const dType Kv,
     //qDebug() << c << B << d << D << c*B << d*D << dD;
 }
 
-dType calcKalman::calcR(locationCoor v_t, locationCoor v_t_1, dType reliability) {
+dType calcTagTrack::calcR(locationCoor v_t, locationCoor v_t_1, dType reliability) {
     dType ans = 0.0f;
     dType k = 0.0f;
 
@@ -37,14 +37,17 @@ dType calcKalman::calcR(locationCoor v_t, locationCoor v_t_1, dType reliability)
     ans = ans < lBound ? lBound : ans;
     return ans;
 }
-dType calcKalman::calcR(dType reliability, CALC_POS_TYPE type) {
-    if (CALC_POS_TYPE::FullCentroid == type) {
+dType calcTagTrack::calcR(dType reliability, const QString &methodName) {
+    if (METHOD_FULL_CENTROID_STR == methodName) {
         reliability /= 100.f;
-    } else if (CALC_POS_TYPE::SubLS == type) {
+    } else if (METHOD_SUB_LS_STR == methodName) {
         reliability /= 100.f;
         //qDebug() << "calcKalman::calcR" << reliability;
-    } else if (CALC_POS_TYPE::TwoCenter == type){
+    } else if (METHOD_TWO_CENTER_STR == methodName){
+    } else if (METHOD_TAYLOR_SERIES_STR == methodName) {
+        reliability /= 100.f;
     } else {}
+
     dType ans = 0.0f;
     if (reliability < 2.5f) {
         ans = 0.05;
@@ -58,34 +61,31 @@ dType calcKalman::calcR(dType reliability, CALC_POS_TYPE type) {
 
     return ans;
 }
-dType calcKalman::calcR(locationCoor v_t, locationCoor v_t_1) {
+dType calcTagTrack::calcR(locationCoor v_t, locationCoor v_t_1) {
     dType v_mod_square = calcDistanceSquare(v_t, v_t_1);
     dType ans = qExp(-v_mod_square/200.0f);
     //qDebug() << v_t.toString() << v_t_1.toString() << v_mod_square << "ans=" << ans;
     ans = ans < 0.1 ? 0.1 : ans;
     return ans;
 }
-dType calcKalman::calcR(QPoint v_t, QPoint v_t_1) {
-    return calcKalman::calcR(locationCoor(v_t), locationCoor(v_t_1));
+dType calcTagTrack::calcR(QPoint v_t, QPoint v_t_1) {
+    return calcTagTrack::calcR(locationCoor(v_t), locationCoor(v_t_1));
 }
 
-void calcKalman::calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo) {
+void calcTagTrack::calcOneTrack(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo) {
+    if (TRACK_METHOD::TRACK_KALMAN == calcTrackMethod) {
+        calcKalmanPosVector(tagMeasInfo, tagKalmanInfo);
+    } else if (TRACK_METHOD::TRACK_KALMAN_LITE == calcTrackMethod) {
+        calcKalmanPosVectorLite(tagMeasInfo, tagKalmanInfo);
+    } else {}
+}
+
+void calcTagTrack::calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo) {
     if (0 == tagMeasInfo.Ans.count()) {
         qDebug() << "calcKalman::calcKalmanPosVector number MeasPos = 0";
         return;
     }
-    CALC_POS_TYPE calcPosType;
-    if (METHOD_FULL_CENTROID_STR == tagMeasInfo.methodName) {
-        calcPosType = CALC_POS_TYPE::FullCentroid;
-    } else if (METHOD_SUB_LS_STR == tagMeasInfo.methodName) {
-        calcPosType = CALC_POS_TYPE::SubLS;
-    } else if (METHOD_TWO_CENTER_STR == tagMeasInfo.methodName){
-        calcPosType = CALC_POS_TYPE::TwoCenter;
-    } else {
-        calcPosType = CALC_POS_TYPE::none_type;
-    }
 
-    // sample interval
     dType T;
     // predict
     locationCoor x_hat_t;
@@ -124,7 +124,7 @@ void calcKalman::calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMeth
     v_t_1 = {0,0,0};
     Px_t_1 = 0.3f;
     Pv_t_1 = 0.3f;
-    R_x = calcKalman::calcR(tagMeasInfo.data[0][0], calcPosType);
+    R_x = calcTagTrack::calcR(tagMeasInfo.data[0][0], tagMeasInfo.methodName);
     R_x_1 = R_x;
     tagKalmanInfo.Ans.append(tagMeasInfo.Ans[0]);
     tagKalmanInfo.data[0].append(K_x);
@@ -148,7 +148,7 @@ void calcKalman::calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMeth
         z_v_meas = (tagMeasInfo.Ans[i] - tagMeasInfo.Ans[i-1]) / T;
         y_v_tilde = z_v_meas - v_hat_t;
         // 4. S = R + HPH
-        R_x = calcR(tagMeasInfo.data[0][i], calcPosType);
+        R_x = calcR(tagMeasInfo.data[0][i], tagMeasInfo.methodName);
         S_x = R_x + Px_t;
         R_v = (R_x + R_x_1) / (T * T);
         S_v = R_v + Pv_t;
@@ -186,20 +186,10 @@ void calcKalman::calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMeth
     }
 }
 
-void calcKalman::calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo) {
+void calcTagTrack::calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo) {
     if (0 == tagMeasInfo.Ans.count()) {
         qDebug() << "calcKalman::calcKalmanPosVector number MeasPos = 0";
         return;
-    }
-    CALC_POS_TYPE calcPosType;
-    if (METHOD_FULL_CENTROID_STR == tagMeasInfo.methodName) {
-        calcPosType = CALC_POS_TYPE::FullCentroid;
-    } else if (METHOD_SUB_LS_STR == tagMeasInfo.methodName) {
-        calcPosType = CALC_POS_TYPE::SubLS;
-    } else if (METHOD_TWO_CENTER_STR == tagMeasInfo.methodName){
-        calcPosType = CALC_POS_TYPE::TwoCenter;
-    } else {
-        calcPosType = CALC_POS_TYPE::none_type;
     }
 
     struct keyParam {
@@ -243,7 +233,7 @@ void calcKalman::calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethodIn
 
     x_t_1 = tagMeasInfo.Ans[0];
     v_t_1 = {0,0,0};
-    param.R = calcR(tagMeasInfo.data[0][0], calcPosType);
+    param.R = calcR(tagMeasInfo.data[0][0], tagMeasInfo.methodName);
     tagKalmanInfo.Ans.append(tagMeasInfo.Ans[0]);
     tagKalmanInfo.data[0].append(Kx);
     tagKalmanInfo.data[1].append(param.R);
@@ -265,7 +255,7 @@ void calcKalman::calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethodIn
         z_x_t_meas = tagMeasInfo.Ans[i];
         y_x_tilde = z_x_t_meas - x_hat_t;
         // 4. S = R + HPH
-        param.R = calcR(tagMeasInfo.data[0][i], calcPosType);
+        param.R = calcR(tagMeasInfo.data[0][i], tagMeasInfo.methodName);
         S = param.R + Pxx_pri_t;
         // 5. k = PH/S
         Kx = Pxx_pri_t / S;

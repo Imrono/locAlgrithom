@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <QFileDialog>
-#include "calcTagTracking.h"
+#include "calcTagTrack.h"
 
 uiMainWindow::uiMainWindow(QWidget *parent) :
     QMainWindow(parent), timerStarted(false),
@@ -55,6 +55,7 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     connect(ui->actionFullCentroid, SIGNAL(triggered(bool)), this, SLOT(posFullCentroid(bool)));
     connect(ui->actionSubLS,        SIGNAL(triggered(bool)), this, SLOT(posSubLS(bool)));
     connect(ui->actionTwoCenter,    SIGNAL(triggered(bool)), this, SLOT(posTwoCenter(bool)));
+    connect(ui->actionTaylorSeries, SIGNAL(triggered(bool)), this, SLOT(posTaylorSeries(bool)));
 
     // TRACK
     connect(ui->actionKalmanTrack,     SIGNAL(triggered(bool)), this, SLOT(trackKalman(bool)));
@@ -195,7 +196,7 @@ void uiMainWindow::handleTimeout(bool isUpdateCount) {
             ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
             //ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
 
-            ui->canvas->setPosition(tag.tagId, KALMAN_STR, tag.distData[distCount].p_t.toQPointF());
+            ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
             //qDebug() << calcDistance(tag.distData[distCount].p_t.toQPointF(),
             //                         oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
 
@@ -208,7 +209,7 @@ void uiMainWindow::handleTimeout(bool isUpdateCount) {
             ui->canvas->setDistance(tag.tagId, distData.get_q()->tagsData[tag.tagId].distData[distCount].distance.data());
 
             ui->canvas->setLines(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines);
-            ui->canvas->setLines(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].AnsLines);
+            ui->canvas->setLines(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines);
 
             switch (tag.distData[distCount].distance.count()) {
             case 6:ui->raw_5->setText(QString::number(tag.distData[distCount].distance[5]));
@@ -285,6 +286,14 @@ void uiMainWindow::loadLogDistanceFile(bool checked) {
     ui->actionRead_dist->setChecked(true);
     ui->actionRead_dist_2->setChecked(false);
     qDebug() << "[@uiMainWindow::loadLogDistanceFile]" << distData.toString();
+
+    ui->actionFullCentroid->setChecked(false);
+    ui->actionSubLS->setChecked(false);
+    ui->actionTwoCenter->setChecked(false);
+    ui->actionTaylorSeries->setChecked(false);
+
+    ui->actionKalmanTrack->setChecked(false);
+    ui->actionkalmanLiteTrack->setChecked(false);
     checkData();
 }
 void uiMainWindow::loadLogDistanceFile_2(bool checked) {
@@ -310,6 +319,14 @@ void uiMainWindow::loadLogDistanceFile_2(bool checked) {
     ui->actionRead_dist->setChecked(false);
     ui->actionRead_dist_2->setChecked(true);
     qDebug() << "[@uiMainWindow::loadLogDistanceFile_2]" << distData.toString();
+
+    ui->actionFullCentroid->setChecked(false);
+    ui->actionSubLS->setChecked(false);
+    ui->actionTwoCenter->setChecked(false);
+    ui->actionTaylorSeries->setChecked(false);
+
+    ui->actionKalmanTrack->setChecked(false);
+    ui->actionkalmanLiteTrack->setChecked(false);
     checkData();
 }
 void uiMainWindow::loadPictureFile(bool checked) {
@@ -319,7 +336,7 @@ void uiMainWindow::loadPictureFile(bool checked) {
     ui->canvas->loadPicture(path);
     ui->actionRead_dist->setChecked(true);
 }
-
+/***********************************************************/
 // NLOS
 void uiMainWindow::nlosWylie(bool checked) {
     Q_UNUSED(checked);
@@ -373,107 +390,100 @@ void uiMainWindow::nlosSumDist(bool checked) {
     qDebug() << "nlosSumDist :" << calcNlos.precNlos;
 }
 
+/***********************************************************/
 // POSITION
-void uiMainWindow::posFullCentroid(bool checked) {
-    Q_UNUSED(checked);
-    ui->actionFullCentroid->setChecked(true);
+void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
+    // Set UI
+    ui->actionFullCentroid->setChecked(false);
     ui->actionSubLS->setChecked(false);
     ui->actionTwoCenter->setChecked(false);
-    calcPos.calcPosType = CALC_POS_TYPE::FullCentroid;
+    ui->actionTaylorSeries->setChecked(false);
+    if (CALC_POS_TYPE::FullCentroid == type) {
+        ui->actionFullCentroid->setChecked(true);
+    } else if (CALC_POS_TYPE::SubLS == type) {
+        ui->actionSubLS->setChecked(true);
+    } else if (CALC_POS_TYPE::TwoCenter == type) {
+        ui->actionTwoCenter->setChecked(true);
+    } else if (CALC_POS_TYPE::Taylor == type) {
+        ui->actionTaylorSeries->setChecked(true);
+    } else {}
+
+    // determine the calculate method
+    calcPos.calcPosType = type;
 
     foreach (storeTagInfo *info, store.tags) {
-        info->addOrResetMethodInfo(MEASUR_STR, METHOD_FULL_CENTROID_STR);
-        calcPos.calcPosVector(store.getTagInfo(info->tagId));
-        ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
-        info->isTagPosInitialed = true;
-
-        qDebug() << "posFullCentroid:" << info->toString();
-        dType measDist = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
-        qDebug() << "posFullCentroid: avgDistanceSquare => measDist:" << measDist;
-
-        ui->canvas->setLines(info->tagId, MEASUR_STR, info->methodInfo[MEASUR_STR].AnsLines);
-    }
-    handleTimeout(false);
-}
-
-void uiMainWindow::posSubLS(bool checked) {
-    Q_UNUSED(checked);
-    ui->actionFullCentroid->setChecked(false);
-    ui->actionSubLS->setChecked(true);
-    ui->actionTwoCenter->setChecked(false);
-    calcPos.calcPosType = CALC_POS_TYPE::SubLS;
-
-    foreach (storeTagInfo *info, store.tags) {
-        info->addOrResetMethodInfo(MEASUR_STR, METHOD_SUB_LS_STR);
+        info->addOrResetMethodInfo(MEASUR_STR, CALC_POS2STR[type]);
+        info->calcPosType = type;
         calcPos.calcPosVector(info);
         ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
         info->isTagPosInitialed = true;
 
-        qDebug() << "[@posSubLS]" << info->toString();
         dType measDist = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
-        qDebug() << "[@posSubLS] avgDistanceSquare => measDist:" << measDist << info->methodInfo[MEASUR_STR].AnsLines.count();
-
-        ui->canvas->setLines(info->tagId, MEASUR_STR, info->methodInfo[MEASUR_STR].AnsLines);
+        qDebug() << "#" + CALC_POS2STR[type] + "#" << info->toString();
+        qDebug() << "#" + CALC_POS2STR[type] + "#"
+                 << "avgDistanceSquare => measDist:" << measDist
+                 << info->methodInfo[MEASUR_STR].AnsLines.count();
     }
+
+    ui->actionKalmanTrack->setChecked(false);
+    ui->actionkalmanLiteTrack->setChecked(false);
+    calcTrack.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
+
     handleTimeout(false);
 }
 
+void uiMainWindow::posFullCentroid(bool checked) {
+    Q_UNUSED(checked);
+    posCalcPROCESS(CALC_POS_TYPE::FullCentroid);
+}
+void uiMainWindow::posSubLS(bool checked) {
+    Q_UNUSED(checked);
+    posCalcPROCESS(CALC_POS_TYPE::SubLS);
+}
 void uiMainWindow::posTwoCenter(bool checked) {
     Q_UNUSED(checked);
-    ui->actionFullCentroid->setChecked(false);
-    ui->actionSubLS->setChecked(false);
-    ui->actionTwoCenter->setChecked(true);
-    calcPos.calcPosType = CALC_POS_TYPE::TwoCenter;
+    posCalcPROCESS(CALC_POS_TYPE::TwoCenter);
+}
+void uiMainWindow::posTaylorSeries(bool checked) {
+    Q_UNUSED(checked);
+    posCalcPROCESS(CALC_POS_TYPE::Taylor);
+}
+
+/***********************************************************/
+// TRACK
+void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
+    // Set UI
+    ui->actionKalmanTrack->setChecked(false);
+    ui->actionkalmanLiteTrack->setChecked(false);
+    if (TRACK_METHOD::TRACK_KALMAN == type) {
+        ui->actionKalmanTrack->setChecked(true);
+    } else if (TRACK_METHOD::TRACK_KALMAN_LITE == type) {
+        ui->actionkalmanLiteTrack->setChecked(true);
+    } else {}
+
+    // determine the calculate method
+    calcTrack.calcTrackMethod = type;
 
     foreach (storeTagInfo *info, store.tags) {
-        info->addOrResetMethodInfo(MEASUR_STR, METHOD_TWO_CENTER_STR);
-        calcPos.calcPosVector(store.getTagInfo(info->tagId));
-        ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
-        info->isTagPosInitialed = true;
+        info->addOrResetMethodInfo(TRACKx_STR, TRACK_METHOD2STR[type]);
+        calcTrack.calcOneTrack(info->methodInfo[MEASUR_STR], info->methodInfo[TRACKx_STR]);
+        ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_TRACK_DATA);
 
-        qDebug() << "posTwoCenter:" << info->toString();
-        dType measDist = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
-        qDebug() << "posTwoCenter: avgDistanceSquare => measDist:" << measDist;
-
-        ui->canvas->setLines(info->tagId, MEASUR_STR, info->methodInfo[MEASUR_STR].AnsLines);
+        dType measDist   = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
+        dType kalmanDist = calcTotalAvgDistanceSquare(info->methodInfo[TRACKx_STR].AnsLines);
+        qDebug() << "#" + TRACK_METHOD2STR[type] + "#" << info->toString();
+        qDebug() << "#" + TRACK_METHOD2STR[type] + "#"
+                 << "avgDistanceSquare => measDist:" << measDist
+                 << "; trackDist:" << kalmanDist;
     }
     handleTimeout(false);
 }
 
-// TRACK
 void uiMainWindow::trackKalman(bool checked) {
     Q_UNUSED(checked);
-    ui->actionKalmanTrack->setChecked(true);
-    ui->actionkalmanLiteTrack->setChecked(false);
-
-    foreach (storeTagInfo *info, store.tags) {
-        info->addOrResetMethodInfo(KALMAN_STR, METHOD_KALMAN_STR);
-        calcKalman::calcKalmanPosVector(info->methodInfo[MEASUR_STR], info->methodInfo[KALMAN_STR]);
-
-        qDebug() << info->toString();
-        dType measDist   = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
-        dType kalmanDist = calcTotalAvgDistanceSquare(info->methodInfo[KALMAN_STR].AnsLines);
-        qDebug() << "kalmanTrackLite: avgDistanceSquare => measDist:" << measDist << "; kalmanDist:" << kalmanDist;
-
-        ui->canvas->setLines(info->tagId, KALMAN_STR, info->methodInfo[KALMAN_STR].AnsLines);
-    }
-    handleTimeout(false);
+    trackCalcPROCESS(TRACK_METHOD::TRACK_KALMAN);
 }
 void uiMainWindow::trackKalmanLite(bool checked) {
     Q_UNUSED(checked);
-    ui->actionKalmanTrack->setChecked(false);
-    ui->actionkalmanLiteTrack->setChecked(true);
-
-    foreach (storeTagInfo *info, store.tags) {
-        info->addOrResetMethodInfo(KALMAN_STR, METHOD_KALMAN_LITE_STR);
-        calcKalman::calcKalmanPosVectorLite(info->methodInfo[KALMAN_STR], info->methodInfo[MEASUR_STR]);
-
-        qDebug() << info->toString();
-        dType measDist   = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
-        dType kalmanDist = calcTotalAvgDistanceSquare(info->methodInfo[KALMAN_STR].AnsLines);
-        qDebug() << "kalmanTrackLite: avgDistanceSquare => measDist:" << measDist << "; kalmanDist:" << kalmanDist;
-
-        ui->canvas->setLines(info->tagId, KALMAN_STR, info->methodInfo[KALMAN_STR].AnsLines);
-    }
-    handleTimeout(false);
+    trackCalcPROCESS(TRACK_METHOD::TRACK_KALMAN_LITE);
 }

@@ -16,18 +16,21 @@ inline void calcMatrix22Mulit(const dType a, const dType b, const dType c, const
     //qDebug() << c << B << d << D << c*B << d*D << dD;
 }
 
-class calcKalman
+class calcTagTrack
 {
 public:
-    calcKalman();
+    calcTagTrack();
 
+    // ALL IN ONE
+    TRACK_METHOD calcTrackMethod{TRACK_METHOD::TRACK_NONE};
+    void calcOneTrack(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo);
     static void calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo);
     static void calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo);
     static void calcMatrixMulit_KP(const dType Kx, const dType Kv,
                                    const dType Pxx_pri_t, const dType Pxv_pri_t, const dType Pvv_pri_t,
                                    dType &Pxx_t, dType &Pxv_t, dType &Pvv_t);
 
-    static dType calcR(dType reliability, CALC_POS_TYPE type = CALC_POS_TYPE::none_type);
+    static dType calcR(dType reliability, const QString &methodName);
     static dType calcR(locationCoor v_t, locationCoor v_t_1, dType reliability);
     static dType calcR(locationCoor v_t, locationCoor v_t_1);
     static dType calcR(QPoint v_t, QPoint v_t_1);

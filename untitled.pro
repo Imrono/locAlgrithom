@@ -35,9 +35,10 @@ SOURCES += \
     calcTagNLOS.cpp \
     uiUsrInfoBtn.cpp \
     uiUsrFrame.cpp \
-    calcTagTracking.cpp \
     calcLibmatrixOp.cpp \
-    calcLibDistance.cpp
+    calcLibDistance.cpp \
+    _myheads.cpp \
+    calcTagTrack.cpp
 
 HEADERS += \
     showStore.h \
@@ -52,9 +53,9 @@ HEADERS += \
     dataType.h \
     uiUsrInfoBtn.h \
     uiUsrFrame.h \
-    calcTagTracking.h \
     calcLibDistance.h \
-    calcLibMatrixOp.h
+    calcLibMatrixOp.h \
+    calcTagTrack.h
 
 FORMS += \
     mainwindow.ui

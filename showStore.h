@@ -60,7 +60,7 @@ struct storeTagInfo {
         methodInfo.clear();
         RawPoints.clear();
         RefinedPoints.clear();
-        calcPosType = CALC_POS_TYPE::none_type;
+        calcPosType = CALC_POS_TYPE::POS_NONE;
     }
     void addOrResetMethodInfo(const QString &methodType, const QString &method);
     void reset(const QString &methodType, const QString &method);

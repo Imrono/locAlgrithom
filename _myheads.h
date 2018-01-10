@@ -17,18 +17,22 @@
 #endif
 
 #define MEASUR_STR "measure"
-#define KALMAN_STR "kalman"
+#define TRACKx_STR "track"
 
 enum CALC_POS_TYPE {
-    none_type = -1,
+    POS_NONE = -1,
     FullCentroid = 0,
     SubLS = 1,
-    TwoCenter = 2
+    TwoCenter = 2,
+    Taylor = 3,
+    NUM_CALC_POS
 };
 
 #define METHOD_FULL_CENTROID_STR "{method:FullCentroid}"
 #define METHOD_SUB_LS_STR        "{method:SubLS}"
 #define METHOD_TWO_CENTER_STR    "{method:TwoCenter}"
+#define METHOD_TAYLOR_SERIES_STR "{method:TaylorSeries}"
+extern QString CALC_POS2STR[CALC_POS_TYPE::NUM_CALC_POS];
 
 enum POINTS_NLOS {
     POINTS_NONE = -1,
@@ -43,12 +47,14 @@ enum POS_PRECISION_NLOS {
 
 enum TRACK_METHOD {
     TRACK_NONE = -1,
-    KALMAN,
-    KALMAN_LITE
+    TRACK_KALMAN,
+    TRACK_KALMAN_LITE,
+    NUM_TRACK_METHOD
 };
 
 #define METHOD_KALMAN_STR      "{method:KalmanTrack}"
 #define METHOD_KALMAN_LITE_STR "{method:LiteKalmanTrack}"
+extern QString TRACK_METHOD2STR[TRACK_METHOD::NUM_TRACK_METHOD];
 
 enum SHOW_SHAPE {
     radius,

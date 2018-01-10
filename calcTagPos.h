@@ -28,13 +28,13 @@ public:
     static locationCoor calcOnePosFor2Dim(dType dist[], locationCoor loca[]);
 
     // ALL IN ONE
-    CALC_POS_TYPE calcPosType{CALC_POS_TYPE::none_type};
-
+    CALC_POS_TYPE calcPosType{CALC_POS_TYPE::POS_NONE};
     locationCoor calcOnePosition(const int *dist, dType &MSE);
 
     locationCoor calcFullCentroid(const int *dist, dType &MSE);
     locationCoor calcSubLS       (const int *dist, dType &MSE);
     locationCoor calcTwoCenter   (const int *dist, dType &MSE);
+    locationCoor calcTaylorSeries(const int *dist, dType &MSE);
 
     static void calcFullCentroid(const int *distance, const locationCoor *sensor,
                                  dType **A, dType **coA, dType *B, int N,
@@ -43,6 +43,10 @@ public:
                                  dType **A, dType **coA, dType *B, int N,
                                  dType &out_x, dType &out_y, dType &out_MSE);
     static void calcTwoCenter   (const int *distance, const locationCoor *sensor, int N,
+                                 dType &out_x, dType &out_y, dType &out_MSE);
+    static void calcTaylorSeries(const int *distance, const locationCoor *sensor,
+                                 dType **A, dType **coA, dType *B, int N,
+                                 dType **A_taylor, dType *B_taylor,
                                  dType &out_x, dType &out_y, dType &out_MSE);
 
     void calcPosVector (storeTagInfo *label);
@@ -69,6 +73,9 @@ private:
     dType  *B_ls{nullptr};
     int ls_row{0};    //number of sensor
     int ls_col{0};    //x,y,x or x,y
+
+    dType *B_taylor{nullptr};
+    dType **A_taylor{nullptr};
 
     dType X[3]{0.f};
 

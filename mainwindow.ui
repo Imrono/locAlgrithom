@@ -360,6 +360,7 @@
     <addaction name="actionFullCentroid"/>
     <addaction name="actionSubLS"/>
     <addaction name="actionTwoCenter"/>
+    <addaction name="actionTaylorSeries"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuview">
@@ -524,6 +525,14 @@
   <action name="actionRead_dist_2">
    <property name="text">
     <string>Read distance_2</string>
+   </property>
+  </action>
+  <action name="actionTaylorSeries">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>泰勒级数迭代</string>
    </property>
   </action>
  </widget>
