@@ -13,7 +13,7 @@
 #endif
 
 #ifndef MY_EPS
-#define MY_EPS  0.0001f
+#define MY_EPS  0.000001f
 #endif
 
 #define MEASUR_STR "measure"
@@ -37,12 +37,14 @@ extern QString CALC_POS2STR[CALC_POS_TYPE::NUM_CALC_POS];
 enum POINTS_NLOS {
     POINTS_NONE = -1,
     WYLIE,
-    MULTI_POINT
+    MULTI_POINT,
+    NUM_POINTS_NLOS
 };
 enum POS_PRECISION_NLOS {
     POS_PRECISION_NONE = -1,
     RESIDUAL,
-    SUM_DIST
+    SUM_DIST,
+    NUM_POS_PRECISION_NLOS
 };
 
 enum TRACK_METHOD {
@@ -70,7 +72,8 @@ enum USR_STATUS {
     HAS_NONE_DATA = -1,
     HAS_DISTANCE_DATA,
     HAS_MEASURE_DATA,
-    HAS_TRACK_DATA
+    HAS_TRACK_DATA,
+    NUM_USR_STATUS
 };
 
 #endif // MYHEADS_H

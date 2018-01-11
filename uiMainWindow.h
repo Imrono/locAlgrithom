@@ -47,15 +47,21 @@ private:
     dataSensorIni cfgData;
     dataDistanceLog distData;
 
-    void paintEvent(QPaintEvent *event);
+    int totalPos{0};
+    dType calcTimeElapsedMeasu{0.f};
+    dType calcTimeElapsedTrack{0.f};
+    QLabel *calcTimeElapsed{nullptr};
+
     void checkData();
+    void resetData();
+    void connectUi();
 
 private slots:
     // FILE
-    void loadIniConfigFile(bool checked);
-    void loadLogDistanceFile(bool checked);
-    void loadLogDistanceFile_2(bool checked);
-    void loadPictureFile(bool checked);
+    void loadIniConfigFile(bool checked, QString pathIn = "");
+    void loadLogDistanceFile(bool checked, QString pathIn = "");
+    void loadLogDistanceFile_2(bool checked, QString pathIn = "");
+    void loadPictureFile(bool checked, QString pathIn = "");
 
     // NLOS
     void nlosWylie(bool checked);
@@ -76,7 +82,7 @@ private slots:
     void trackKalmanLite(bool checked);
 
 private slots:
-    void handleTimeout(bool isUpdateCount = true);
+    void handleModelDataUpdate(bool isUpdateCount = true);
     void oneUsrBtnClicked(int tagId, bool isShowable);
 };
 

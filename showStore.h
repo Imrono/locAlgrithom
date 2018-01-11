@@ -64,6 +64,7 @@ struct storeTagInfo {
     }
     void addOrResetMethodInfo(const QString &methodType, const QString &method);
     void reset(const QString &methodType, const QString &method);
+    void reset(const QString &methodType);
 };
 
 class showStore

@@ -335,7 +335,7 @@ void calcTagPos::calcTaylorSeries(const int *distance, const locationCoor *senso
     mse = calcMSE(A, B, X, N, 3);
 
     int count = 0;
-    while (mse > 10000.f && count < 30 && dMse > 1000.f) {
+    while (mse > 10000.f && count < 3 && dMse > 1000.f) {
         //qDebug() << count << "calcTaylorSeries" << mse << dMse;
         for (int i = 0; i < N; i++) {
             tmpD = qSqrt(qPow(X[0] - sensor[i].x, 2) + qPow(X[1] - sensor[i].y, 2));

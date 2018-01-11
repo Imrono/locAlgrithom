@@ -9,119 +9,34 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    // status bar shows the "distCount"
     distCountShow = new QLabel(this);
     statusBar()->addWidget(distCountShow);
     distCountShow->setText(QString("distCount: %0").arg(0, 4, 10, QChar('0')));
+    // status bar shows the "calcTimeElapsed"
+    calcTimeElapsed = new QLabel(this);
+    calcTimeElapsed->setAlignment(Qt::AlignRight);
+    calcTimeElapsed->setFrameStyle(QFrame::Box | QFrame::Sunken);
+    statusBar()->addPermanentWidget(calcTimeElapsed);
+    calcTimeElapsed->setText(QString("nPOS:%0 {MEAS:%1(s)},{TRACK:%2(s)}")
+                             .arg(totalPos).arg(calcTimeElapsedMeasu).arg(calcTimeElapsedTrack));
 
     // CFG DATA
-    cfgData.loadNewFile("D:\\code\\kelmanLocationData\\configExample.ini");
-    //cfgData.loadNewFile("D:\\code\\kelmanLocationData\\aaa.ini");
-    qDebug() << cfgData.toString();
-    calcPos.setConfigData(cfgData.get_q());
-    ui->canvas->setConfigData(cfgData.get_q());
-    ui->canvas->syncWithUiFrame(ui->UsrFrm);
+    //loadIniConfigFile(true, "D:\\code\\kelmanLocationData\\aaa.ini");
+    loadIniConfigFile(true, "D:\\code\\kelmanLocationData\\configExample.ini");
 
     // DIST DATA
-    distData.loadNewFile_1("D:\\code\\kelmanLocationData\\201712111515.log");
-    //distData.loadNewFile_2("D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705181600.log");
-    //distData.loadNewFile_2("D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705191135.log");
-    qDebug() << "[@uiMainWindow::uiMainWindow]" << distData.toString();
-    foreach (oneTag tag, distData.get_q()->tagsData) {
-        store.addNewTagInfo(tag.tagId);
-        ui->UsrFrm->addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
-    }
-    calcPos.setDistanceData(distData.get_q());
-    ui->canvas->setDistanceData(distData.get_q());
-    ui->canvas->syncWithUiFrame(ui->UsrFrm);
+    //loadLogDistanceFile_2(true, "D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705181600.log");
+    //loadLogDistanceFile_2(true, "D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705191135.log");
+    loadLogDistanceFile(true, "D:\\code\\kelmanLocationData\\201712111515.log");
 
     // SET NLOS FOR calcPos
     calcPos.setNlosJudge(&calcNlos);
 
     checkData();
 
-    // FILE
-    connect(ui->actionRead_ini,     SIGNAL(triggered(bool)), this, SLOT(loadIniConfigFile(bool)));
-    connect(ui->actionRead_dist,    SIGNAL(triggered(bool)), this, SLOT(loadLogDistanceFile(bool)));
-    connect(ui->actionRead_dist_2,  SIGNAL(triggered(bool)), this, SLOT(loadLogDistanceFile_2(bool)));
-    connect(ui->actionRead_picture, SIGNAL(triggered(bool)), this, SLOT(loadPictureFile(bool)));
-
-    // NLOS
-    connect(ui->actionWylie,     SIGNAL(triggered(bool)), this, SLOT(nlosWylie(bool)));
-    connect(ui->actionMultiPoint,SIGNAL(triggered(bool)), this, SLOT(nlosMultiPoint(bool)));
-    connect(ui->actionRes,       SIGNAL(triggered(bool)), this, SLOT(nlosRes(bool)));
-    connect(ui->actionSumDist,   SIGNAL(triggered(bool)), this, SLOT(nlosSumDist(bool)));
-
-    // POSITION
-    connect(ui->actionFullCentroid, SIGNAL(triggered(bool)), this, SLOT(posFullCentroid(bool)));
-    connect(ui->actionSubLS,        SIGNAL(triggered(bool)), this, SLOT(posSubLS(bool)));
-    connect(ui->actionTwoCenter,    SIGNAL(triggered(bool)), this, SLOT(posTwoCenter(bool)));
-    connect(ui->actionTaylorSeries, SIGNAL(triggered(bool)), this, SLOT(posTaylorSeries(bool)));
-
-    // TRACK
-    connect(ui->actionKalmanTrack,     SIGNAL(triggered(bool)), this, SLOT(trackKalman(bool)));
-    connect(ui->actionkalmanLiteTrack, SIGNAL(triggered(bool)), this, SLOT(trackKalmanLite(bool)));
-
-    /*************************************************************/
-    connect(&timer, SIGNAL(timeout()), this, SLOT(handleTimeout()));
-
-    connect(ui->beginTrack, &QPushButton::clicked, this, [this](void) {
-        if (timerStarted) {
-            timer.stop();
-            this->ui->beginTrack->setText("track");
-        } else {
-            timer.start(500);
-            ui->beginTrack->setText("stop");
-        }
-        timerStarted = !timerStarted;
-    });
-    connect(ui->showPath, &QPushButton::clicked, this, [this](void) {
-        ui->showPath->setStyleSheet("font-weight: bold;");
-        if (!ui->canvas->reverseShowPath()) {
-            ui->showPath->setText(MY_STR("显示路径"));
-        } else {
-            ui->showPath->setText(MY_STR("隐藏路径"));
-        }
-        handleTimeout(false);
-        update();
-    });
-    connect(ui->reset, &QPushButton::clicked, this, [this](void) {
-        distCount = 1;
-        handleTimeout(false);
-    });
-    connect(ui->previous, &QPushButton::clicked, this, [this](void) {
-        distCount --;
-        handleTimeout(false);
-    });
-    connect(ui->next, &QPushButton::clicked, this, [this](void) {
-        distCount ++;
-        handleTimeout(false);
-    });
-    connect(ui->allPos, &QPushButton::clicked, this, [this](void) {
-        if (!ui->canvas->reverseShowAllPos()) {
-            ui->allPos->setText(MY_STR("显示所有点"));
-        } else {
-            ui->allPos->setText(MY_STR("隐藏所有点"));
-        }
-        update();
-    });
-    connect(ui->showRadius, &QPushButton::clicked, this, [this](void) {
-        if (!ui->canvas->reverseShowRadius()) {
-            ui->showRadius->setText(MY_STR("显示半径"));
-        } else {
-            ui->showRadius->setText(MY_STR("隐藏半径"));
-        }
-        update();
-    });
-    connect(ui->showTrack, &QPushButton::clicked, this, [this](void) {
-        if (!ui->canvas->reverseShowTrack()) {
-            ui->showTrack->setText(MY_STR("显示Track"));
-        } else {
-            ui->showTrack->setText(MY_STR("隐藏Track"));
-        }
-        update();
-    });
-
-    connect(ui->UsrFrm, SIGNAL(oneUsrBtnClicked_siganl(int, bool)), this, SLOT(oneUsrBtnClicked(int, bool)));
+    // connect signals and slots for uiMainWindow
+    connectUi();
 
     // initial calculate method
     //nlosRes(true);
@@ -129,7 +44,7 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     posSubLS(true);
     trackKalman(true);
 
-    handleTimeout(false);
+    handleModelDataUpdate(false);
 }
 
 uiMainWindow::~uiMainWindow()
@@ -137,61 +52,33 @@ uiMainWindow::~uiMainWindow()
     delete ui;
 }
 
-void uiMainWindow::checkData() {
-    qDebug() << "cfgData.get_q() =" << cfgData.get_q()->isInitialized
-             << "distData.get_q() =" << distData.get_q()->isInitialized;
-    if (!cfgData.get_q()->isInitialized || !distData.get_q()->isInitialized) {
-        ui->actionWylie->setDisabled(true);
-        ui->actionMultiPoint->setDisabled(true);
-        ui->actionRes->setDisabled(true);
-        ui->actionSumDist->setDisabled(true);
-
-        ui->actionFullCentroid->setDisabled(true);
-        ui->actionSubLS->setDisabled(true);
-        ui->actionTwoCenter->setDisabled(true);
-
-        ui->actionKalmanTrack->setDisabled(true);
-        ui->actionkalmanLiteTrack->setDisabled(true);
-    } else {
-        ui->actionWylie->setEnabled(true);
-        ui->actionMultiPoint->setEnabled(true);
-        ui->actionRes->setEnabled(true);
-        ui->actionSumDist->setEnabled(true);
-
-        ui->actionFullCentroid->setEnabled(true);
-        ui->actionSubLS->setEnabled(true);
-        ui->actionTwoCenter->setEnabled(true);
-
-        ui->actionKalmanTrack->setEnabled(true);
-        ui->actionkalmanLiteTrack->setEnabled(true);
-    }
-}
-
-void uiMainWindow::paintEvent(QPaintEvent *event) {
-    Q_UNUSED(event);
-
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing, true);
-}
-
 void uiMainWindow::oneUsrBtnClicked(int tagId, bool isShowable) {
     Q_UNUSED(tagId);
     Q_UNUSED(isShowable);
     ui->canvas->syncWithUiFrame(ui->UsrFrm);
-    handleTimeout(false);
+    handleModelDataUpdate(false);
 }
 
-void uiMainWindow::handleTimeout(bool isUpdateCount) {
+void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
     distCount = distCount < 1 ? 1 : distCount;
+    // distCount updated automaticly when timeout event occurs
     if (isUpdateCount) {
-        distCount++;    //为了保证qDebug与paintEvent显示一致，先distCount++，实际从1开始。
+        distCount++;
     }
+    // update the status bar info
     distCountShow->setText(QString("distCount: %0").arg(distCount, 4, 10, QChar('0')));
 
+    // prepare model data for canvas view
     foreach (oneTag tag, distData.get_q()->tagsData) {
-        if (ui->UsrFrm->isShowable(tag.tagId)) {
-            storeTagInfo *oneTagInfo = store.getTagInfo(tag.tagId);
-            if (!oneTagInfo->isTagPosInitialed) continue;
+        storeTagInfo *oneTagInfo = store.getTagInfo(tag.tagId);
+
+        // CONDITIONs to the data
+        // 1. the user wants to show
+        if (ui->UsrFrm->isShowable(tag.tagId)
+        // 2. MEASURE (position) is sucessful processed
+         && oneTagInfo->isTagPosInitialed
+        // 3. for multi-tag, tags data count may different
+         && oneTagInfo->methodInfo[MEASUR_STR].AnsLines.count() > distCount) {
 
             ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
             //ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
@@ -199,7 +86,7 @@ void uiMainWindow::handleTimeout(bool isUpdateCount) {
             ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
             //qDebug() << calcDistance(tag.distData[distCount].p_t.toQPointF(),
             //                         oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
-            qDebug() << "[@handleTimeout]" << tag.tagId << MEASUR_STR << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
+            qDebug() << "[@handleModelDataUpdate] " << distCount << tag.tagId << MEASUR_STR << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
             //ui->canvas->setPosition(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].Ans[distCount].toQPointF());
             //ui->canvas->setLine(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].AnsLines[distCount-1]);
 
@@ -246,16 +133,24 @@ void uiMainWindow::handleTimeout(bool isUpdateCount) {
 // MENU ACTION
 /***********************************************************/
 // FILE
-void uiMainWindow::loadIniConfigFile(bool checked) {
+void uiMainWindow::loadIniConfigFile(bool checked, QString pathIn) {
     Q_UNUSED(checked);
+    resetData();
+
     int nSensorKeep = cfgData.get_q()->sensor.count();
     bool isInitKeep = cfgData.get_q()->isInitialized;
-    QString path = QFileDialog::getOpenFileName(this, "Select Config File", ".", "config file(*.ini)");
-    qDebug() << "loadIniConfigFile Path:" << path;
+    QString path;
+    if (0 == pathIn.length()) {
+        path = QFileDialog::getOpenFileName(this, "Select Config File", ".", "config file(*.ini)");
+    } else {
+        path = pathIn;
+    }
+    qDebug() << "[@uiMainWindow::loadIniConfigFile] Path:" << path;
     cfgData.loadNewFile(path);
     calcPos.setConfigData(cfgData.get_q());
     ui->canvas->setConfigData(cfgData.get_q());
     ui->actionRead_ini->setChecked(true);
+
     checkData();
 
     if (isInitKeep && nSensorKeep != cfgData.get_q()->sensor.count()) {
@@ -263,16 +158,17 @@ void uiMainWindow::loadIniConfigFile(bool checked) {
         loadLogDistanceFile_2(true);
     }
 }
-void uiMainWindow::loadLogDistanceFile(bool checked) {
+void uiMainWindow::loadLogDistanceFile(bool checked, QString pathIn) {
     Q_UNUSED(checked);
-    QString path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "distance file(*.log)");
-    qDebug() << "loadLogDistanceFile Path:" << path;
+    resetData();
 
-    // CLEAR LEGACY
-    store.clear();
-    distData.clear();
-    ui->UsrFrm->removeAll();
-    ui->canvas->removeAll();
+    QString path;
+    if (0 == pathIn.length()) {
+        path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "distance file(*.log)");
+    } else {
+        path = pathIn;
+    }
+    qDebug() << "[@uiMainWindow::loadLogDistanceFile] Path:" << path;
 
     distData.loadNewFile_1(path);
     foreach (oneTag tag, distData.get_q()->tagsData) {
@@ -287,25 +183,19 @@ void uiMainWindow::loadLogDistanceFile(bool checked) {
     ui->actionRead_dist_2->setChecked(false);
     qDebug() << "[@uiMainWindow::loadLogDistanceFile]" << distData.toString();
 
-    ui->actionFullCentroid->setChecked(false);
-    ui->actionSubLS->setChecked(false);
-    ui->actionTwoCenter->setChecked(false);
-    ui->actionTaylorSeries->setChecked(false);
-
-    ui->actionKalmanTrack->setChecked(false);
-    ui->actionkalmanLiteTrack->setChecked(false);
     checkData();
 }
-void uiMainWindow::loadLogDistanceFile_2(bool checked) {
+void uiMainWindow::loadLogDistanceFile_2(bool checked, QString pathIn) {
     Q_UNUSED(checked);
-    QString path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "distance file(*.log)");
-    qDebug() << "loadLogDistanceFile_2 Path:" << path;
+    resetData();
 
-    // CLEAR LEGACY
-    store.clear();
-    distData.clear();
-    ui->UsrFrm->removeAll();
-    ui->canvas->removeAll();
+    QString path;
+    if (0 == pathIn.length()) {
+        path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "distance file(*.log)");
+    } else {
+        path = pathIn;
+    }
+    qDebug() << "[@uiMainWindow::loadLogDistanceFile_2] Path:" << path;
 
     distData.loadNewFile_2(path);
     foreach (oneTag tag, distData.get_q()->tagsData) {
@@ -320,19 +210,17 @@ void uiMainWindow::loadLogDistanceFile_2(bool checked) {
     ui->actionRead_dist_2->setChecked(true);
     qDebug() << "[@uiMainWindow::loadLogDistanceFile_2]" << distData.toString();
 
-    ui->actionFullCentroid->setChecked(false);
-    ui->actionSubLS->setChecked(false);
-    ui->actionTwoCenter->setChecked(false);
-    ui->actionTaylorSeries->setChecked(false);
-
-    ui->actionKalmanTrack->setChecked(false);
-    ui->actionkalmanLiteTrack->setChecked(false);
     checkData();
 }
-void uiMainWindow::loadPictureFile(bool checked) {
+void uiMainWindow::loadPictureFile(bool checked, QString pathIn) {
     Q_UNUSED(checked);
-    QString path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "picture file(*.*)");
-    qDebug() << "loadPictureFile Path:" << path;
+    QString path;
+    if (0 == pathIn.length()) {
+        path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "picture file(*.*)");
+    } else {
+        path = pathIn;
+    }
+    qDebug() << "[@uiMainWindow::loadPictureFile] Path:" << path;
     ui->canvas->loadPicture(path);
     ui->actionRead_dist->setChecked(true);
 }
@@ -411,25 +299,39 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
     // determine the calculate method
     calcPos.calcPosType = type;
 
+    QTime time;
+    time.start();
+    totalPos = 0;
     foreach (storeTagInfo *info, store.tags) {
         info->addOrResetMethodInfo(MEASUR_STR, CALC_POS2STR[type]);
         info->calcPosType = type;
+/****** CALC POS MAIN *****************************************/
         calcPos.calcPosVector(info);
+/***********************************************************/
         ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
         info->isTagPosInitialed = true;
+        info->reset(TRACKx_STR);
+        totalPos += info->methodInfo[MEASUR_STR].Ans.count();
 
         dType measDist = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
-        qDebug() << "#" + CALC_POS2STR[type] + "#" << info->toString();
-        qDebug() << "#" + CALC_POS2STR[type] + "#"
+        qDebug() << "#posCalcPROCESS#" << CALC_POS2STR[type] << info->toString();
+        qDebug() << "#posCalcPROCESS#" << CALC_POS2STR[type]
                  << "avgDistanceSquare => measDist:" << measDist
                  << info->methodInfo[MEASUR_STR].AnsLines.count();
     }
+    calcTimeElapsedMeasu = time.elapsed()/1000.f;
+    calcTimeElapsedTrack = 0.f;
+    calcTimeElapsed->setText(QString("nPOS:%0 {MEAS:%1(s)},{TRACK:%2(s)}")
+                             .arg(totalPos).arg(calcTimeElapsedMeasu).arg(calcTimeElapsedTrack));
+    qDebug() << "#posCalcPROCESS#" << CALC_POS2STR[type]
+             << "total Pos:" << totalPos << ";"
+             << "using Time:" << calcTimeElapsedMeasu << "(s)";
 
     ui->actionKalmanTrack->setChecked(false);
     ui->actionkalmanLiteTrack->setChecked(false);
     calcTrack.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
 
-    handleTimeout(false);
+    handleModelDataUpdate(false);
 }
 
 void uiMainWindow::posFullCentroid(bool checked) {
@@ -464,19 +366,30 @@ void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
     // determine the calculate method
     calcTrack.calcTrackMethod = type;
 
+    QTime time;
+    time.start();
     foreach (storeTagInfo *info, store.tags) {
         info->addOrResetMethodInfo(TRACKx_STR, TRACK_METHOD2STR[type]);
+/****** CALC TRACK MAIN ****************************************/
         calcTrack.calcOneTrack(info->methodInfo[MEASUR_STR], info->methodInfo[TRACKx_STR]);
+/***********************************************************/
         ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_TRACK_DATA);
 
         dType measDist   = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
         dType kalmanDist = calcTotalAvgDistanceSquare(info->methodInfo[TRACKx_STR].AnsLines);
-        qDebug() << "#" + TRACK_METHOD2STR[type] + "#" << info->toString();
-        qDebug() << "#" + TRACK_METHOD2STR[type] + "#"
-                 << "avgDistanceSquare => measDist:" << measDist
-                 << "; trackDist:" << kalmanDist;
+        qDebug() << "#trackCalcPROCESS#" << TRACK_METHOD2STR[type] << info->toString();
+        qDebug() << "#trackCalcPROCESS#" << TRACK_METHOD2STR[type]
+                 << "avgDistanceSquare => measDist:" << measDist << ";"
+                 << "trackDist:" << kalmanDist;
     }
-    handleTimeout(false);
+    calcTimeElapsedTrack = time.elapsed()/1000.f;
+    calcTimeElapsed->setText(QString("nPOS:%0 {MEAS:%1(s)},{TRACK:%2(s)}")
+                             .arg(totalPos).arg(calcTimeElapsedMeasu).arg(calcTimeElapsedTrack));
+    qDebug() << "#trackCalcPROCESS#" << TRACK_METHOD2STR[type]
+             << "total Pos:" << totalPos << ";"
+             << "using Time:" << calcTimeElapsedTrack << "(s)";
+
+    handleModelDataUpdate(false);
 }
 
 void uiMainWindow::trackKalman(bool checked) {

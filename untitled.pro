@@ -38,7 +38,8 @@ SOURCES += \
     calcLibmatrixOp.cpp \
     calcLibDistance.cpp \
     _myheads.cpp \
-    calcTagTrack.cpp
+    calcTagTrack.cpp \
+    uiMainwindowTedious.cpp
 
 HEADERS += \
     showStore.h \

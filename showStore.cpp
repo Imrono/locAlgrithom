@@ -14,6 +14,12 @@ void storeTagInfo::reset(const QString &methodType, const QString &method) {
         methodInfo[methodType].methodName = method;
     }
 }
+void storeTagInfo::reset(const QString &methodType) {
+    if (methodInfo.contains(methodType)) {
+        methodInfo[methodType].Ans.clear();
+        methodInfo[methodType].AnsLines.clear();
+    }
+}
 
 showStore::showStore()
 {
