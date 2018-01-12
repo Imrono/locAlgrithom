@@ -80,15 +80,18 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
         // 3. for multi-tag, tags data count may different
          && oneTagInfo->methodInfo[MEASUR_STR].AnsLines.count() > distCount) {
 
-            ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
-            //ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
-
-            ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
+            if (CALC_POS_TYPE::POS_NONE != calcPos.calcPosType) {
+                ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
+                //ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
+            }
+            //ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
             //qDebug() << calcDistance(tag.distData[distCount].p_t.toQPointF(),
             //                         oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
-            qDebug() << "[@handleModelDataUpdate] " << distCount << tag.tagId << MEASUR_STR << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
-            //ui->canvas->setPosition(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].Ans[distCount].toQPointF());
-            //ui->canvas->setLine(tag.tagId, KALMAN_STR, oneTagInfo->methodInfo[KALMAN_STR].AnsLines[distCount-1]);
+            //qDebug() << "[@handleModelDataUpdate] " << distCount << tag.tagId << MEASUR_STR << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
+            if (TRACK_METHOD::TRACK_NONE != calcTrack.calcTrackMethod) {
+                ui->canvas->setPosition(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].Ans[distCount].toQPointF());
+                //ui->canvas->setLine(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines[distCount-1]);
+            }
 
             ui->canvas->setPointsRaw(tag.tagId, MEASUR_STR, oneTagInfo->RawPoints[distCount]);
             ui->canvas->setPointsRefined(tag.tagId, MEASUR_STR, oneTagInfo->RefinedPoints[distCount]);
@@ -281,11 +284,7 @@ void uiMainWindow::nlosSumDist(bool checked) {
 /***********************************************************/
 // POSITION
 void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
-    // Set UI
-    ui->actionFullCentroid->setChecked(false);
-    ui->actionSubLS->setChecked(false);
-    ui->actionTwoCenter->setChecked(false);
-    ui->actionTaylorSeries->setChecked(false);
+    resetUi(true, false);
     if (CALC_POS_TYPE::FullCentroid == type) {
         ui->actionFullCentroid->setChecked(true);
     } else if (CALC_POS_TYPE::SubLS == type) {
@@ -294,6 +293,8 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
         ui->actionTwoCenter->setChecked(true);
     } else if (CALC_POS_TYPE::Taylor == type) {
         ui->actionTaylorSeries->setChecked(true);
+    } else if (CALC_POS_TYPE::WeightedTaylor == type) {
+        ui->actionWeightedTaylor->setChecked(true);
     } else {}
 
     // determine the calculate method
@@ -303,9 +304,10 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
     time.start();
     totalPos = 0;
     foreach (storeTagInfo *info, store.tags) {
+        ui->canvas->clearData(info->tagId);
         info->addOrResetMethodInfo(MEASUR_STR, CALC_POS2STR[type]);
         info->calcPosType = type;
-/****** CALC POS MAIN *****************************************/
+/****** CALC POS MAIN **************************************/
         calcPos.calcPosVector(info);
 /***********************************************************/
         ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
@@ -328,7 +330,8 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
              << "using Time:" << calcTimeElapsedMeasu << "(s)";
 
     ui->actionKalmanTrack->setChecked(false);
-    ui->actionkalmanLiteTrack->setChecked(false);
+    ui->actionKalmanLiteTrack->setChecked(false);
+    ui->actionKalmanInfoTrack->setChecked(false);
     calcTrack.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
 
     handleModelDataUpdate(false);
@@ -350,17 +353,20 @@ void uiMainWindow::posTaylorSeries(bool checked) {
     Q_UNUSED(checked);
     posCalcPROCESS(CALC_POS_TYPE::Taylor);
 }
-
+void uiMainWindow::posWeightedTaylor(bool checked) {
+    Q_UNUSED(checked);
+    posCalcPROCESS(CALC_POS_TYPE::WeightedTaylor);
+}
 /***********************************************************/
 // TRACK
 void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
-    // Set UI
-    ui->actionKalmanTrack->setChecked(false);
-    ui->actionkalmanLiteTrack->setChecked(false);
+    resetUi(false, true);
     if (TRACK_METHOD::TRACK_KALMAN == type) {
         ui->actionKalmanTrack->setChecked(true);
     } else if (TRACK_METHOD::TRACK_KALMAN_LITE == type) {
-        ui->actionkalmanLiteTrack->setChecked(true);
+        ui->actionKalmanLiteTrack->setChecked(true);
+    } else if (TRACK_METHOD::TRACK_KALMAN_INFO == type) {
+        ui->actionKalmanInfoTrack->setChecked(true);
     } else {}
 
     // determine the calculate method
@@ -399,4 +405,8 @@ void uiMainWindow::trackKalman(bool checked) {
 void uiMainWindow::trackKalmanLite(bool checked) {
     Q_UNUSED(checked);
     trackCalcPROCESS(TRACK_METHOD::TRACK_KALMAN_LITE);
+}
+void uiMainWindow::trackKalmanInfo(bool checked) {
+    Q_UNUSED(checked);
+    trackCalcPROCESS(TRACK_METHOD::TRACK_KALMAN_INFO);
 }

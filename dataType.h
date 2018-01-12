@@ -77,6 +77,10 @@ struct locationCoor
         ans.z /= t;
         return ans;
     }
+    static dType dot(const locationCoor &a, const locationCoor &b) {
+	return a.x*b.x + a.y*b.y + a.z*b.z;
+    }
+
     QString toString() const {
         return QString("(%0,%1,%2)").arg(x).arg(y).arg(z);
     }

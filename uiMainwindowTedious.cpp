@@ -16,15 +16,16 @@ void uiMainWindow::connectUi() {
     connect(ui->actionSumDist,   SIGNAL(triggered(bool)), this, SLOT(nlosSumDist(bool)));
 
     // POSITION
-    connect(ui->actionFullCentroid, SIGNAL(triggered(bool)), this, SLOT(posFullCentroid(bool)));
-    connect(ui->actionSubLS,        SIGNAL(triggered(bool)), this, SLOT(posSubLS(bool)));
-    connect(ui->actionTwoCenter,    SIGNAL(triggered(bool)), this, SLOT(posTwoCenter(bool)));
-    connect(ui->actionTaylorSeries, SIGNAL(triggered(bool)), this, SLOT(posTaylorSeries(bool)));
+    connect(ui->actionFullCentroid,   SIGNAL(triggered(bool)), this, SLOT(posFullCentroid(bool)));
+    connect(ui->actionSubLS,          SIGNAL(triggered(bool)), this, SLOT(posSubLS(bool)));
+    connect(ui->actionTwoCenter,      SIGNAL(triggered(bool)), this, SLOT(posTwoCenter(bool)));
+    connect(ui->actionTaylorSeries,   SIGNAL(triggered(bool)), this, SLOT(posTaylorSeries(bool)));
+    connect(ui->actionWeightedTaylor, SIGNAL(triggered(bool)), this, SLOT(posWeightedTaylor(bool)));
 
     // TRACK
     connect(ui->actionKalmanTrack,     SIGNAL(triggered(bool)), this, SLOT(trackKalman(bool)));
-    connect(ui->actionkalmanLiteTrack, SIGNAL(triggered(bool)), this, SLOT(trackKalmanLite(bool)));
-
+    connect(ui->actionKalmanLiteTrack, SIGNAL(triggered(bool)), this, SLOT(trackKalmanLite(bool)));
+    connect(ui->actionKalmanInfoTrack, SIGNAL(triggered(bool)), this, SLOT(trackKalmanInfo(bool)));
 /*************************************************************/
     connect(&timer, SIGNAL(timeout()), this, SLOT(handleModelDataUpdate()));
 
@@ -102,7 +103,8 @@ void uiMainWindow::checkData() {
         ui->actionTaylorSeries->setDisabled(true);
 
         ui->actionKalmanTrack->setDisabled(true);
-        ui->actionkalmanLiteTrack->setDisabled(true);
+        ui->actionKalmanLiteTrack->setDisabled(true);
+        ui->actionKalmanInfoTrack->setDisabled(true);
     } else {
         ui->actionWylie->setEnabled(true);
         ui->actionMultiPoint->setEnabled(true);
@@ -115,7 +117,8 @@ void uiMainWindow::checkData() {
         ui->actionTaylorSeries->setEnabled(true);
 
         ui->actionKalmanTrack->setEnabled(true);
-        ui->actionkalmanLiteTrack->setEnabled(true);
+        ui->actionKalmanLiteTrack->setEnabled(true);
+        ui->actionKalmanInfoTrack->setEnabled(true);
     }
 }
 void uiMainWindow::resetData() {
@@ -125,13 +128,23 @@ void uiMainWindow::resetData() {
     ui->UsrFrm->removeAll();
     ui->canvas->removeAll();
     // CLEAR UI
-    calcPos.calcPosType = CALC_POS_TYPE::POS_NONE;
-    ui->actionFullCentroid->setChecked(false);
-    ui->actionSubLS->setChecked(false);
-    ui->actionTwoCenter->setChecked(false);
-    ui->actionTaylorSeries->setChecked(false);
+    resetUi(true, true);
+}
 
-    calcTrack.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
-    ui->actionKalmanTrack->setChecked(false);
-    ui->actionkalmanLiteTrack->setChecked(false);
+void uiMainWindow::resetUi(bool isPos, bool isTrack) {
+    if (isPos) {
+        calcPos.calcPosType = CALC_POS_TYPE::POS_NONE;
+        ui->actionFullCentroid->setChecked(false);
+        ui->actionSubLS->setChecked(false);
+        ui->actionTwoCenter->setChecked(false);
+        ui->actionTaylorSeries->setChecked(false);
+        ui->actionWeightedTaylor->setChecked(false);
+    } else {}
+
+    if (isTrack) {
+        calcTrack.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
+        ui->actionKalmanTrack->setChecked(false);
+        ui->actionKalmanLiteTrack->setChecked(false);
+        ui->actionKalmanInfoTrack->setChecked(false);
+    } else {}
 }

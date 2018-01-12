@@ -7,6 +7,10 @@ calcTagPos::~calcTagPos() {
     resetA();
 }
 void calcTagPos::resetA() {
+    // Weighted
+    if (nullptr == W_taylor)    delete []W_taylor;
+    W_taylor = nullptr;
+
     // Taylor
     if (nullptr != A_taylor) {
         for (int i = 0; i < fc_row; i++) {
@@ -115,6 +119,9 @@ void calcTagPos::setConfigData(const configData *cfg_q) {
     for (int i = 0; i < fc_row; i++) {
         A_taylor[i] = new dType[2];
     }
+
+    // weighted
+    W_taylor = new dType[fc_row];
 }
 void calcTagPos::setDistanceData(const distanceData *dist_q) {
     this->dist_d = dist_q;
@@ -234,6 +241,8 @@ locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE) {
         return calcTwoCenter(dist, MSE);
     } else if (CALC_POS_TYPE::Taylor == calcPosType) {
         return calcTaylorSeries(dist, MSE);
+    } else if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
+        return calcWeightedTaylor(dist, MSE);
     } else {
         return {0.f, 0.f, 0.f};
     }
@@ -364,6 +373,86 @@ void calcTagPos::calcTaylorSeries(const int *distance, const locationCoor *senso
     out_MSE = calcMSE(A, B, X, N, 3);
 }
 
+void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sensor,
+                                    dType **A, dType **coA, dType *B, int N,
+                                    dType **A_taylor, dType *B_taylor, dType *W_taylor,
+                                    dType &out_x, dType &out_y, dType &out_MSE) {
+    dType X[3] = {0.f};
+    dType dX[3] = {0.f};
+    dType tmpD = 0.f;
+    dType mse = 0.f;
+    dType mseKeep = 0.f;
+    dType dMse = 10000.f;
+
+    for (int i = 0; i < N; i++) {
+        B[i] = qPow(dType(distance[i]), 2) - qPow(sensor[i].x, 2) - qPow(sensor[i].y, 2);
+    }
+    matrixMuti(coA, B, X, 3, N);
+    X[2] = qPow(X[0], 2) + qPow(X[1], 2);
+    mse = calcMSE(A, B, X, N, 3);
+
+    // calculate weight
+    int *idx = new int[N];
+    int ii;
+    for (int i = 0; i < N; i++) {
+        int tmp = 0.f;
+        for (int j = 0; j < N; j++) {
+            if (tmp < distance[j]) {
+                bool found = false;
+                for (int k = 0; k < i; k++) {
+                    if (idx[k] == j) found = true;
+                }
+                if (!found) {
+                    tmp = distance[j];
+                    ii = j;
+                } else {}
+            }
+        }
+        idx[i] = ii;
+    }
+    for (int i = 0; i < N; i++) {
+        W_taylor[i] = 1.f / qSqrt(qAbs(dType(distance[i])-dType(distance[idx[2]]))+10.f);
+        //W_taylor[i] = 1.f;
+    }
+    /*
+    qDebug() << distance[0] << distance[1] << distance[2] << distance[3] << ","
+             << idx[0] << idx[1] << idx[2] << idx[3] << ","
+             << distance[idx[0]] << distance[idx[1]] << distance[idx[2]] << distance[idx[3]] << ","
+             << W_taylor[0] << W_taylor[1] << W_taylor[2] << W_taylor[3];
+    */
+    delete []idx;
+
+    int count = 0;
+    while (mse > 10000.f && count < 3 && dMse > 1000.f) {
+        //qDebug() << count << "calcTaylorSeries" << mse << dMse;
+        // fill the matrix
+        for (int i = 0; i < N; i++) {
+            tmpD = qSqrt(qPow(X[0] - sensor[i].x, 2) + qPow(X[1] - sensor[i].y, 2));
+            A_taylor[i][0] = ((X[0] - sensor[i].x) / tmpD) * W_taylor[i];
+            A_taylor[i][1] = ((X[1] - sensor[i].y) / tmpD) * W_taylor[i];
+            B_taylor[i] =    (dType(distance[i]) - tmpD)   * W_taylor[i];
+        }
+
+        leastSquare(A_taylor, B_taylor, dX, N, 2);
+
+        X[0] += dX[0];
+        X[1] += dX[1];
+        X[2] = qPow(X[0], 2) + qPow(X[1], 2);
+
+        mseKeep = mse;
+        mse = calcMSE(A, B, X, N, 3);
+        dMse = qAbs(mseKeep - mse);
+
+        count ++;
+    };
+    //qDebug() << count << "#calcTaylorSeries#" << mse << dMse;
+
+    // output
+    out_x   = X[0];
+    out_y   = X[1];
+    out_MSE = calcMSE(A, B, X, N, 3);
+    qDebug() << out_x << out_y;
+}
 
 locationCoor calcTagPos::calcFullCentroid(const int *dist, dType &MSE) {
     calcFullCentroid(dist, cfg_d->sensor.data(),
@@ -383,13 +472,21 @@ locationCoor calcTagPos::calcTwoCenter(const int *dist, dType &MSE) {
     calcTwoCenter(dist, cfg_d->sensor.data(),
                   cfg_d->sensor.count(), X[0], X[1], MSE);
 
-    //qDebug() << X[0] << X[1];
     return locationCoor{X[0], X[1], 0.f};
 }
 
 locationCoor calcTagPos::calcTaylorSeries(const int *dist, dType &MSE) {
     calcTaylorSeries(dist, cfg_d->sensor.data(),
-                     A_fc, A_fc_inverse_AT, B_fc, fc_row, A_taylor, B_taylor, X[0], X[1], MSE);
+                     A_fc, A_fc_inverse_AT, B_fc, fc_row,
+                     A_taylor, B_taylor, X[0], X[1], MSE);
+
+    return locationCoor{X[0], X[1], 0.f};
+}
+
+locationCoor calcTagPos::calcWeightedTaylor(const int *dist, dType &MSE) {
+    calcWeightedTaylor(dist, cfg_d->sensor.data(),
+                       A_fc, A_fc_inverse_AT, B_fc, fc_row,
+                       A_taylor, B_taylor, W_taylor, X[0], X[1], MSE);
 
     return locationCoor{X[0], X[1], 0.f};
 }

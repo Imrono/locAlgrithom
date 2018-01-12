@@ -24,12 +24,15 @@ public:
     // ALL IN ONE
     TRACK_METHOD calcTrackMethod{TRACK_METHOD::TRACK_NONE};
     void calcOneTrack(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo);
-    static void calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo);
     static void calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo);
+    static void calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo);
+    static void calcKalmanPosVectorInfo(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo);
+
     static void calcMatrixMulit_KP(const dType Kx, const dType Kv,
                                    const dType Pxx_pri_t, const dType Pxv_pri_t, const dType Pvv_pri_t,
                                    dType &Pxx_t, dType &Pxv_t, dType &Pvv_t);
 
+    static dType calcQ();
     static dType calcR(dType reliability, const QString &methodName);
     static dType calcR(locationCoor v_t, locationCoor v_t_1, dType reliability);
     static dType calcR(locationCoor v_t, locationCoor v_t_1);

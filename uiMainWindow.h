@@ -54,6 +54,7 @@ private:
 
     void checkData();
     void resetData();
+    void resetUi(bool isPos = false, bool isTrack = false);
     void connectUi();
 
 private slots:
@@ -75,11 +76,13 @@ private slots:
     void posSubLS(bool checked);
     void posTwoCenter(bool checked);
     void posTaylorSeries(bool checked);
+    void posWeightedTaylor(bool checked);
 
     // TRACK
     void trackCalcPROCESS(TRACK_METHOD type);
     void trackKalman(bool checked);
     void trackKalmanLite(bool checked);
+    void trackKalmanInfo(bool checked);
 
 private slots:
     void handleModelDataUpdate(bool isUpdateCount = true);

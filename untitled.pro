@@ -35,11 +35,11 @@ SOURCES += \
     calcTagNLOS.cpp \
     uiUsrInfoBtn.cpp \
     uiUsrFrame.cpp \
-    calcLibmatrixOp.cpp \
     calcLibDistance.cpp \
     _myheads.cpp \
     calcTagTrack.cpp \
-    uiMainwindowTedious.cpp
+    uiMainwindowTedious.cpp \
+    calcLibMatrixOp.cpp
 
 HEADERS += \
     showStore.h \

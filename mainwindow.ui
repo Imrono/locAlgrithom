@@ -361,6 +361,7 @@
     <addaction name="actionSubLS"/>
     <addaction name="actionTwoCenter"/>
     <addaction name="actionTaylorSeries"/>
+    <addaction name="actionWeightedTaylor"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuview">
@@ -385,7 +386,8 @@
      <string>标签跟踪</string>
     </property>
     <addaction name="actionKalmanTrack"/>
-    <addaction name="actionkalmanLiteTrack"/>
+    <addaction name="actionKalmanLiteTrack"/>
+    <addaction name="actionKalmanInfoTrack"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -493,7 +495,7 @@
     <string>kalman</string>
    </property>
   </action>
-  <action name="actionkalmanLiteTrack">
+  <action name="actionKalmanLiteTrack">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -533,6 +535,22 @@
    </property>
    <property name="text">
     <string>泰勒级数迭代</string>
+   </property>
+  </action>
+  <action name="actionKalmanInfoTrack">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>kalmanInfo</string>
+   </property>
+  </action>
+  <action name="actionWeightedTaylor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>加权泰勒迭代</string>
    </property>
   </action>
  </widget>
