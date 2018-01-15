@@ -84,6 +84,15 @@ public:
     }
 
     void loadPicture(QString path);
+    void zoomChange(int ratio = 0) {
+        if (ratioZoom + ratio > 0) {
+            ratioZoom += ratio;
+        }
+        update();
+    }
+    void zoomReset() {ratioZoom = 100;}
+    int zoomGet() {return ratioZoom;}
+    dType zoom() {return ratioZoom/100.f;}
 
 private:
     int widthCanvasOld{0};
@@ -113,6 +122,12 @@ private:
     bool isShowTrack{false};
 
     dType ratioShow{1.f};
+    QPoint center;
+    int ratioZoom{100};
+    QPoint offset{QPoint(0,0)};
+    QPointF toZoomedPoint(QPointF p) {
+        return p*zoom()+(1.f-zoom())*center;
+    }
 
     QMap<int, showTagRelated> tags;
     bool isShowPath{false};

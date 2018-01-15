@@ -2,6 +2,7 @@
 #include <QtMath>
 #include <QDebug>
 #include "calcLibMatrixOp.h"
+#include "calcLibMath.h"
 
 calcTagPos::~calcTagPos() {
     resetA();
@@ -195,7 +196,8 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
         tagInfo->RawPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
 
         //qDebug() << "[" << i << "]" << tmpDist.toStringDist();
-        tmpX = calcOnePosition(tmpDist.distance, mse);
+        dType T = tagDists.distData[i].time.toMSecsSinceEpoch();
+        tmpX = calcOnePosition(tmpDist.distance, mse, T);
         //qDebug() << tmpX.toString() << mse;
         if (i >= 1) {
             /* distance filter BEGIN */
@@ -209,7 +211,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
                         break;
                     } else {
                         if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
-                            tmpX = calcOnePosition(tmpDist.distance, mse);
+                            tmpX = calcOnePosition(tmpDist.distance, mse, T);
                         } else {}
                     }
                 }
@@ -232,7 +234,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
     }
 }
 
-locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE) {
+locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T) {
     if (CALC_POS_TYPE::FullCentroid == calcPosType) {
         return calcFullCentroid(dist, MSE);
     } else if (CALC_POS_TYPE::SubLS == calcPosType) {
@@ -243,6 +245,8 @@ locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE) {
         return calcTaylorSeries(dist, MSE);
     } else if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
         return calcWeightedTaylor(dist, MSE);
+    } else if (CALC_POS_TYPE::KalmanTaylor == calcPosType) {
+        return calcKalmanTaylor(dist, MSE, T);
     } else {
         return {0.f, 0.f, 0.f};
     }
@@ -393,23 +397,8 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 
     // calculate weight
     int *idx = new int[N];
-    int ii;
-    for (int i = 0; i < N; i++) {
-        int tmp = 0.f;
-        for (int j = 0; j < N; j++) {
-            if (tmp < distance[j]) {
-                bool found = false;
-                for (int k = 0; k < i; k++) {
-                    if (idx[k] == j) found = true;
-                }
-                if (!found) {
-                    tmp = distance[j];
-                    ii = j;
-                } else {}
-            }
-        }
-        idx[i] = ii;
-    }
+    sortDistance(distance, idx, N);
+
     for (int i = 0; i < N; i++) {
         W_taylor[i] = 1.f / qSqrt(qAbs(dType(distance[i])-dType(distance[idx[2]]))+10.f);
         //W_taylor[i] = 1.f;
@@ -445,13 +434,11 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 
         count ++;
     };
-    //qDebug() << count << "#calcTaylorSeries#" << mse << dMse;
 
     // output
     out_x   = X[0];
     out_y   = X[1];
     out_MSE = calcMSE(A, B, X, N, 3);
-    qDebug() << out_x << out_y;
 }
 
 locationCoor calcTagPos::calcFullCentroid(const int *dist, dType &MSE) {
@@ -488,5 +475,12 @@ locationCoor calcTagPos::calcWeightedTaylor(const int *dist, dType &MSE) {
                        A_fc, A_fc_inverse_AT, B_fc, fc_row,
                        A_taylor, B_taylor, W_taylor, X[0], X[1], MSE);
 
+    return locationCoor{X[0], X[1], 0.f};
+}
+
+locationCoor calcTagPos::calcKalmanTaylor(const int *dist, dType &MSE, dType T) {
+    calcKalmanTaylor(dist, cfg_d->sensor.data(), T,
+                     A_fc, A_fc_inverse_AT, B_fc, fc_row,
+                     A_taylor, B_taylor, W_taylor, X[0], X[1], MSE);
     return locationCoor{X[0], X[1], 0.f};
 }

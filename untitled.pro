@@ -39,7 +39,9 @@ SOURCES += \
     _myheads.cpp \
     calcTagTrack.cpp \
     uiMainwindowTedious.cpp \
-    calcLibMatrixOp.cpp
+    calcLibMatrixOp.cpp \
+    calcTagPosKalmanTaylor.cpp \
+    calcLibMath.cpp
 
 HEADERS += \
     showStore.h \
@@ -56,7 +58,8 @@ HEADERS += \
     uiUsrFrame.h \
     calcLibDistance.h \
     calcLibMatrixOp.h \
-    calcTagTrack.h
+    calcTagTrack.h \
+    calcLibMath.h
 
 FORMS += \
     mainwindow.ui
@@ -69,3 +72,5 @@ win32-msvc*:QMAKE_CXXFLAGS += /wd"4819"
 
 RESOURCES += \
     resource.qrc
+
+DISTFILES +=

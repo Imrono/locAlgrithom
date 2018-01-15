@@ -99,6 +99,7 @@ void uiCanvas::resizeEvent(QResizeEvent *event) {
 
     if (widthCanvasOld != width() || heightCanvasOld != height()) {
         ratioShow = static_cast<dType>(width()) / widthActual;
+        center = QPoint(width()/2, height()/2);
         cfg_actualData2showData();
     }
     widthCanvasOld = width();
@@ -128,7 +129,11 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     painter.setBrush(QBrush(Qt::yellow));
     QPainterPath alarmPath;
     for (int i = 0; i < alarmShow.count(); i++) {
-        alarmPath.addPolygon(alarmShow[i]);
+        QPolygonF tmpAlarm;
+        for (int j = 0; j < alarmShow[i].count(); j++) {
+            tmpAlarm << toZoomedPoint(alarmShow[i][j]);
+        }
+        alarmPath.addPolygon(tmpAlarm);
     }
     painter.drawPath(alarmPath);
 
@@ -136,7 +141,11 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     painter.setBrush(QBrush(Qt::red));
     QPainterPath stopPath;
     for (int i = 0; i < stopShow.count(); i++) {
-        stopPath.addPolygon(stopShow[i]);
+        QPolygonF tmpStop;
+        for (int j = 0; j < stopShow[i].count(); j++) {
+            tmpStop << toZoomedPoint(stopShow[i][j]);
+        }
+        stopPath.addPolygon(tmpStop);
     }
     painter.drawPath(stopPath);
 
@@ -144,7 +153,11 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     painter.setBrush(QBrush(Qt::green));
     QPainterPath operPath;
     for (int i = 0; i < operShow.count(); i++) {
-        operPath.addPolygon(operShow[i]);
+        QPolygonF tmpOper;
+        for (int j = 0; j < operShow[i].count(); j++) {
+            tmpOper << toZoomedPoint(operShow[i][j]);
+        }
+        operPath.addPolygon(tmpOper);
     }
     painter.drawPath(operPath);
 
@@ -160,40 +173,43 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
         painter.setBrush(QColor(0, 0, 0));
         for (int i = 0; i < this->cfg_d->sensor.count(); i++) {
             painter.setPen(QPen(QColor(0, 0, 0), 2));
-            painter.drawEllipse(sensorShow[i], 6, 6);
+            painter.drawEllipse(toZoomedPoint(sensorShow[i]), 6, 6);
             // index the anchor
             painter.setPen(Qt::white);
             QFont font;
             font.setBold(true);
             painter.setFont(font);
-            painter.drawText(sensorShow[i].rx()-6, sensorShow[i].ry()-6, 12, 12, Qt::AlignCenter, QString::number(i, 10));
+            painter.drawText(toZoomedPoint(sensorShow[i]).rx()-6,
+                             toZoomedPoint(sensorShow[i]).ry()-6,
+                             12, 12, Qt::AlignCenter, QString::number(i, 10));
         }
     }
 
     // real time Point at TOP
     if (isShowPath) {
         foreach(const showTagRelated &tag, tags) {
-            tag.drawLines(painter, ratioShow);
+            tag.drawLines(painter, ratioShow, zoom(), center);
         }
     }
 
     foreach (showTagRelated tag, tags) {
         if (isShowRadius) {
-            tag.drawCircle(painter, cfg_d->sensor, ratioShow);
+            tag.drawCircle(painter, cfg_d->sensor, ratioShow, zoom(), center);
         }
         if (isShowRadiusBold) {
-            tag.drawCircleBold(painter, cfg_d->sensor[boldRadiusIdx], boldRadiusIdx, ratioShow);
+            tag.drawCircleBold(painter, cfg_d->sensor[boldRadiusIdx], boldRadiusIdx,
+                               ratioShow, zoom(), center);
         }
 
-        tag.drawPoint(painter, ratioShow);
-        tag.drawLine(painter, ratioShow);
+        tag.drawPoint(painter, ratioShow, zoom(), center);
+        tag.drawLine(painter, ratioShow, zoom(), center);
 
         if (isShowTrack) {
         }
 
         if (isShowAllPos) {
-            tag.drawPointsRaw(painter, ratioShow);
-            tag.drawPointsRefined(painter, ratioShow);
+            tag.drawPointsRaw(painter, ratioShow, zoom(), center);
+            tag.drawPointsRefined(painter, ratioShow, zoom(), center);
         }
     }
 }
@@ -205,8 +221,8 @@ void uiCanvas::mousePressEvent(QMouseEvent *event) {
     isShowRadiusBold = false;
     boldRadiusIdx = -1;
     for (int i = 0; i < cfg_d->sensor.count(); i++) {
-        dType d = qSqrt(qPow(x - actual2Show(cfg_d->sensor[i]).x(), 2)
-                      + qPow(y - actual2Show(cfg_d->sensor[i]).y(), 2));
+        dType d = qSqrt(qPow(x - toZoomedPoint(sensorShow[i]).x(), 2)
+                      + qPow(y - toZoomedPoint(sensorShow[i]).y(), 2));
         if (d < 16) {
             isShowRadiusBold = true;
             boldRadiusIdx = i;
@@ -240,6 +256,7 @@ void uiCanvas::loadPicture(QString path) {
         mybits->rgba_bits[3] = (mybits->rgba == 0xFFFFFFFF) ? 0 : 255;
         mybits++;
     }
+    backgroundImg.scaled(widthActual, heightActual);
 
     update();
 }

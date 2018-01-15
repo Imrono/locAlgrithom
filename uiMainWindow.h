@@ -52,10 +52,16 @@ private:
     dType calcTimeElapsedTrack{0.f};
     QLabel *calcTimeElapsed{nullptr};
 
+    QLabel *distZoomShow{nullptr};
+
     void checkData();
     void resetData();
     void resetUi(bool isPos = false, bool isTrack = false);
     void connectUi();
+
+    void setStatusTimeInfo();
+    void setStatusDistCount();
+    void setStatusZoom();
 
 private slots:
     // FILE
@@ -77,12 +83,17 @@ private slots:
     void posTwoCenter(bool checked);
     void posTaylorSeries(bool checked);
     void posWeightedTaylor(bool checked);
+    void posKalmanTaylor(bool checked);
 
     // TRACK
     void trackCalcPROCESS(TRACK_METHOD type);
     void trackKalman(bool checked);
     void trackKalmanLite(bool checked);
     void trackKalmanInfo(bool checked);
+
+    // ZOOM
+    void zoomIn(bool);
+    void zoomOut(bool);
 
 private slots:
     void handleModelDataUpdate(bool isUpdateCount = true);

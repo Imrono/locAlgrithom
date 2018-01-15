@@ -26,6 +26,7 @@ enum CALC_POS_TYPE {
     TwoCenter = 2,
     Taylor = 3,
     WeightedTaylor,
+    KalmanTaylor,
     NUM_CALC_POS
 };
 
@@ -33,7 +34,8 @@ enum CALC_POS_TYPE {
 #define METHOD_SUB_LS_STR          "{method:SubLS}"
 #define METHOD_TWO_CENTER_STR      "{method:TwoCenter}"
 #define METHOD_TAYLOR_SERIES_STR   "{method:TaylorSeries}"
-#define METHOD_WEIGHTED_TAYLOR_STR "{method:TaylorSeries}"
+#define METHOD_WEIGHTED_TAYLOR_STR "{method:WeightedTaylor}"
+#define METHOD_KALMAN_TAYLOR_STR   "{method:KalmanTaylor}"
 extern QString CALC_POS2STR[CALC_POS_TYPE::NUM_CALC_POS];
 
 enum POINTS_NLOS {

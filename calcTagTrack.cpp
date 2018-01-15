@@ -49,6 +49,8 @@ dType calcTagTrack::calcR(dType reliability, const QString &methodName) {
     } else if (METHOD_TWO_CENTER_STR == methodName){
     } else if (METHOD_TAYLOR_SERIES_STR == methodName) {
         reliability /= 100.f;
+    } else if (METHOD_KALMAN_TAYLOR_STR == methodName) {
+        reliability /= 100.f;
     } else {}
 
     dType ans = 0.0f;

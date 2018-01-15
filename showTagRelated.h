@@ -107,13 +107,23 @@ public:
     }
 
 /******************************************************************/
-    void drawPoint(QPainter &painter, dType ratio = 1.f) const;
-    void drawPointsRaw(QPainter &painter, dType ratio = 1.f) const;
-    void drawPointsRefined(QPainter &painter, dType ratio = 1.f) const;
-    void drawLine(QPainter &painter, dType ratio = 1.f) const;
-    void drawLines(QPainter &painter, dType ratio = 1.f) const;
-    void drawCircle(QPainter &painter, const QVector<locationCoor> &sensor, dType ratio = 1.f) const;
-    void drawCircleBold(QPainter &painter, const locationCoor &sensor, int distIdx, dType ratio = 1.f) const;
+    void drawPoint(QPainter &painter, dType ratio = 1.f,
+                   dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
+    void drawPointsRaw(QPainter &painter, dType ratio = 1.f,
+                       dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
+    void drawPointsRefined(QPainter &painter, dType ratio = 1.f,
+                           dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
+    void drawLine(QPainter &painter, dType ratio = 1.f,
+                  dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
+    void drawLines(QPainter &painter, dType ratio = 1.f,
+                   dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
+    void drawCircle(QPainter &painter, const QVector<locationCoor> &sensor,
+                    dType ratio = 1.f, dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
+    void drawCircleBold(QPainter &painter, const locationCoor &sensor, int distIdx,
+                        dType ratio = 1.f, dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
+    static QPointF toZoomedPoint(QPointF p, dType ratio, dType zoom, QPointF offset) {
+        return p*ratio*zoom+(1-zoom)*offset;
+    }
 
     //showTagRelated& operator=(const showTagRelated &sp);
     static void resetColorCount() {tagsViewDataBase.count = 0;}

@@ -9,17 +9,21 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // status bar shows the zoom
+    distZoomShow = new QLabel(this);
+    statusBar()->addWidget(distZoomShow);
+    setStatusZoom();
     // status bar shows the "distCount"
     distCountShow = new QLabel(this);
     statusBar()->addWidget(distCountShow);
-    distCountShow->setText(QString("distCount: %0").arg(0, 4, 10, QChar('0')));
+    setStatusDistCount();
     // status bar shows the "calcTimeElapsed"
     calcTimeElapsed = new QLabel(this);
     calcTimeElapsed->setAlignment(Qt::AlignRight);
     calcTimeElapsed->setFrameStyle(QFrame::Box | QFrame::Sunken);
     statusBar()->addPermanentWidget(calcTimeElapsed);
-    calcTimeElapsed->setText(QString("nPOS:%0 {MEAS:%1(s)},{TRACK:%2(s)}")
-                             .arg(totalPos).arg(calcTimeElapsedMeasu).arg(calcTimeElapsedTrack));
+    setStatusTimeInfo();
 
     // CFG DATA
     //loadIniConfigFile(true, "D:\\code\\kelmanLocationData\\aaa.ini");
@@ -66,7 +70,7 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
         distCount++;
     }
     // update the status bar info
-    distCountShow->setText(QString("distCount: %0").arg(distCount, 4, 10, QChar('0')));
+    setStatusDistCount();
 
     // prepare model data for canvas view
     foreach (oneTag tag, distData.get_q()->tagsData) {
@@ -295,7 +299,9 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
         ui->actionTaylorSeries->setChecked(true);
     } else if (CALC_POS_TYPE::WeightedTaylor == type) {
         ui->actionWeightedTaylor->setChecked(true);
-    } else {}
+    } else if (CALC_POS_TYPE::KalmanTaylor == type) {
+        ui->actionKalmanTaylor->setChecked(true);
+    }else {}
 
     // determine the calculate method
     calcPos.calcPosType = type;
@@ -323,8 +329,7 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
     }
     calcTimeElapsedMeasu = time.elapsed()/1000.f;
     calcTimeElapsedTrack = 0.f;
-    calcTimeElapsed->setText(QString("nPOS:%0 {MEAS:%1(s)},{TRACK:%2(s)}")
-                             .arg(totalPos).arg(calcTimeElapsedMeasu).arg(calcTimeElapsedTrack));
+    setStatusTimeInfo();
     qDebug() << "#posCalcPROCESS#" << CALC_POS2STR[type]
              << "total Pos:" << totalPos << ";"
              << "using Time:" << calcTimeElapsedMeasu << "(s)";
@@ -356,6 +361,10 @@ void uiMainWindow::posTaylorSeries(bool checked) {
 void uiMainWindow::posWeightedTaylor(bool checked) {
     Q_UNUSED(checked);
     posCalcPROCESS(CALC_POS_TYPE::WeightedTaylor);
+}
+void uiMainWindow::posKalmanTaylor(bool checked) {
+    Q_UNUSED(checked);
+    posCalcPROCESS(CALC_POS_TYPE::KalmanTaylor);
 }
 /***********************************************************/
 // TRACK
@@ -389,8 +398,7 @@ void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
                  << "trackDist:" << kalmanDist;
     }
     calcTimeElapsedTrack = time.elapsed()/1000.f;
-    calcTimeElapsed->setText(QString("nPOS:%0 {MEAS:%1(s)},{TRACK:%2(s)}")
-                             .arg(totalPos).arg(calcTimeElapsedMeasu).arg(calcTimeElapsedTrack));
+    setStatusTimeInfo();
     qDebug() << "#trackCalcPROCESS#" << TRACK_METHOD2STR[type]
              << "total Pos:" << totalPos << ";"
              << "using Time:" << calcTimeElapsedTrack << "(s)";

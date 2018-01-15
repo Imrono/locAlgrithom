@@ -21,11 +21,16 @@ void uiMainWindow::connectUi() {
     connect(ui->actionTwoCenter,      SIGNAL(triggered(bool)), this, SLOT(posTwoCenter(bool)));
     connect(ui->actionTaylorSeries,   SIGNAL(triggered(bool)), this, SLOT(posTaylorSeries(bool)));
     connect(ui->actionWeightedTaylor, SIGNAL(triggered(bool)), this, SLOT(posWeightedTaylor(bool)));
+    connect(ui->actionKalmanTaylor,   SIGNAL(triggered(bool)), this, SLOT(posKalmanTaylor(bool)));
 
     // TRACK
     connect(ui->actionKalmanTrack,     SIGNAL(triggered(bool)), this, SLOT(trackKalman(bool)));
     connect(ui->actionKalmanLiteTrack, SIGNAL(triggered(bool)), this, SLOT(trackKalmanLite(bool)));
     connect(ui->actionKalmanInfoTrack, SIGNAL(triggered(bool)), this, SLOT(trackKalmanInfo(bool)));
+
+    // ZOOM
+    connect(ui->actionZoomIn,  SIGNAL(triggered(bool)), this, SLOT(zoomIn(bool)));
+    connect(ui->actionZoomOut, SIGNAL(triggered(bool)), this, SLOT(zoomOut(bool)));
 /*************************************************************/
     connect(&timer, SIGNAL(timeout()), this, SLOT(handleModelDataUpdate()));
 
@@ -62,9 +67,9 @@ void uiMainWindow::connectUi() {
     });
     connect(ui->allPos, &QPushButton::clicked, this, [this](void) {
         if (!ui->canvas->reverseShowAllPos()) {
-            ui->allPos->setText("显示所有点");
+            ui->allPos->setText("显示raw");
         } else {
-            ui->allPos->setText("隐藏所有点");
+            ui->allPos->setText("隐藏raw");
         }
         handleModelDataUpdate(false);
     });
@@ -101,6 +106,7 @@ void uiMainWindow::checkData() {
         ui->actionSubLS->setDisabled(true);
         ui->actionTwoCenter->setDisabled(true);
         ui->actionTaylorSeries->setDisabled(true);
+        ui->actionKalmanTaylor->setDisabled(true);
 
         ui->actionKalmanTrack->setDisabled(true);
         ui->actionKalmanLiteTrack->setDisabled(true);
@@ -115,6 +121,7 @@ void uiMainWindow::checkData() {
         ui->actionSubLS->setEnabled(true);
         ui->actionTwoCenter->setEnabled(true);
         ui->actionTaylorSeries->setEnabled(true);
+        ui->actionKalmanTaylor->setEnabled(true);
 
         ui->actionKalmanTrack->setEnabled(true);
         ui->actionKalmanLiteTrack->setEnabled(true);
@@ -139,6 +146,7 @@ void uiMainWindow::resetUi(bool isPos, bool isTrack) {
         ui->actionTwoCenter->setChecked(false);
         ui->actionTaylorSeries->setChecked(false);
         ui->actionWeightedTaylor->setChecked(false);
+        ui->actionKalmanTaylor->setChecked(false);
     } else {}
 
     if (isTrack) {
@@ -147,4 +155,40 @@ void uiMainWindow::resetUi(bool isPos, bool isTrack) {
         ui->actionKalmanLiteTrack->setChecked(false);
         ui->actionKalmanInfoTrack->setChecked(false);
     } else {}
+}
+
+void uiMainWindow::setStatusTimeInfo() {
+    QString posStr;
+    QString trackStr;
+    if (CALC_POS_TYPE::POS_NONE == calcPos.calcPosType) {
+        posStr = "{pos_none}";
+    } else {
+        posStr = CALC_POS2STR[calcPos.calcPosType];
+    }
+    if (TRACK_METHOD::TRACK_NONE == calcTrack.calcTrackMethod) {
+        trackStr = "{track_none}";
+    } else {
+        trackStr = TRACK_METHOD2STR[calcTrack.calcTrackMethod];
+    }
+    calcTimeElapsed->setText(QString("<b>nPOS:%0</b> | <b>%1</b>:%2(s) | <b>%3</b>:%4(s)")
+                             .arg(totalPos)
+                             .arg(posStr).arg(calcTimeElapsedMeasu)
+                             .arg(trackStr).arg(calcTimeElapsedTrack));
+}
+void uiMainWindow::setStatusDistCount() {
+    distCountShow->setText(QString("distCount: <b>%0</b>").arg(distCount, 4, 10, QChar('0')));
+}
+void uiMainWindow::setStatusZoom() {
+    distZoomShow->setText(QString("[%0%]")
+                          .arg(ui->canvas->zoomGet(), 3, 10, QChar('0')));
+}
+
+void uiMainWindow::zoomIn(bool) {
+    ui->canvas->zoomChange(20);
+    setStatusZoom();
+}
+
+void uiMainWindow::zoomOut(bool) {
+    ui->canvas->zoomChange(-20);
+    setStatusZoom();
 }

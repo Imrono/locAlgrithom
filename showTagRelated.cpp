@@ -59,57 +59,71 @@ void showTagRelated::setTagView() {
     }
 }
 
-void showTagRelated::drawPoint(QPainter &painter, dType ratio) const {
+void showTagRelated::drawPoint(QPainter &painter, dType ratio,
+                               dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setBrush(QBrush(oneMethod.posColor));
         painter.setPen  (QPen  (QColor(Qt::darkGray), 2));
-        painter.drawEllipse(oneMethod.pos*ratio, shapeSize, shapeSize);
+        //painter.drawEllipse(oneMethod.pos*ratio, shapeSize, shapeSize);
+        painter.drawEllipse(toZoomedPoint(oneMethod.pos, ratio, zoom, offset),
+                            shapeSize, shapeSize);
+        //qDebug() << oneMethod.pos*ratio-offset << offset;
     }
 }
-void showTagRelated::drawPointsRaw(QPainter &painter, dType ratio) const {
+void showTagRelated::drawPointsRaw(QPainter &painter, dType ratio,
+                                   dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setBrush(QBrush(oneMethod.posColor));
         painter.setPen  (QPen  (QColor(Qt::darkGray), 1));
         for (int j = 0; j < oneMethod.pointsRaw.count(); j++) {
-            painter.drawEllipse(oneMethod.pointsRaw[j]*ratio, shapeSize-1, shapeSize-1);
+            painter.drawEllipse(toZoomedPoint(oneMethod.pointsRaw[j], ratio, zoom, offset),
+                                shapeSize-1, shapeSize-1);
         }
     }
 }
-void showTagRelated::drawPointsRefined(QPainter &painter, dType ratio) const {
+void showTagRelated::drawPointsRefined(QPainter &painter, dType ratio,
+                                       dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setBrush(QBrush(QColor(Qt::darkGray)));
         painter.setPen  (QPen  (Qt::black, 1));
         for (int j = 0; j < oneMethod.pointsRefined.count(); j++) {
-            painter.drawEllipse(oneMethod.pointsRefined[j]*ratio, shapeSize-1, shapeSize-1);
+            painter.drawEllipse(toZoomedPoint(oneMethod.pointsRefined[j], ratio, zoom, offset),
+                                shapeSize-1, shapeSize-1);
         }
     }
 }
-void showTagRelated::drawLine(QPainter &painter, dType ratio) const {
+void showTagRelated::drawLine(QPainter &painter, dType ratio,
+                              dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setPen  (QPen(oneMethod.posColor, 2));
-        painter.drawLine(QLineF{oneMethod.line.p1()*ratio, oneMethod.line.p2()*ratio});
+        painter.drawLine(QLineF{toZoomedPoint(oneMethod.line.p1(), ratio, zoom, offset),
+                                toZoomedPoint(oneMethod.line.p2(), ratio, zoom, offset)});
     }
 }
-void showTagRelated::drawLines(QPainter &painter, dType ratio) const {
+void showTagRelated::drawLines(QPainter &painter, dType ratio,
+                               dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setPen(QPen(oneMethod.linesColor, 2));
         for (int j = 0; j < oneMethod.lines.count(); j++)
-            painter.drawLine(QLineF{oneMethod.lines[j].p1()*ratio,
-                                    oneMethod.lines[j].p2()*ratio});
+            painter.drawLine(QLineF{toZoomedPoint(oneMethod.lines[j].p1(), ratio, zoom, offset),
+                                    toZoomedPoint(oneMethod.lines[j].p2(), ratio, zoom, offset)});
     }
 }
 
-void showTagRelated::drawCircle(QPainter &painter, const QVector<locationCoor> &sensor, dType ratio) const {
+void showTagRelated::drawCircle(QPainter &painter, const QVector<locationCoor> &sensor,
+                                dType ratio, dType zoom, QPointF offset) const {
     painter.setPen(QPen(Qt::black, 1));
     painter.setBrush(Qt::NoBrush);
     for (int i = 0; i < distance.count(); i++) {
-        painter.drawEllipse(sensor[i].toQPointF() * ratio, distance[i] * ratio, distance[i] * ratio);
+        painter.drawEllipse(toZoomedPoint(sensor[i].toQPointF(), ratio, zoom, offset),
+                            distance[i] * ratio * zoom, distance[i] * ratio * zoom);
     }
 }
 
 void showTagRelated::drawCircleBold(QPainter &painter, const locationCoor &sensor,
-                                    int distIdx, dType ratio) const {
+                                    int distIdx, dType ratio, dType zoom, QPointF offset) const {
     painter.setPen(QPen(Qt::black, 3));
     painter.setBrush(Qt::NoBrush);
-    painter.drawEllipse(sensor.toQPointF() * ratio, distance[distIdx] * ratio, distance[distIdx] * ratio);
+    painter.drawEllipse(toZoomedPoint(sensor.toQPointF(), ratio, zoom, offset),
+                        distance[distIdx] * ratio * zoom, distance[distIdx] * ratio * zoom);
 }
