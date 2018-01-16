@@ -41,7 +41,8 @@ SOURCES += \
     uiMainwindowTedious.cpp \
     calcLibMatrixOp.cpp \
     calcTagPosKalmanTaylor.cpp \
-    calcLibMath.cpp
+    calcLibMath.cpp \
+    calcTagPosWeightedTaylor.cpp
 
 HEADERS += \
     showStore.h \

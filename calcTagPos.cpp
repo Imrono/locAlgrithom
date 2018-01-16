@@ -1,6 +1,5 @@
 ﻿#include "calcTagPos.h"
 #include <QtMath>
-#include <QDebug>
 #include "calcLibMatrixOp.h"
 #include "calcLibMath.h"
 
@@ -185,7 +184,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
     locationCoor tmpX;
     double mse = 0.f;
 
-    distRefined.clear();
+    QVector<dist4Calc> distRefined;
 
     const oneTag &tagDists = dist_d->tagsData[tagInfo->tagId];
     for (int i = 0; i < tagDists.distData.count(); i++) {
@@ -201,8 +200,8 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
         //qDebug() << tmpX.toString() << mse;
         if (i >= 1) {
             /* distance filter BEGIN */
-            // ITERATIO
-            iterCount = 1;
+            // ITERATION
+            int iterCount = 1;
             do {
                 if (!calcNlos->posPrecisionNLOS(mse)) {  // MSE小于阈值，直接退出循环
                     break;
@@ -210,6 +209,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
                     if (iterCount-- == 0) {
                         break;
                     } else {
+                        // tmpDist 即是IN也是OUT；distRefined是保存历史修正后的值
                         if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
                             tmpX = calcOnePosition(tmpDist.distance, mse, T);
                         } else {}
@@ -217,20 +217,19 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
                 }
             } while(1);
             /* distance filter END */
-
-        // store and update
-            tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
-            tagInfo->methodInfo[MEASUR_STR].AnsLines
-                    .append(QLineF(tagInfo->methodInfo[MEASUR_STR].Ans[i-1].toQPointF(),
-                                   tagInfo->methodInfo[MEASUR_STR].Ans[i].toQPointF()));
-        } else {
-            tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
         }
+        // store and update
+        distRefined.append(tmpDist);
         tagInfo->methodInfo[MEASUR_STR].time.append(tagDists.distData[i].time);
         tagInfo->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
         tagInfo->Reliability.append(mse);
         tagInfo->methodInfo[MEASUR_STR].data[0].append(mse);
-        distRefined.append(tmpDist);
+        tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
+        if (i > 0) {
+            tagInfo->methodInfo[MEASUR_STR].AnsLines
+                    .append(QLineF(tagInfo->methodInfo[MEASUR_STR].Ans[i-1].toQPointF(),
+                                   tagInfo->methodInfo[MEASUR_STR].Ans[i].toQPointF()));
+        }
     }
 }
 
@@ -370,70 +369,6 @@ void calcTagPos::calcTaylorSeries(const int *distance, const locationCoor *senso
         count ++;
     };
     //qDebug() << count << "#calcTaylorSeries#" << mse << dMse;
-
-    // output
-    out_x   = X[0];
-    out_y   = X[1];
-    out_MSE = calcMSE(A, B, X, N, 3);
-}
-
-void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sensor,
-                                    dType **A, dType **coA, dType *B, int N,
-                                    dType **A_taylor, dType *B_taylor, dType *W_taylor,
-                                    dType &out_x, dType &out_y, dType &out_MSE) {
-    dType X[3] = {0.f};
-    dType dX[3] = {0.f};
-    dType tmpD = 0.f;
-    dType mse = 0.f;
-    dType mseKeep = 0.f;
-    dType dMse = 10000.f;
-
-    for (int i = 0; i < N; i++) {
-        B[i] = qPow(dType(distance[i]), 2) - qPow(sensor[i].x, 2) - qPow(sensor[i].y, 2);
-    }
-    matrixMuti(coA, B, X, 3, N);
-    X[2] = qPow(X[0], 2) + qPow(X[1], 2);
-    mse = calcMSE(A, B, X, N, 3);
-
-    // calculate weight
-    int *idx = new int[N];
-    sortDistance(distance, idx, N);
-
-    for (int i = 0; i < N; i++) {
-        W_taylor[i] = 1.f / qSqrt(qAbs(dType(distance[i])-dType(distance[idx[2]]))+10.f);
-        //W_taylor[i] = 1.f;
-    }
-    /*
-    qDebug() << distance[0] << distance[1] << distance[2] << distance[3] << ","
-             << idx[0] << idx[1] << idx[2] << idx[3] << ","
-             << distance[idx[0]] << distance[idx[1]] << distance[idx[2]] << distance[idx[3]] << ","
-             << W_taylor[0] << W_taylor[1] << W_taylor[2] << W_taylor[3];
-    */
-    delete []idx;
-
-    int count = 0;
-    while (mse > 10000.f && count < 3 && dMse > 1000.f) {
-        //qDebug() << count << "calcTaylorSeries" << mse << dMse;
-        // fill the matrix
-        for (int i = 0; i < N; i++) {
-            tmpD = qSqrt(qPow(X[0] - sensor[i].x, 2) + qPow(X[1] - sensor[i].y, 2));
-            A_taylor[i][0] = ((X[0] - sensor[i].x) / tmpD) * W_taylor[i];
-            A_taylor[i][1] = ((X[1] - sensor[i].y) / tmpD) * W_taylor[i];
-            B_taylor[i] =    (dType(distance[i]) - tmpD)   * W_taylor[i];
-        }
-
-        leastSquare(A_taylor, B_taylor, dX, N, 2);
-
-        X[0] += dX[0];
-        X[1] += dX[1];
-        X[2] = qPow(X[0], 2) + qPow(X[1], 2);
-
-        mseKeep = mse;
-        mse = calcMSE(A, B, X, N, 3);
-        dMse = qAbs(mseKeep - mse);
-
-        count ++;
-    };
 
     // output
     out_x   = X[0];

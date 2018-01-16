@@ -5,9 +5,10 @@
 
 uiCanvas::uiCanvas(QWidget *parent) : QWidget(parent)
 {
-    widthCanvasOld = width();
-    heightCanvasOld = height();
+    widthCanvas = width();
+    heightCanvas = height();
     ratioShow = static_cast<dType>(width()) / widthActual;
+    setMouseTracking(true);
 }
 
 void uiCanvas::cfg_actualData2showData() {
@@ -97,13 +98,13 @@ void uiCanvas::resizeEvent(QResizeEvent *event) {
     Q_UNUSED(event);
     qDebug() << this->width() << this->height();
 
-    if (widthCanvasOld != width() || heightCanvasOld != height()) {
+    if (widthCanvas != width() || heightCanvas != height()) {
         ratioShow = static_cast<dType>(width()) / widthActual;
         center = QPoint(width()/2, height()/2);
         cfg_actualData2showData();
     }
-    widthCanvasOld = width();
-    heightCanvasOld = height();
+    widthCanvas = width();
+    heightCanvas = height();
 
     update();
 }
@@ -163,7 +164,10 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
 
     // 画背景
     if (!backgroundImg.isNull()) {
-        QRect rect(0,0,this->width(),this->height());
+        toZoomedPoint(QPointF(0.f, 0.f));
+        QRect rect(toZoomedPoint(QPointF(0.f, 0.f)).x(),
+                   toZoomedPoint(QPointF(0.f, 0.f)).y(),
+                   width() * zoom(), height() * zoom());
         painter.drawImage(rect, backgroundImg);
     }
 
@@ -214,6 +218,12 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     }
 }
 
+void uiCanvas::mouseMoveEvent(QMouseEvent *event) {
+    QPointF p = QPointF(event->x(), event->y());
+    QPointF ans = ((p-center)/zoom()+center)/ratioShow;
+    emit mouseChange(ans.x(), ans.y());
+}
+
 void uiCanvas::mousePressEvent(QMouseEvent *event) {
     dType x = event->x();
     dType y = event->y();
@@ -223,7 +233,7 @@ void uiCanvas::mousePressEvent(QMouseEvent *event) {
     for (int i = 0; i < cfg_d->sensor.count(); i++) {
         dType d = qSqrt(qPow(x - toZoomedPoint(sensorShow[i]).x(), 2)
                       + qPow(y - toZoomedPoint(sensorShow[i]).y(), 2));
-        if (d < 16) {
+        if (d < 9) {
             isShowRadiusBold = true;
             boldRadiusIdx = i;
             break;

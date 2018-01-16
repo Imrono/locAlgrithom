@@ -53,6 +53,7 @@ private:
     QLabel *calcTimeElapsed{nullptr};
 
     QLabel *distZoomShow{nullptr};
+    QLabel *canvasPosShow{nullptr};
 
     void checkData();
     void resetData();
@@ -62,6 +63,7 @@ private:
     void setStatusTimeInfo();
     void setStatusDistCount();
     void setStatusZoom();
+    void setStatusMousePos(int x, int y);
 
 private slots:
     // FILE
@@ -98,6 +100,8 @@ private slots:
 private slots:
     void handleModelDataUpdate(bool isUpdateCount = true);
     void oneUsrBtnClicked(int tagId, bool isShowable);
+
+    void showMousePos(int x, int y);
 };
 
 #endif // MAINWINDOW_H

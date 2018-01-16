@@ -82,7 +82,7 @@ bool gaussianElimination(dType **A, dType *b, dType *x, long n) {
 }
 
 bool leastSquare(dType const * const * const A, dType const * const b,
-                 dType * const x, long nRow, long nCol) {
+		 dType * const x, long nRow, long nCol, dType lamda) {
     if (nRow < nCol)
         return false;
 
@@ -105,6 +105,12 @@ bool leastSquare(dType const * const * const A, dType const * const b,
     //         << AT[0][0] << AT[0][1] << AT[0][2]
     //         << AT[1][0] << AT[1][1] << AT[1][2];
     matrixMuti(AT, A, ATA, nCol, nRow, nCol);
+
+    // Levenberg–Marquardt method for convergence acceleration
+    for (int i = 0; i < nCol; i++) {
+	//ATA[i][i] *= (lamda + 1.f);
+	ATA[i][i] += lamda;
+    }
     //qDebug() << "ATA"
     //         << ATA[0][0] << ATA[0][1]
     //         << ATA[1][0] << ATA[1][1];

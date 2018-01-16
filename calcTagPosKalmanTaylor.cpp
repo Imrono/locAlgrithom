@@ -108,7 +108,7 @@ void calcTagPos::calcKalmanTaylor(const int *distance, const locationCoor *senso
     Pxv_pri_t = Pxv_t_1 + T_diff*Pvv_t_1 + Q/T_diff*2.f;
     Pvv_pri_t = Pvv_t_1 + Q/T_diff/T_diff*4.f;
     // 3. y = z - Hx
-    //z_x_t_meas = 0.f;
+    z_x_t_meas = {X[0], X[1], 0.f};
     y_x_tilde = z_x_t_meas - x_hat_t;
     // 4. S = R + HPH
     R = calcTagTrack::calcR(mse, METHOD_TAYLOR_SERIES_STR);

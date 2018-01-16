@@ -14,6 +14,10 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     distZoomShow = new QLabel(this);
     statusBar()->addWidget(distZoomShow);
     setStatusZoom();
+    // status bar canvas pos show
+    canvasPosShow = new QLabel(this);
+    statusBar()->addWidget(canvasPosShow);
+    setStatusMousePos(0, 0);
     // status bar shows the "distCount"
     distCountShow = new QLabel(this);
     statusBar()->addWidget(distCountShow);
@@ -26,13 +30,13 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     setStatusTimeInfo();
 
     // CFG DATA
-    //loadIniConfigFile(true, "D:\\code\\kelmanLocationData\\aaa.ini");
-    loadIniConfigFile(true, "D:\\code\\kelmanLocationData\\configExample.ini");
+    loadIniConfigFile(true, "D:\\code\\kelmanLocationData\\aaa.ini");
+    //loadIniConfigFile(true, "D:\\code\\kelmanLocationData\\configExample.ini");
 
     // DIST DATA
-    //loadLogDistanceFile_2(true, "D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705181600.log");
+    loadLogDistanceFile_2(true, "D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705181600.log");
     //loadLogDistanceFile_2(true, "D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705191135.log");
-    loadLogDistanceFile(true, "D:\\code\\kelmanLocationData\\201712111515.log");
+    //loadLogDistanceFile(true, "D:\\code\\kelmanLocationData\\201712111515.log");
 
     // SET NLOS FOR calcPos
     calcPos.setNlosJudge(&calcNlos);
@@ -88,12 +92,17 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
                 ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
                 //ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
             }
+            QPointF tmpOK;
+            tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - tag.distData[distCount].p_t.toQPointF();
+            ui->canvas->setPosition(tag.tagId, TRACKx_STR, tmpOK);
             //ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
-            //qDebug() << calcDistance(tag.distData[distCount].p_t.toQPointF(),
-            //                         oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
+            qDebug() << distCount
+                     << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF()
+                     << calcDistance(tag.distData[distCount].p_t.toQPointF(),
+                                     oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
             //qDebug() << "[@handleModelDataUpdate] " << distCount << tag.tagId << MEASUR_STR << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
             if (TRACK_METHOD::TRACK_NONE != calcTrack.calcTrackMethod) {
-                ui->canvas->setPosition(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].Ans[distCount].toQPointF());
+                //ui->canvas->setPosition(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].Ans[distCount].toQPointF());
                 //ui->canvas->setLine(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines[distCount-1]);
             }
 

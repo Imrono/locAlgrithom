@@ -94,12 +94,15 @@ public:
     int zoomGet() {return ratioZoom;}
     dType zoom() {return ratioZoom/100.f;}
 
-private:
-    int widthCanvasOld{0};
-    int heightCanvasOld{0};
-
     dType widthActual{4000.f};
     dType heightActual{3000.f};
+
+signals:
+    void mouseChange(int x, int y);
+
+private:
+    int widthCanvas{0};
+    int heightCanvas{0};
 
     const configData   *cfg_d {nullptr};
     const distanceData *dist_d{nullptr};
@@ -136,6 +139,7 @@ private:
 
     void paintEvent(QPaintEvent *event);
     void resizeEvent(QResizeEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     QImage backgroundImg;

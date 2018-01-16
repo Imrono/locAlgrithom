@@ -12,8 +12,6 @@
 class calcTagPos
 {
 public:
-    QVector<dist4Calc> distRefined;
-
     explicit calcTagPos() {}
     explicit calcTagPos(const configData *cfg_q, const distanceData *dist_q) {
         this->cfg_d  = cfg_q;
@@ -89,8 +87,6 @@ private:
     dType **A_taylor{nullptr};
 
     dType X[3]{0.f};
-
-    int iterCount{1};
 };
 
 #endif // CALCPOS_H

@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 void uiMainWindow::connectUi() {
+    connect(ui->canvas, SIGNAL(mouseChange(int,int)), this, SLOT(showMousePos(int, int)));
 /*************************************************************/
     // FILE
     connect(ui->actionRead_ini,     SIGNAL(triggered(bool)), this, SLOT(loadIniConfigFile(bool)));
@@ -182,13 +183,19 @@ void uiMainWindow::setStatusZoom() {
     distZoomShow->setText(QString("[%0%]")
                           .arg(ui->canvas->zoomGet(), 3, 10, QChar('0')));
 }
+void uiMainWindow::setStatusMousePos(int x, int y) {
+    canvasPosShow->setText(QString("(%0,%1)").arg(x, 4, 10, QChar('0')).arg(y, 4, 10, QChar('0')));
+}
 
 void uiMainWindow::zoomIn(bool) {
     ui->canvas->zoomChange(20);
     setStatusZoom();
 }
-
 void uiMainWindow::zoomOut(bool) {
     ui->canvas->zoomChange(-20);
     setStatusZoom();
+}
+
+void uiMainWindow::showMousePos(int x, int y) {
+    setStatusMousePos(x, y);
 }
