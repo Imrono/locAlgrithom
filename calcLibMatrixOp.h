@@ -14,6 +14,8 @@ void matrixTrans(dType const * const * const A, dType * const * const AT, const 
 bool gaussianElimination(dType **A, dType *b, dType *x, long n);
 bool leastSquare(dType const * const * const A, dType const * const b,
                  dType * const x, long nRow, long nCol, dType lamda = 0.0f);
+bool weightedLeastSquare(dType const * const * const A, dType const * const b, dType const * const w,
+                         dType * const x, long nRow, long nCol, dType lamda = 0.0f);
 
 bool leastSquare_A(dType **ATA, dType **AT, dType *b, dType *x, long A_Row);
 

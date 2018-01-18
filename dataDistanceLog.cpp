@@ -117,6 +117,8 @@ void dataDistanceLog::loadNewFile_2(const QString &fileName) {
             tmpLogData.p_t.x = rx.cap(13).toInt();
             tmpLogData.p_t.y = rx.cap(14).toInt();
             tmpLogData.p_t.z = rx.cap(15).toInt();
+            tmpLogData.l_t = QLineF(QPointF(tmpLogData.p_t_1.x, tmpLogData.p_t_1.y),
+                                   QPointF(tmpLogData.p_t.x, tmpLogData.p_t.y));
             if (!q->tagsData.contains(tagId)) {
                 oneTag tmpTag(tagId);
                 q->tagsData.insert(tagId, tmpTag);

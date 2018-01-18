@@ -48,6 +48,9 @@ dType calcTagTrack::calcR(dType reliability, const QString &methodName) {
         //qDebug() << "calcKalman::calcR" << reliability;
     } else if (METHOD_TWO_CENTER_STR == methodName){
     } else if (METHOD_TAYLOR_SERIES_STR == methodName) {
+        qDebug() << reliability;
+        reliability /= 100.f;
+    } else if (METHOD_WEIGHTED_TAYLOR_STR == methodName) {
         reliability /= 100.f;
     } else if (METHOD_KALMAN_TAYLOR_STR == methodName) {
         reliability /= 100.f;
@@ -123,7 +126,7 @@ void calcTagTrack::calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMe
     dType K_x = 1.0f;
     dType K_v = 1.0f;
 
-    qDebug() << "[@calcKalmanPosVectorLite]" << "Q=" << Q;
+    qDebug() << "[@calcKalmanPosVectorLite] measure Name" << tagMeasInfo.methodName << "Q=" << Q;
 
     tagKalmanInfo.clear();
 
@@ -231,7 +234,7 @@ void calcTagTrack::calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethod
     dType Kx = 1.0f;
     dType Kv = 1.0f;
 
-    qDebug() << "[@calcKalmanPosVector]" << "Q=" << Q;
+    qDebug() << "[@calcKalmanPosVector] measure Name" << tagMeasInfo.methodName << "Q=" << Q;
 
     tagKalmanInfo.clear();
 
@@ -320,8 +323,8 @@ void calcTagTrack::calcKalmanPosVectorInfo(storeMethodInfo &tagMeasInfo, storeMe
     }
 
     dType R = 1.0f;
-    dType Qxx = calcTagTrack::calcQ();
-    dType Qvv = 0.f;
+    dType Qxx = 50.f;
+    dType Qvv = 5.f;
     dType T;
     // predict
     locationCoor x_hat_t;
@@ -351,6 +354,8 @@ void calcTagTrack::calcKalmanPosVectorInfo(storeMethodInfo &tagMeasInfo, storeMe
 
     dType Kx = 1.0f;
     dType Kv = 1.0f;
+
+    qDebug() << "[@calcKalmanPosVectorInfo] measure Name" << tagMeasInfo.methodName;
 
     const int numCov = 6;
     dType cov[numCov] = {0.f};
@@ -396,7 +401,7 @@ void calcTagTrack::calcKalmanPosVectorInfo(storeMethodInfo &tagMeasInfo, storeMe
         if (i >= numCov)
             R = cov_hat - Pxx_t;
         R /= 3.f;// added by test
-        qDebug() << i << cov_hat << "v" << locationCoor::dot(v_t, v_t) << Pxx_t_1 << "Q=" << Qxx << Qvv << "R=" << R << "K_t_1=" << Kx;
+        //qDebug() << i << cov_hat << "v" << locationCoor::dot(v_t, v_t) << Pxx_t_1 << "Q=" << Qxx << Qvv << "R=" << R << "K_t_1=" << Kx;
 
         // *2. P = FPF + Q
         Pxx_pri_t = Pxx_t_1 + 2.f*T*Pxv_t_1 + T*T*Pvv_t_1 + Qxx;

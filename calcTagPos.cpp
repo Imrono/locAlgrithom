@@ -66,6 +66,9 @@ void calcTagPos::setConfigData(const configData *cfg_q) {
     this->cfg_d = cfg_q;
     resetA();
 
+    if (0 == cfg_d->sensor.count())
+        return;
+
     // calculate A, (A^T A)^(-1)*A^T
     ls_row = cfg_d->sensor.count() - 1;
     ls_col = 2;

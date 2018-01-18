@@ -34,6 +34,7 @@ void matrixMuti(dType const * const * const a, const dType * const b,
         }
     }
 }
+
 void matrixTrans(dType const * const * const A, dType * const * const AT, const long nRow, const long nCol) {
     for(int i = 0; i < nRow; i++)
         for(int j = 0; j < nCol; j++)
@@ -108,8 +109,8 @@ bool leastSquare(dType const * const * const A, dType const * const b,
 
     // Levenberg–Marquardt method for convergence acceleration
     for (int i = 0; i < nCol; i++) {
-	//ATA[i][i] *= (lamda + 1.f);
-	ATA[i][i] += lamda;
+	ATA[i][i] *= (lamda + 1.f);
+	//ATA[i][i] += lamda;
     }
     //qDebug() << "ATA"
     //         << ATA[0][0] << ATA[0][1]
@@ -130,6 +131,33 @@ bool leastSquare(dType const * const * const A, dType const * const b,
         delete []AT[i];
     }
     delete []AT;
+    return ans;
+}
+bool weightedLeastSquare(dType const * const * const A, dType const * const b, dType const * const w,
+			 dType * const x, long nRow, long nCol, dType lamda) {
+    dType **tmpA = new dType*[nRow];
+    for (int i = 0; i < nRow; i++) {
+	tmpA[i] = new dType[nCol];
+    }
+    dType *tmpB = new dType[nRow];
+
+    // refill matrix with weight
+    for (int i = 0; i < nRow; i++) {
+	for (int j = 0; j < nCol; j++) {
+	    tmpA[i][j] = w[i]*A[i][j];
+	    //qDebug() << "[" << i << "," << j << "]" << tmpA[i][j] << A[i][j] << "|" << w[i];
+	}
+	tmpB[i] = w[i]*b[i];
+	//qDebug() << tmpB[i] << b[i] << w[i];
+    }
+
+    bool ans = leastSquare(tmpA, tmpB, x, nRow, nCol, lamda);
+
+    delete []tmpB;
+    for (int i = 0; i < nRow; i++) {
+	delete []tmpA[i];
+    }
+    delete []tmpA;
     return ans;
 }
 

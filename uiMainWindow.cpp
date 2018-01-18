@@ -49,8 +49,8 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     // initial calculate method
     //nlosRes(true);
     //nlosMultiPoint(true);
-    posSubLS(true);
-    trackKalman(true);
+    posWeightedTaylor(true);
+    //trackKalman(true);
 
     handleModelDataUpdate(false);
 }
@@ -92,8 +92,8 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
                 ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
                 //ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
             }
-            QPointF tmpOK;
-            tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - tag.distData[distCount].p_t.toQPointF();
+            QPointF tmpOK = tag.distData[distCount].p_t.toQPointF();
+            //tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - tag.distData[distCount].p_t.toQPointF();
             ui->canvas->setPosition(tag.tagId, TRACKx_STR, tmpOK);
             //ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
             qDebug() << distCount
@@ -112,7 +112,12 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             ui->canvas->setDistance(tag.tagId, distData.get_q()->tagsData[tag.tagId].distData[distCount].distance.data());
 
             ui->canvas->setLines(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines);
-            ui->canvas->setLines(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines);
+            //ui->canvas->setLines(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines);
+            QVector<QLineF> tmpLines;
+            for (int i = 0; i < tag.distData.count(); i++) {
+                tmpLines.append(tag.distData[i].l_t);
+            }
+            ui->canvas->setLines(tag.tagId, TRACKx_STR, tmpLines);
 
             switch (tag.distData[distCount].distance.count()) {
             case 6:ui->raw_5->setText(QString::number(tag.distData[distCount].distance[5]));

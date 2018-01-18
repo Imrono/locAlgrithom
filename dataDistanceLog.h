@@ -3,12 +3,14 @@
 #include "_myheads.h"
 #include "dataType.h"
 #include <QVector>
+#include <QLine>
 
 struct oneLogData {
     QDateTime time;
     QVector<int> distance;
     locationCoor p_t_1;
     locationCoor p_t;
+    QLineF l_t;
     QString toString();
 };
 

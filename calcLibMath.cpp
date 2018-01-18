@@ -18,6 +18,11 @@ void sortDistance(const int *distance, int /*OUT*/*idx, const int N) {
         }
         idx[i] = ii;
     }
+    for (int j = 0; j < N/2; j++) {
+        int tmp = idx[j];
+        idx[j] = idx[N-1-j];
+        idx[N-1-j] = tmp;
+    }
 }
 
 void sortDistance(const int *distance, int *outDist, int *outIdx, const int N) {
