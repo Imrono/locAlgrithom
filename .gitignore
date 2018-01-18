@@ -3,6 +3,8 @@
 *.filters
 *.stash
 *.vcxproj
+*.VC.db
+*.VC.VC.opendb
 
 GeneratedFiles/
 debug/
