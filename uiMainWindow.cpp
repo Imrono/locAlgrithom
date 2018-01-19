@@ -34,12 +34,14 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     setStatusTimeInfo();
 
     // CFG DATA
-    loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
+    //loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
+    loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/config/石煤测试5.ini"));
     //loadIniConfigFile(true, "D:\\code\\kelmanLocationData\\configExample.ini");
 
     // DIST DATA
-    loadLogDistanceFile_2(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
+    //loadLogDistanceFile_2(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
     //loadLogDistanceFile_2(true, "D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705191135.log");
+    loadLogDistanceFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/distance/201712201435.log"));
     //loadLogDistanceFile(true, "D:\\code\\kelmanLocationData\\201712111515.log");
 
     // SET NLOS FOR calcPos
@@ -116,6 +118,8 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             ui->canvas->setDistance(tag.tagId,
                                     distData.get_q()->tagsData[tag.tagId].distData[distCount].distance.data(),
                                     oneTagInfo->usedSeneor[distCount].data());
+
+            ui->canvas->setIterPoints(tag.tagId, oneTagInfo->iterPoints[distCount]);
 
             ui->canvas->setLines(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines);
             //ui->canvas->setLines(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines);

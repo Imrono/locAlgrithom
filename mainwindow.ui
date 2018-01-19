@@ -315,7 +315,7 @@
      <string>显示半径</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="showTrack">
+   <widget class="QPushButton" name="showTrace">
     <property name="geometry">
      <rect>
       <x>830</x>
@@ -325,7 +325,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>显示Track</string>
+     <string>显示Trace</string>
     </property>
    </widget>
    <widget class="uiUsrFrame" name="UsrFrm">
@@ -352,7 +352,7 @@
    <zorder>previous</zorder>
    <zorder>gridLayoutWidget</zorder>
    <zorder>showRadius</zorder>
-   <zorder>showTrack</zorder>
+   <zorder>showTrace</zorder>
    <zorder>UsrFrm</zorder>
    <zorder>canvas</zorder>
   </widget>
@@ -593,7 +593,7 @@
   <tabstop>refine_4</tabstop>
   <tabstop>refine_5</tabstop>
   <tabstop>showRadius</tabstop>
-  <tabstop>showTrack</tabstop>
+  <tabstop>showTrace</tabstop>
  </tabstops>
  <resources/>
  <connections/>

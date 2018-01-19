@@ -24,6 +24,11 @@ public:
             tags[tagId].setPosition(methodName, p);
         }
     }
+    void setIterPoints(int tagId, const QVector<QPointF> &p) {
+        if (tags.contains(tagId)) {
+            tags[tagId].setIterPos(p);
+        }
+    }
     void setLine(int tagId, const QString &methodName, const QLineF &l) {
         if (tags.contains(tagId)) {
             tags[tagId].setLine(methodName, l);
@@ -82,8 +87,8 @@ public:
         return isShowRadius;
     }
     bool reverseShowTrack() {
-        isShowTrack = !isShowTrack;
-        return isShowTrack;
+        isShowTrace = !isShowTrace;
+        return isShowTrace;
     }
 
     void loadPicture(QString path);
@@ -125,7 +130,7 @@ private:
     bool isShowRadius{false};
     bool isShowRadiusBold{false};
     int  boldRadiusIdx{-1};
-    bool isShowTrack{false};
+    bool isShowTrace{false};
 
     dType ratioShow{1.f};
     QPoint center;

@@ -83,11 +83,11 @@ void uiMainWindow::connectUi() {
         }
         handleModelDataUpdate(false);
     });
-    connect(ui->showTrack, &QPushButton::clicked, this, [this](void) {
+    connect(ui->showTrace, &QPushButton::clicked, this, [this](void) {
         if (!ui->canvas->reverseShowTrack()) {
-            ui->showTrack->setText("显示Track");
+            ui->showTrace->setText("显示Trace");
         } else {
-            ui->showTrack->setText("隐藏Track");
+            ui->showTrace->setText("隐藏Trace");
         }
         handleModelDataUpdate(false);
     });
@@ -112,6 +112,12 @@ void uiMainWindow::wheelEvent(QWheelEvent *e)
             zoomIn(); //放大
         } else {
             zoomOut();//缩小
+        }
+    } else if (QApplication::keyboardModifiers () == Qt::AltModifier) {
+        if(e->delta() > 0) {
+            emit ui->previous->clicked();
+        } else {
+            emit ui->next->clicked();
         }
     } else {}
 }

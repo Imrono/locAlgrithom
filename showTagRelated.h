@@ -57,6 +57,9 @@ public:
         }
         oneTagMethod[name].pos = p;
     }
+    void setIterPos(const QVector<QPointF> &p) {
+        iterPoints = p;
+    }
     void setLine(const QString &name, const QLineF &l) {
         if (!oneTagMethod.contains(name)) {
             addMethod(name);
@@ -108,6 +111,8 @@ public:
 /******************************************************************/
     void drawPoint(QPainter &painter, dType ratio = 1.f,
                    dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
+    void drawIterPoints(QPainter &painter, dType ratio = 1.f,
+                        dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
     void drawPointsRaw(QPainter &painter, dType ratio = 1.f,
                        dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
     void drawPointsRefined(QPainter &painter, dType ratio = 1.f,
@@ -135,6 +140,8 @@ private:
     // 画圆，直观显示坐标计算过程
     QVector<int>  distance;
     QVector<bool> usedSensor;
+
+    QVector<QPointF> iterPoints;
 
     // 画笔和画刷的颜色
     oneTagView tagView;

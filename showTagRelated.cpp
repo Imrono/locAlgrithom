@@ -70,6 +70,21 @@ void showTagRelated::drawPoint(QPainter &painter, dType ratio,
         //qDebug() << oneMethod.pos*ratio-offset << offset;
     }
 }
+void showTagRelated::drawIterPoints(QPainter &painter, dType ratio,
+                                    dType zoom, QPointF offset) const {
+    painter.setBrush(QBrush(QColor(Qt::white)));
+    QFont font;
+    font.setBold(false);
+    painter.setFont(font);
+    for (int i = 0; i < iterPoints.count(); i++) {
+        QPointF p = toZoomedPoint(iterPoints[i], ratio, zoom, offset);
+        painter.setPen(QPen(QColor(Qt::white), 0));
+        painter.drawEllipse(p, shapeSize*2, shapeSize*2);
+        painter.setPen(Qt::black);
+        painter.drawText(p.x()-5, p.y()-5, 10, 10, Qt::AlignCenter, QString::number(i));
+        qDebug() << "iteration" << i << iterPoints[i];
+    }
+}
 void showTagRelated::drawPointsRaw(QPainter &painter, dType ratio,
                                    dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {

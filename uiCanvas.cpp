@@ -172,6 +172,9 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     }
 
     // [Sensor]
+    QFont font;
+    font.setBold(true);
+    painter.setFont(font);
     if (isShowSensor) {
         painter.drawText(0, 100, 50, 10, Qt::AlignLeft, QString("%0").arg(this->width()));
         painter.setBrush(QColor(0, 0, 0));
@@ -180,9 +183,6 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
             painter.drawEllipse(toZoomedPoint(sensorShow[i]), 6, 6);
             // index the anchor
             painter.setPen(Qt::white);
-            QFont font;
-            font.setBold(true);
-            painter.setFont(font);
             painter.drawText(toZoomedPoint(sensorShow[i]).rx()-6,
                              toZoomedPoint(sensorShow[i]).ry()-6,
                              12, 12, Qt::AlignCenter, QString::number(i, 10));
@@ -205,11 +205,12 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
                                ratioShow, zoom(), center);
         }
 
+        if (isShowTrace) {
+            tag.drawIterPoints(painter, ratioShow, zoom(), center);
+        }
+
         tag.drawPoint(painter, ratioShow, zoom(), center);
         tag.drawLine(painter, ratioShow, zoom(), center);
-
-        if (isShowTrack) {
-        }
 
         if (isShowAllPos) {
             tag.drawPointsRaw(painter, ratioShow, zoom(), center);

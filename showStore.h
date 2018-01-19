@@ -41,6 +41,7 @@ struct storeTagInfo {
     QVector<dType>                 data_P;
     QVector<dType>                 data_y;
     QVector<QVector<bool>>         usedSeneor;
+    QVector<QVector<QPointF>>      iterPoints;
 
     QVector<QVector<locationCoor>> RawPoints;
     QVector<QVector<locationCoor>> RefinedPoints;
