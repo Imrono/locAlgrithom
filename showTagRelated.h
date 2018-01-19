@@ -95,10 +95,9 @@ public:
         setPointsRefined(name, tmp);
     }
 
-    void setDistance(QVector<int> dist) {
-        distance.clear();
-        for (int i = 0; i < dist.count(); i++)
-            distance.append(dist[i]);
+    void setDistance(const QVector<int> &dist, const QVector<bool> &used) {
+        distance = dist;
+        usedSensor = used;
     }
 
     void clearData() {
@@ -134,7 +133,8 @@ private:
     int tagId{-1};
 
     // 画圆，直观显示坐标计算过程
-    QVector<int> distance;
+    QVector<int>  distance;
+    QVector<bool> usedSensor;
 
     // 画笔和画刷的颜色
     oneTagView tagView;

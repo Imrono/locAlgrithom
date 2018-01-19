@@ -28,6 +28,8 @@ private:
     bool isShowable{true};
 
     void paintEvent(QPaintEvent *event);
+    void keyPressEvent (QKeyEvent *e);
+
     QColor colorA;
     bool isColorA_ready{false};
 };

@@ -112,9 +112,15 @@ void showTagRelated::drawLines(QPainter &painter, dType ratio,
 
 void showTagRelated::drawCircle(QPainter &painter, const QVector<locationCoor> &sensor,
                                 dType ratio, dType zoom, QPointF offset) const {
-    painter.setPen(QPen(Qt::black, 1));
+    QPen tmpPen = QPen(Qt::black, 1);
     painter.setBrush(Qt::NoBrush);
     for (int i = 0; i < distance.count(); i++) {
+        if (usedSensor[i]) {
+            tmpPen.setStyle(Qt::SolidLine);
+        } else {
+            tmpPen.setStyle(Qt::DotLine);
+        }
+        painter.setPen(tmpPen);
         painter.drawEllipse(toZoomedPoint(sensor[i].toQPointF(), ratio, zoom, offset),
                             distance[i] * ratio * zoom, distance[i] * ratio * zoom);
     }
@@ -122,8 +128,15 @@ void showTagRelated::drawCircle(QPainter &painter, const QVector<locationCoor> &
 
 void showTagRelated::drawCircleBold(QPainter &painter, const locationCoor &sensor,
                                     int distIdx, dType ratio, dType zoom, QPointF offset) const {
-    painter.setPen(QPen(Qt::black, 3));
+    QPen tmpPen = QPen(Qt::black, 3);
     painter.setBrush(Qt::NoBrush);
+    if (usedSensor[distIdx]) {
+        tmpPen.setStyle(Qt::SolidLine);
+    } else {
+        tmpPen.setStyle(Qt::DotLine);
+    }
+    painter.setPen(tmpPen);
+
     painter.drawEllipse(toZoomedPoint(sensor.toQPointF(), ratio, zoom, offset),
                         distance[distIdx] * ratio * zoom, distance[distIdx] * ratio * zoom);
 }

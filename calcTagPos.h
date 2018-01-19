@@ -27,13 +27,13 @@ public:
 
     // ALL IN ONE
     CALC_POS_TYPE calcPosType{CALC_POS_TYPE::POS_NONE};
-    locationCoor calcOnePosition(const int *dist, dType &MSE, dType T);
+    locationCoor calcOnePosition(const int *dist, dType &MSE, dType T, bool *usedSensor);
 
     locationCoor calcFullCentroid  (const int *dist, dType &MSE);
     locationCoor calcSubLS         (const int *dist, dType &MSE);
     locationCoor calcTwoCenter     (const int *dist, dType &MSE);
     locationCoor calcTaylorSeries  (const int *dist, dType &MSE);
-    locationCoor calcWeightedTaylor(const int *dist, dType &MSE);
+    locationCoor calcWeightedTaylor(const int *dist, dType &MSE, bool *usedSensor);
     locationCoor calcKalmanTaylor  (const int *dist, dType &MSE, dType T);
 
     static void calcFullCentroid  (const int *distance, const locationCoor *sensor,
@@ -51,7 +51,7 @@ public:
     static void calcWeightedTaylor(const int *distance, const locationCoor *sensor,
                                    dType **A, dType **coA, dType *B, int N,
                                    dType **A_taylor, dType *B_taylor, dType *W_taylor,
-                                   dType &out_x, dType &out_y, dType &out_MSE);
+                                   dType &out_x, dType &out_y, dType &out_MSE, bool *usedSensor);
     static void calcKalmanTaylor  (const int *distance, const locationCoor *sensor, dType T_in,
                                    dType **A, dType **coA, dType *B, int N,
                                    dType **A_taylor, dType *B_taylor, dType *W_taylor,

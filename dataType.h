@@ -37,12 +37,13 @@ struct locationCoor
 
     locationCoor()
     {}
-    locationCoor(dType x, dType y, dType z) : x{x}, y{y}, z{z}
-    {}
-    locationCoor(const locationCoor &obj): x(obj.x), y(obj.y), z(obj.z)
-    {}
-    locationCoor(const QPoint &obj): x(obj.x()), y(obj.y()), z(0.0f)
-    {}
+    locationCoor(dType x, dType y, dType z) :
+        x{x}, y{y}, z{z} {}
+    locationCoor(const locationCoor &obj):
+        x(obj.x), y(obj.y), z(obj.z) {}
+    locationCoor(const QPoint &obj):
+        x(obj.x()), y(obj.y()), z(0.0f) {}
+
     locationCoor operator=(const locationCoor &t) {
         x = t.x;
         y = t.y;

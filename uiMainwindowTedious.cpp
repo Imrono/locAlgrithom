@@ -1,5 +1,6 @@
 #include "uiMainWindow.h"
 #include "ui_mainwindow.h"
+#include <QEvent>
 
 void uiMainWindow::connectUi() {
     connect(ui->canvas, SIGNAL(mouseChange(int,int)), this, SLOT(showMousePos(int, int)));
@@ -92,6 +93,27 @@ void uiMainWindow::connectUi() {
     });
 
     connect(ui->UsrFrm, SIGNAL(oneUsrBtnClicked_siganl(int, bool)), this, SLOT(oneUsrBtnClicked(int, bool)));
+}
+
+void uiMainWindow::keyPressEvent(QKeyEvent *e) {
+//    if (e->modifiers() == Qt::ShiftModifier) {
+//        if (e->key() == Qt::Key_Less) {
+//            emit ui->previous->clicked();
+//        } else if (e->key() == Qt::Key_Greater) {
+//            emit ui->next->clicked();
+//        } else {}
+//    } else {}
+    QMainWindow::keyPressEvent(e);
+}
+void uiMainWindow::wheelEvent(QWheelEvent *e)
+{
+    if (QApplication::keyboardModifiers () == Qt::ControlModifier) {
+        if(e->delta() > 0) {
+            zoomIn(); //放大
+        } else {
+            zoomOut();//缩小
+        }
+    } else {}
 }
 
 void uiMainWindow::checkData() {

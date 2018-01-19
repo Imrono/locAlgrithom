@@ -44,12 +44,15 @@ public:
             tags[tagId].setLines(methodName, lines);
         }
     }
-    void setDistance(int tagId,  const int *dist) {
+    void setDistance(int tagId, const int *dist, bool *usedSensor) {
         if (tags.contains(tagId)) {
             QVector<int> d;
-            for (int i = 0; i < cfg_d->sensor.count(); i++)
+            QVector<bool> used;
+            for (int i = 0; i < cfg_d->sensor.count(); i++) {
                 d.append(dist[i]);
-            tags[tagId].setDistance(d);
+                used.append(usedSensor[i]);
+            }
+            tags[tagId].setDistance(d, used);
         }
     }
     void clearData(int tagId) {

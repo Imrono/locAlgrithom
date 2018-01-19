@@ -87,6 +87,12 @@
     <property name="text">
      <string>next</string>
     </property>
+    <property name="shortcut">
+     <string>&gt;</string>
+    </property>
+    <property name="autoDefault">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QPushButton" name="allPos">
     <property name="geometry">
@@ -112,6 +118,12 @@
     </property>
     <property name="text">
      <string>previous</string>
+    </property>
+    <property name="shortcut">
+     <string>&lt;</string>
+    </property>
+    <property name="autoDefault">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QWidget" name="gridLayoutWidget">
@@ -472,22 +484,6 @@
     <string>距离和比较</string>
    </property>
   </action>
-  <action name="actionKalmanDist">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Kalman</string>
-   </property>
-  </action>
-  <action name="actionKangDist">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Kang</string>
-   </property>
-  </action>
   <action name="actionKalmanTrack">
    <property name="checkable">
     <bool>true</bool>
@@ -577,6 +573,28 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>next</tabstop>
+  <tabstop>previous</tabstop>
+  <tabstop>showPath</tabstop>
+  <tabstop>reset</tabstop>
+  <tabstop>allPos</tabstop>
+  <tabstop>beginTrack</tabstop>
+  <tabstop>raw_0</tabstop>
+  <tabstop>raw_1</tabstop>
+  <tabstop>refine_2</tabstop>
+  <tabstop>raw_3</tabstop>
+  <tabstop>raw_2</tabstop>
+  <tabstop>refine_0</tabstop>
+  <tabstop>refine_1</tabstop>
+  <tabstop>refine_3</tabstop>
+  <tabstop>raw_4</tabstop>
+  <tabstop>raw_5</tabstop>
+  <tabstop>refine_4</tabstop>
+  <tabstop>refine_5</tabstop>
+  <tabstop>showRadius</tabstop>
+  <tabstop>showTrack</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

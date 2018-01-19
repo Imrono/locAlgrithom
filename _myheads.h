@@ -4,6 +4,8 @@
 #include <QVector>
 #include <QDebug>
 
+#define MAX_SENSOR 10
+
 #ifndef dType
 #define dType double
 #endif

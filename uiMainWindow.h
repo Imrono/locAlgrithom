@@ -65,6 +65,9 @@ private:
     void setStatusZoom();
     void setStatusMousePos(int x, int y);
 
+    void keyPressEvent(QKeyEvent *e);
+    void wheelEvent(QWheelEvent *e);
+
 private slots:
     // FILE
     void loadIniConfigFile(bool checked, QString pathIn = "");
@@ -94,8 +97,8 @@ private slots:
     void trackKalmanInfo(bool checked);
 
     // ZOOM
-    void zoomIn(bool);
-    void zoomOut(bool);
+    void zoomIn(bool checked = false);
+    void zoomOut(bool checked = false);
 
 private slots:
     void handleModelDataUpdate(bool isUpdateCount = true);

@@ -1,32 +1,15 @@
 #include "uiUsrInfoBtn.h"
 #include <QPainter>
+#include <QKeyEvent>
 
 uiUsrInfoBtn::uiUsrInfoBtn(int tagId, QWidget *parent) :
     tagId{tagId}, QToolButton(parent) {
     initial();
-
-    connect(this, &QToolButton::clicked, this, [this](void) {
-        this->isShowable = !this->isShowable;
-        syncShowable();
-    });
-
-    connect(this, &QToolButton::clicked, this, [this](void) {
-        emit oneUsrBtnClicked(this->tagId);
-    });
 }
 
 uiUsrInfoBtn::uiUsrInfoBtn(int tagId, bool isShowable, QWidget *parent) :
     tagId{tagId}, isShowable{isShowable}, QToolButton(parent) {
     initial();
-
-    connect(this, &QToolButton::clicked, this, [this](void) {
-        this->isShowable = !this->isShowable;
-        syncShowable();
-    });
-
-    connect(this, &QToolButton::clicked, this, [this](void) {
-        emit oneUsrBtnClicked(this->tagId);
-    });
 }
 
 void uiUsrInfoBtn::initial() {
@@ -41,6 +24,16 @@ void uiUsrInfoBtn::initial() {
     setText(QString("%0").arg(tagId, 4, 10, QChar('0')));
 
     syncShowable();
+
+    connect(this, &QToolButton::clicked, this, [this](void) {
+        setFocus();
+        this->isShowable = !this->isShowable;
+        syncShowable();
+    });
+
+    connect(this, &QToolButton::clicked, this, [this](void) {
+        emit oneUsrBtnClicked(this->tagId);
+    });
 }
 
 void uiUsrInfoBtn::setUsrStatus(USR_STATUS status) {
@@ -79,4 +72,17 @@ void uiUsrInfoBtn::paintEvent(QPaintEvent *event) {
     if (isShowable) {
         painter.drawEllipse(QPointF{5.f, 5.f}, 3, 3);
     }
+}
+
+void uiUsrInfoBtn::keyPressEvent(QKeyEvent *e) {
+    switch(e->key())
+    {
+    case Qt::Key_Enter:
+	case Qt::Key_Return:
+        emit clicked();
+        break;
+    default:
+        break;
+    }
+    QToolButton::keyPressEvent(e);
 }

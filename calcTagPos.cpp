@@ -183,11 +183,18 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
     if (nullptr == tagInfo)
         return;
 
+    bool isNlosIgnore = false;
+    if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
+		isNlosIgnore = true;
+    }
     int nSensor = cfg_d->sensor.count();
     locationCoor tmpX;
     double mse = 0.f;
 
     QVector<dist4Calc> distRefined;
+    bool usedSensor[MAX_SENSOR];
+    for (int i = 0; i < MAX_SENSOR; i++)
+        usedSensor[i] = true;
 
     const oneTag &tagDists = dist_d->tagsData[tagInfo->tagId];
     for (int i = 0; i < tagDists.distData.count(); i++) {
@@ -199,13 +206,13 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
 
         //qDebug() << "[" << i << "]" << tmpDist.toStringDist();
         dType T = tagDists.distData[i].time.toMSecsSinceEpoch();
-        tmpX = calcOnePosition(tmpDist.distance, mse, T);
+        tmpX = calcOnePosition(tmpDist.distance, mse, T, usedSensor);
         //qDebug() << tmpX.toString() << mse;
         if (i >= 1) {
             /* distance filter BEGIN */
             // ITERATION
             int iterCount = 1;
-            do {
+            while (!isNlosIgnore) {
                 if (!calcNlos->posPrecisionNLOS(mse)) {  // MSE小于阈值，直接退出循环
                     break;
                 } else {
@@ -214,11 +221,11 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
                     } else {
                         // tmpDist 即是IN也是OUT；distRefined是保存历史修正后的值
                         if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
-                            tmpX = calcOnePosition(tmpDist.distance, mse, T);
+                            tmpX = calcOnePosition(tmpDist.distance, mse, T, usedSensor);
                         } else {}
                     }
                 }
-            } while(1);
+            }
             /* distance filter END */
         }
         // store and update
@@ -233,10 +240,15 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
                     .append(QLineF(tagInfo->methodInfo[MEASUR_STR].Ans[i-1].toQPointF(),
                                    tagInfo->methodInfo[MEASUR_STR].Ans[i].toQPointF()));
         }
+        QVector<bool> tmp;
+        for (int k = 0; k < cfg_d->sensor.count(); k++) {
+            tmp.append(usedSensor[k]);
+        }
+        tagInfo->usedSeneor.append(tmp);
     }
 }
 
-locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T) {
+locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T, bool *usedSensor) {
     if (CALC_POS_TYPE::FullCentroid == calcPosType) {
         return calcFullCentroid(dist, MSE);
     } else if (CALC_POS_TYPE::SubLS == calcPosType) {
@@ -246,7 +258,7 @@ locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T) {
     } else if (CALC_POS_TYPE::Taylor == calcPosType) {
         return calcTaylorSeries(dist, MSE);
     } else if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
-        return calcWeightedTaylor(dist, MSE);
+        return calcWeightedTaylor(dist, MSE, usedSensor);
     } else if (CALC_POS_TYPE::KalmanTaylor == calcPosType) {
         return calcKalmanTaylor(dist, MSE, T);
     } else {
@@ -408,10 +420,10 @@ locationCoor calcTagPos::calcTaylorSeries(const int *dist, dType &MSE) {
     return locationCoor{X[0], X[1], 0.f};
 }
 
-locationCoor calcTagPos::calcWeightedTaylor(const int *dist, dType &MSE) {
+locationCoor calcTagPos::calcWeightedTaylor(const int *dist, dType &MSE, bool *usedSensor) {
     calcWeightedTaylor(dist, cfg_d->sensor.data(),
                        A_fc, A_fc_inverse_AT, B_fc, fc_row,
-                       A_taylor, B_taylor, W_taylor, X[0], X[1], MSE);
+                       A_taylor, B_taylor, W_taylor, X[0], X[1], MSE, usedSensor);
 
     return locationCoor{X[0], X[1], 0.f};
 }
