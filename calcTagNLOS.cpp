@@ -31,7 +31,7 @@ calcTagNLOS::~calcTagNLOS()
 // POINTS_NLOS
 bool calcTagNLOS::pointsPredictNlos(/*IN & OUT*/dist4Calc &distCurr, int nSensor,
                                     const QVector<dist4Calc> &distRefined) const {
-    if (WYLIE == predictNlos) {
+    if (POINTS_NLOS::WYLIE == predictNlos) {
         if (distRefined.count() < wylieN + 1) {
             qDebug() << "distRefined.count() < wylieN + 1" << distRefined.count() << wylieN;
             return false;
@@ -50,7 +50,7 @@ bool calcTagNLOS::pointsPredictNlos(/*IN & OUT*/dist4Calc &distCurr, int nSensor
             }
             return ans;
         }
-    } else if (MULTI_POINT == predictNlos) {
+    } else if (POINTS_NLOS::MULTI_POINT == predictNlos) {
         int idx_t_1 = distRefined.count() - 1;
         if (0 >= idx_t_1) {
             return false;
@@ -173,9 +173,9 @@ void calcTagNLOS::refineMultiPointNLOS(/*IN_OUT*/int *d_t, /*IN*/const int *d_t_
 /*************************************************************/
 // POS_PRECISION_NLOS
 bool calcTagNLOS::posPrecisionNLOS(dType precision) const {
-    if(RESIDUAL == precNlos) {
+    if(POS_PRECISION_NLOS::RESIDUAL == precNlos) {
         return isResNLOS(precision);
-    } else if (SUM_DIST == precNlos) {
+    } else if (POS_PRECISION_NLOS::SUM_DIST == precNlos) {
         return isSumDistNLOS(precision);
     } else {
         return false;

@@ -38,7 +38,6 @@ private:
     bool timerStarted;
 
     int distCount{0};
-    QLabel *distCountShow{nullptr};
 
     calcTagPos calcPos;
     calcTagNLOS calcNlos;
@@ -50,20 +49,22 @@ private:
     int totalPos{0};
     dType calcTimeElapsedMeasu{0.f};
     dType calcTimeElapsedTrack{0.f};
-    QLabel *calcTimeElapsed{nullptr};
-
-    QLabel *distZoomShow{nullptr};
-    QLabel *canvasPosShow{nullptr};
 
     void checkData();
     void resetData();
     void resetUi(bool isPos = false, bool isTrack = false);
     void connectUi();
 
+    QLabel *calcTimeElapsed{nullptr};
     void setStatusTimeInfo();
+    QLabel *distCountShow{nullptr};
     void setStatusDistCount();
+    QLabel *distZoomShow{nullptr};
     void setStatusZoom();
+    QLabel *canvasPosShow{nullptr};
     void setStatusMousePos(int x, int y);
+    QLabel *iterationNum{nullptr};
+    void setStatusIter(int n, dType mse);
 
     void keyPressEvent(QKeyEvent *e);
     void wheelEvent(QWheelEvent *e);

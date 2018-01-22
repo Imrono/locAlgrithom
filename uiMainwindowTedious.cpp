@@ -85,10 +85,19 @@ void uiMainWindow::connectUi() {
     });
     connect(ui->showTrace, &QPushButton::clicked, this, [this](void) {
         if (!ui->canvas->reverseShowTrack()) {
-            ui->showTrace->setText("显示Trace");
+            ui->showTrace->setText("显示iter");
         } else {
-            ui->showTrace->setText("隐藏Trace");
+            ui->showTrace->setText("隐藏iter");
         }
+        handleModelDataUpdate(false);
+    });
+
+    connect(ui->distCountEdit, &QLineEdit::returnPressed, this, [this](void) {
+        distCount = ui->distCountEdit->text().toInt();
+        handleModelDataUpdate(false);
+    });
+    connect(ui->gotoCount, &QPushButton::clicked, this, [this](void) {
+        distCount = ui->distCountEdit->text().toInt();
         handleModelDataUpdate(false);
     });
 
@@ -226,4 +235,8 @@ void uiMainWindow::zoomOut(bool) {
 
 void uiMainWindow::showMousePos(int x, int y) {
     setStatusMousePos(x, y);
+}
+
+void uiMainWindow::setStatusIter(int n, dType mse) {
+    iterationNum->setText(QString::number((n)) + QString("<") + QString::number((mse)) + QString(">"));
 }

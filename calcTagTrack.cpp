@@ -281,15 +281,16 @@ void calcTagTrack::calcKalmanPosVector(storeMethodInfo &tagMeasInfo, storeMethod
         tagKalmanInfo.data[3].append(y_x_tilde.x*y_x_tilde.x + y_x_tilde.y*y_x_tilde.y + y_x_tilde.z*y_x_tilde.z);
 
         /*
-        qDebug() << QString("i=%0, P_t_1=%1, P_t=%2, R_t=%3, Kx=%4, dist_x=%5, dist_v=%6, Q=%7")
+        qDebug() << x_t.toQPoint()
+                 << QString("i=%0, P_t_1=%1, P_t=%2, R_t=%3, Kx=%4, dist_x=%5, dist_v=%6, Q=%7")
                     .arg(i, 4, 10, QChar('0'))
                     .arg(Pxx_t_1, 8, 'g', 4)
                     .arg(Pxx_t, 8, 'g', 4)
-                    .arg(R_t, 8, 'g', 4)
+                    .arg(R, 8, 'g', 4)
                     .arg(Kx, 7, 'g', 4)
                     .arg(calcDistance(x_t, z_x_t_meas), 6, 'g', 3)
                     .arg(calcDistance(v_t, v_hat_t), 6, 'g', 3)
-                    .arg(Q_x, 6, 'g', 3);
+                    .arg(Q, 6, 'g', 3);
         */
         /*
         qDebug() << QString("i=%0, Pxx_1=%1, Pvx_1=%2, Pxv_1=%3, Pvv_1=%4,"

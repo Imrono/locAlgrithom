@@ -24,7 +24,7 @@ dType calcDistanceMSE(const int *a, const dType *b, int N) {
 }
 dType calcDistanceMSE(const int *dist, const dType *X, const locationCoor *sensor, int N) {
     //dType *d_hat = new dType[N];
-    dType d_hat[10];
+    dType d_hat[MAX_SENSOR];
     for (int i = 0; i < N; i++) {
         //qDebug() << "calcDistanceMSE" << X[0] << X[1] << sensor[i].toString()
         //         << qPow(X[0]-sensor[i].x, 2) << qPow(X[1]-sensor[i].y, 2);

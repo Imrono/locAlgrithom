@@ -6,8 +6,8 @@ QMap<int, oneTagView> showTagRelated::tagViewData;
 tagsView showTagRelated::tagsViewDataBase;
 
 tagsView::tagsView(){
-    viewDatabase << oneTagView{{QColor{Qt::red},    QColor{Qt::darkRed}},    {SHOW_SHAPE::radius, SHOW_SHAPE::square}, 0, false};
-    viewDatabase << oneTagView{{QColor{Qt::green},  QColor{Qt::darkGreen}},  {SHOW_SHAPE::radius, SHOW_SHAPE::square}, 1, false};
+    viewDatabase << oneTagView{{QColor{Qt::green},  QColor{Qt::darkGreen}},  {SHOW_SHAPE::radius, SHOW_SHAPE::square}, 0, false};
+    viewDatabase << oneTagView{{QColor{Qt::red},    QColor{Qt::darkRed}},    {SHOW_SHAPE::radius, SHOW_SHAPE::square}, 1, false};
     viewDatabase << oneTagView{{QColor{Qt::blue},   QColor{Qt::darkBlue}},   {SHOW_SHAPE::radius, SHOW_SHAPE::square}, 2, false};
     viewDatabase << oneTagView{{QColor{Qt::cyan},   QColor{Qt::darkCyan}},   {SHOW_SHAPE::radius, SHOW_SHAPE::square}, 3, false};
     viewDatabase << oneTagView{{QColor{Qt::magenta},QColor{Qt::darkMagenta}},{SHOW_SHAPE::radius, SHOW_SHAPE::square}, 4, false};
@@ -82,7 +82,7 @@ void showTagRelated::drawIterPoints(QPainter &painter, dType ratio,
         painter.drawEllipse(p, shapeSize*2, shapeSize*2);
         painter.setPen(Qt::black);
         painter.drawText(p.x()-5, p.y()-5, 10, 10, Qt::AlignCenter, QString::number(i));
-        qDebug() << "iteration" << i << iterPoints[i];
+        //qDebug() << "iteration" << i << iterPoints[i];
     }
 }
 void showTagRelated::drawPointsRaw(QPainter &painter, dType ratio,

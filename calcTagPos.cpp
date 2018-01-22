@@ -185,7 +185,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
 
     bool isNlosIgnore = false;
     if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
-		isNlosIgnore = true;
+        isNlosIgnore = false;
     }
     int nSensor = cfg_d->sensor.count();
     locationCoor tmpX;
@@ -210,22 +210,14 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
         tmpX = calcOnePosition(tmpDist.distance, mse, T, usedSensor, tmpTrace);
         //qDebug() << tmpX.toString() << mse;
         if (i >= 1) {
-            /* distance filter BEGIN */
-            // ITERATION
+            /* distance filter ITERATION */
             int iterCount = 1;
-            while (!isNlosIgnore) {
-                if (!calcNlos->posPrecisionNLOS(mse)) {  // MSE小于阈值，直接退出循环
-                    break;
-                } else {
-                    if (iterCount-- == 0) {
-                        break;
-                    } else {
-                        // tmpDist 即是IN也是OUT；distRefined是保存历史修正后的值
-                        if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
-                            tmpX = calcOnePosition(tmpDist.distance, mse, T, usedSensor, tmpTrace);
-                        } else {}
-                    }
-                }
+            while (iterCount-- > 0
+                && calcNlos->posPrecisionNLOS(mse)) {   // MSE小于阈值，直接退出循环
+                // tmpDist 即是IN也是OUT；distRefined是保存历史修正后的值
+                if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
+                    tmpX = calcOnePosition(tmpDist.distance, mse, T, usedSensor, tmpTrace);
+                } else {}
             }
             /* distance filter END */
         }
@@ -236,6 +228,8 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
         tagInfo->Reliability.append(mse);
         tagInfo->methodInfo[MEASUR_STR].data[0].append(mse);
         tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
+		qDebug() << tmpX.toString();
+		qDebug() << tagInfo->methodInfo[MEASUR_STR].Ans[tagInfo->methodInfo[MEASUR_STR].Ans.count() - 1].toString();
         tagInfo->iterPoints.append(tmpTrace);
         if (i > 0) {
             tagInfo->methodInfo[MEASUR_STR].AnsLines
@@ -425,6 +419,10 @@ locationCoor calcTagPos::calcTaylorSeries(const int *dist, dType &MSE) {
 
 locationCoor calcTagPos::calcWeightedTaylor(const int *dist, dType &MSE,
                                             bool *usedSensor, QVector<QPointF> &iterTrace) {
+	for (int i = 0; i < fc_row; i++) {
+		W_taylor[i] = 0.0f;
+	}
+
     calcWeightedTaylor(dist, cfg_d->sensor.data(),
                        A_fc, A_fc_inverse_AT, B_fc, fc_row,
                        A_taylor, B_taylor, W_taylor, X[0], X[1], MSE, usedSensor, iterTrace);

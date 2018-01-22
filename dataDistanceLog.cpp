@@ -35,7 +35,7 @@ void dataDistanceLog::loadNewFile_1(const QString &fileName) {
 
     oneLogData tmpLogData;
     int count = 0;
-    bool started = false;
+    int recCount = 0;
     while(!file.atEnd()) {
         QByteArray line = file.readLine();
         QString str(line);
@@ -51,14 +51,15 @@ void dataDistanceLog::loadNewFile_1(const QString &fileName) {
             Q_UNUSED(statStr);
 
             if (0 == sensorId) {
-                started = true;
+                recCount = 0;
                 tmpLogData.distance.clear();
             }
 
             tmpLogData.time = QDateTime::fromString(dateStr, "yyyy/MM/dd hh:mm:ss:zzz");
             tmpLogData.distance.append(distStr.toInt());
+            recCount ++;
 
-            if (3 == sensorId && started) {
+            if (3 == sensorId && 4 == recCount) {
                 //started = false;
                 if (!q->tagsData.contains(tagId)) {
                     q->tagsData.insert(tagId, oneTag(tagId));

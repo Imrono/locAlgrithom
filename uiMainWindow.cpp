@@ -32,6 +32,9 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     calcTimeElapsed->setFrameStyle(QFrame::Box | QFrame::Sunken);
     statusBar()->addPermanentWidget(calcTimeElapsed);
     setStatusTimeInfo();
+    iterationNum = new QLabel(this);
+    statusBar()->addWidget(iterationNum);
+    setStatusIter(0, 0.f);
 
     // CFG DATA
     //loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
@@ -96,21 +99,29 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
 
             if (CALC_POS_TYPE::POS_NONE != calcPos.calcPosType) {
                 ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
-                //ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
-            }
-            QPointF tmpOK = tag.distData[distCount].p_t.toQPointF();
+                ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
+            } else {}
+            //QPointF tmpOK = tag.distData[distCount].p_t.toQPointF();
             //tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - tag.distData[distCount].p_t.toQPointF();
-            ui->canvas->setPosition(tag.tagId, TRACKx_STR, tmpOK);
+            //ui->canvas->setPosition(tag.tagId, TRACKx_STR, tmpOK);
             //ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
-            qDebug() << distCount
-                     << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF()
-                     << calcDistance(tag.distData[distCount].p_t.toQPointF(),
-                                     oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
+            /*
+            QVector<QLineF> tmpLines;
+            for (int i = 0; i < tag.distData.count(); i++) {
+                tmpLines.append(tag.distData[i].l_t);
+            }
+            ui->canvas->setLines(tag.tagId, TRACKx_STR, tmpLines);
+            */
+			qDebug() << distCount
+				<< oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF()
+				<< calcDistance(tag.distData[distCount].p_t.toQPointF(),
+					oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
+                    // << oneTagInfo->methodInfo[TRACKx_STR].Ans[distCount].toQPointF();
             //qDebug() << "[@handleModelDataUpdate] " << distCount << tag.tagId << MEASUR_STR << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
             if (TRACK_METHOD::TRACK_NONE != calcTrack.calcTrackMethod) {
-                //ui->canvas->setPosition(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].Ans[distCount].toQPointF());
-                //ui->canvas->setLine(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines[distCount-1]);
-            }
+                ui->canvas->setPosition(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].Ans[distCount].toQPointF());
+                ui->canvas->setLine(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines[distCount-1]);
+            } else {}
 
             ui->canvas->setPointsRaw(tag.tagId, MEASUR_STR, oneTagInfo->RawPoints[distCount]);
             ui->canvas->setPointsRefined(tag.tagId, MEASUR_STR, oneTagInfo->RefinedPoints[distCount]);
@@ -120,14 +131,11 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
                                     oneTagInfo->usedSeneor[distCount].data());
 
             ui->canvas->setIterPoints(tag.tagId, oneTagInfo->iterPoints[distCount]);
+            setStatusIter(oneTagInfo->iterPoints[distCount].count(),
+                          oneTagInfo->methodInfo[MEASUR_STR].data[0][distCount]);
 
             ui->canvas->setLines(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines);
-            //ui->canvas->setLines(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines);
-            QVector<QLineF> tmpLines;
-            for (int i = 0; i < tag.distData.count(); i++) {
-                tmpLines.append(tag.distData[i].l_t);
-            }
-            ui->canvas->setLines(tag.tagId, TRACKx_STR, tmpLines);
+            ui->canvas->setLines(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines);
 
             switch (tag.distData[distCount].distance.count()) {
             case 6:ui->raw_5->setText(QString::number(tag.distData[distCount].distance[5]));
@@ -267,7 +275,7 @@ void uiMainWindow::nlosWylie(bool checked) {
         calcNlos.predictNlos = POINTS_NLOS::POINTS_NONE;
     }
     ui->actionMultiPoint->setChecked(false);
-    qDebug() << "nlosWylie :" << calcNlos.predictNlos;
+    qDebug() << "[@nlosWylie] clicked";
 }
 
 void uiMainWindow::nlosMultiPoint(bool checked) {
@@ -280,7 +288,7 @@ void uiMainWindow::nlosMultiPoint(bool checked) {
         calcNlos.predictNlos = POINTS_NLOS::POINTS_NONE;
         ui->actionMultiPoint->setChecked(false);
     }
-    qDebug() << "nlosMultiPoint :" << calcNlos.predictNlos;
+    qDebug() << "[@nlosMultiPoint] clicked";
 }
 
 void uiMainWindow::nlosRes(bool checked) {
@@ -293,7 +301,7 @@ void uiMainWindow::nlosRes(bool checked) {
         calcNlos.precNlos = POS_PRECISION_NLOS::POS_PRECISION_NONE;
         ui->actionRes->setChecked(false);
     }
-    qDebug() << "nlosRes :" << calcNlos.precNlos;
+    qDebug() << "[@nlosRes] clicked";
 }
 
 void uiMainWindow::nlosSumDist(bool checked) {
@@ -306,7 +314,7 @@ void uiMainWindow::nlosSumDist(bool checked) {
         calcNlos.precNlos = POS_PRECISION_NLOS::POS_PRECISION_NONE;
         ui->actionSumDist->setChecked(false);
     }
-    qDebug() << "nlosSumDist :" << calcNlos.precNlos;
+    qDebug() << "[@nlosSumDist] clicked";
 }
 
 /***********************************************************/
