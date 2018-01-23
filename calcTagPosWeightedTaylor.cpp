@@ -28,6 +28,7 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
     }
 
     // calculate weight
+    int refIdx = (N+1)/2;
     dType midDist = sortedDist[2];
     dType littleDist = sortedDist[1];
     for (int i = 0; i < N; i++) {
@@ -40,7 +41,6 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
         }
     }
     int nUnuseableNlos = 0;
-    int refIdx = (N+1)/2;
     for (int i = 0; i < N; i++) {
         if (i < refIdx+1) {
             usedSensor[idx[i]] = true;
@@ -103,11 +103,13 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 */
     int count = 0;
 	// Marquardt damping parameter using trust region
-    dType minLamda = 0.1f;
-	dType maxLamda = 100.f;
+    dType minLamda = .5f;
+    dType maxLamda = 1.f;
 	dType lamda = minLamda;
     dType nu = 1.1f;
-	dType mse_pref = 10000.f;
+    dType mse_pref = 10000.f;
+    dType alpha = 1.2f;
+    dType beta = 50.f;
     do {
         dType X0[2];    //迭代初值，由于有dX，所以要用X0暂存。
         X0[0] = X[0]; X0[1] = X[1];
@@ -129,25 +131,25 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
         mse = calcDistanceMSE(distance, X, sensor, matrixN);
 
         if (1 == count % 5) {
-			if (mse < mse_pref || mseLast > mse * 1.2f) {
+            if (mse < mse_pref || mseLast > mse * alpha) {
 				if (qAbs(lamda - minLamda) < MY_EPS) {
 					// do nothing
 				} else {
-					lamda /= nu;
+                    lamda /= nu;
 				}
-			} else if (mse < mse_pref * 50.f) {
+            } else if (mse < mse_pref * beta) {
 				// do nothing
 			} else {
 				if (lamda > maxLamda) {
 					// do nothing
 				} else {
-					lamda *= nu;
+                    lamda *= nu;
 				}
 			}
 		}
         qDebug() << lamda << QPointF{X[0], X[1]} << mse << mseLast;
         iterTrace.append(QPointF{X[0], X[1]});
-    } while (mse > mse_pref && count++ < 40 && qAbs(mseLast - mse) > 100.f);
+    } while (mse > mse_pref && count++ < 40 && qAbs(mseLast - mse) > mse_pref/100.f);
 
     // output
     out_x   = X[0];
