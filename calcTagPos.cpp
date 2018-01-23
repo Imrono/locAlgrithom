@@ -185,6 +185,8 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
 
     bool isNlosIgnore = false;
     if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
+        lastPos[0] = {0.f};
+        lastPos[1] = {0.f};
         isNlosIgnore = false;
     }
     int nSensor = cfg_d->sensor.count();

@@ -343,6 +343,7 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
     totalPos = 0;
     foreach (storeTagInfo *info, store.tags) {
         ui->canvas->clearData(info->tagId);
+        info->clear();
         info->addOrResetMethodInfo(MEASUR_STR, CALC_POS2STR[type]);
         info->calcPosType = type;
 /****** CALC POS MAIN **************************************/

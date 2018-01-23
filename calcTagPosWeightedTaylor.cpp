@@ -3,13 +3,14 @@
 #include "calcLibMatrixOp.h"
 #include "calcLibMath.h"
 
+dType calcTagPos::lastPos[2] = {0.f, 0.f};
+
 void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sensor,
                                     dType **A, dType **coA, dType *B, int N,
                                     dType **A_taylor, dType *B_taylor, dType *W_taylor,
                                     dType &out_x, dType &out_y, dType &out_MSE,
                                     bool *usedSensor, QVector<QPointF> &iterTrace) {
     Q_UNUSED(coA);
-	static dType lastPos[2] = {0.f, 0.f};
     dType X[3] = {0.f, 0.f, 0.f};
     dType dX[3] = {0.f, 0.f, 0.f};
     dType tmpD = 0.f;
@@ -28,10 +29,11 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 
     // calculate weight
     dType midDist = sortedDist[2];
+    dType littleDist = sortedDist[1];
     for (int i = 0; i < N; i++) {
         dType currDist = dType(sortedDist[i]);
         if (currDist < midDist
-         && currDist > 0.2f*midDist) {
+         && currDist > 0.3f * littleDist) {
             W_taylor[i] = 1.f * qPow(qAbs(currDist-midDist)+1.f, 0.1);
         } else {
             W_taylor[i] = 1.f / qSqrt(qAbs(currDist-midDist)+1.f);
@@ -90,8 +92,8 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 	}
 	X[2] = X[0] * X[0] + X[1] * X[1];
 	mse = calcDistanceMSE(sortedDist, X, sortedSensor, matrixN);
+    qDebug() << QPointF{X[0], X[1]} << mse;
     iterTrace.append(QPointF{X[0], X[1]});
-
 /*
     qDebug() << distance[0] << distance[1] << distance[2] << distance[3] << distance[4] << distance[5] << ","
              << idx[0] << idx[1] << idx[2] << idx[3] << idx[4] << idx[5] << ","
@@ -107,7 +109,7 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
     dType nu = 1.1f;
 	dType mse_pref = 10000.f;
     do {
-        dType X0[2];//迭代初值，由于有dX，所以要用X0暂存。
+        dType X0[2];    //迭代初值，由于有dX，所以要用X0暂存。
         X0[0] = X[0]; X0[1] = X[1];
         mseLast = mse;
         // fill the matrix
@@ -143,9 +145,9 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 				}
 			}
 		}
-        qDebug() << lamda << QPointF{X[0], X[1]} << mse;
+        qDebug() << lamda << QPointF{X[0], X[1]} << mse << mseLast;
         iterTrace.append(QPointF{X[0], X[1]});
-	} while (mse > mse_pref && count++ < 40 && qAbs(mseLast - mse) > 500.f);
+    } while (mse > mse_pref && count++ < 40 && qAbs(mseLast - mse) > 100.f);
 
     // output
     out_x   = X[0];

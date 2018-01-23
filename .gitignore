@@ -11,3 +11,5 @@ debug/
 x64/
 .vs/
 build-*/
+
+*.lnk

@@ -90,6 +90,8 @@ private:
     dType **A_taylor{nullptr};
 
     dType X[3]{0.f};
+
+    static dType lastPos[2];
 };
 
 #endif // CALCPOS_H

@@ -59,6 +59,8 @@ struct storeTagInfo {
     }
 
     void clear() {
+        iterPoints.clear();
+        usedSeneor.clear();
         methodInfo.clear();
         RawPoints.clear();
         RefinedPoints.clear();
