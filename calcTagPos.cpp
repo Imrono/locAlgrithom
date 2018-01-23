@@ -230,8 +230,8 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
         tagInfo->Reliability.append(mse);
         tagInfo->methodInfo[MEASUR_STR].data[0].append(mse);
         tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
-		qDebug() << tmpX.toString();
-		qDebug() << tagInfo->methodInfo[MEASUR_STR].Ans[tagInfo->methodInfo[MEASUR_STR].Ans.count() - 1].toString();
+        //qDebug() << tmpX.toString();
+        //qDebug() << tagInfo->methodInfo[MEASUR_STR].Ans[tagInfo->methodInfo[MEASUR_STR].Ans.count() - 1].toString();
         tagInfo->iterPoints.append(tmpTrace);
         if (i > 0) {
             tagInfo->methodInfo[MEASUR_STR].AnsLines

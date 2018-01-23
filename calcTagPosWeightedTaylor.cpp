@@ -55,13 +55,13 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
             }
         }
     }
-//    /*
+    /*
     qDebug() << distance[0] << distance[1] << distance[2] << distance[3] << distance[4] << distance[5] << ","
              << sortedDist[0] << sortedDist[1] << sortedDist[2] << sortedDist[3] << sortedDist[4] << sortedDist[5] << ","
              << W_taylor[0] << W_taylor[1] << W_taylor[2] << W_taylor[3] << W_taylor[4] << W_taylor[5] << ","
              << sortedDist[refIdx] << nUnuseableNlos
              << usedSensor[0] << usedSensor[1] << usedSensor[2] << usedSensor[3] << usedSensor[4] << usedSensor[5];
-//    */
+    */
     int matrixN = N - nUnuseableNlos;
 
     // initial point
@@ -92,7 +92,7 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 	}
 	X[2] = X[0] * X[0] + X[1] * X[1];
 	mse = calcDistanceMSE(sortedDist, X, sortedSensor, matrixN);
-    qDebug() << QPointF{X[0], X[1]} << mse;
+    //qDebug() << QPointF{X[0], X[1]} << mse;
     iterTrace.append(QPointF{X[0], X[1]});
 /*
     qDebug() << distance[0] << distance[1] << distance[2] << distance[3] << distance[4] << distance[5] << ","
@@ -147,7 +147,7 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 				}
 			}
 		}
-        qDebug() << lamda << QPointF{X[0], X[1]} << mse << mseLast;
+        //qDebug() << lamda << QPointF{X[0], X[1]} << mse << mseLast;
         iterTrace.append(QPointF{X[0], X[1]});
     } while (mse > mse_pref && count++ < 40 && qAbs(mseLast - mse) > mse_pref/100.f);
 
