@@ -95,6 +95,7 @@ void uiMainWindow::connectUi() {
     connect(ui->distCountEdit, &QLineEdit::returnPressed, this, [this](void) {
         distCount = ui->distCountEdit->text().toInt();
         handleModelDataUpdate(false);
+        ui->next->setFocus();
     });
     connect(ui->gotoCount, &QPushButton::clicked, this, [this](void) {
         distCount = ui->distCountEdit->text().toInt();

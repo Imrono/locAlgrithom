@@ -24,4 +24,9 @@ void coefficient_B(dType const * const * const A,
                    dType * const * const coA, long nRow, long nCol);
 
 dType calcMSE(dType **A, dType *b, dType *x, long nRow, long nCol);
+
+/******************************************************/
+bool matrix22_inverse(dType **A, dType **A_inverse);
+bool matrix33_inverse(dType **A, dType **A_inverse);
+
 #endif // MATRIXOP_H

@@ -101,7 +101,6 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
              << W_taylor[0] << W_taylor[1] << W_taylor[2] << W_taylor[3] << W_taylor[4] << W_taylor[5]
              << nUnuseableNlos;
 */
-    int count = 0;
 	// Marquardt damping parameter using trust region
     dType minLamda = .5f;
     dType maxLamda = 1.f;
@@ -110,6 +109,8 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
     dType mse_pref = 10000.f;
     dType alpha = 1.2f;
     dType beta = 50.f;
+    // iteration
+    int count = 0;
     do {
         dType X0[2];    //迭代初值，由于有dX，所以要用X0暂存。
         X0[0] = X[0]; X0[1] = X[1];
@@ -121,7 +122,6 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
             A_taylor[i][1] = ((X[1] - sortedSensor[i].y) / tmpD) * W_taylor[i];
             B_taylor[i] =    (dType(sortedDist[i]) - tmpD)       * W_taylor[i];
         }
-
 
         leastSquare(A_taylor, B_taylor, dX, matrixN, 2, lamda);
 

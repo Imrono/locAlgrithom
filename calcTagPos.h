@@ -8,6 +8,9 @@
 #include "showStore.h"
 #include "calcTagNLOS.h"
 #include "calcLibDistance.h"
+extern "C"{
+#include "armVersion/calcTagPosWeightTaylor_ARM.h"
+}
 
 class calcTagPos
 {

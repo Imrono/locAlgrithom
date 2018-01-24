@@ -88,7 +88,7 @@
      <string>next</string>
     </property>
     <property name="shortcut">
-     <string>&gt;</string>
+     <string>Right</string>
     </property>
     <property name="autoRepeat">
      <bool>true</bool>
@@ -129,7 +129,7 @@
      <string>previous</string>
     </property>
     <property name="shortcut">
-     <string>&lt;</string>
+     <string>Left</string>
     </property>
     <property name="autoDefault">
      <bool>true</bool>

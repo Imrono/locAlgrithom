@@ -10,7 +10,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = locAlgrithom
 TEMPLATE = app
-RC_FILE = locAlgrithom.rc
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
@@ -43,7 +42,9 @@ SOURCES += \
     calcLibMatrixOp.cpp \
     calcTagPosKalmanTaylor.cpp \
     calcLibMath.cpp \
-    calcTagPosWeightedTaylor.cpp
+    calcTagPosWeightedTaylor.cpp \
+    armVersion/calcTagPosWeightTaylor_ARM.c \
+    calcLibMatrixOpInverse.cpp
 
 HEADERS += \
     showStore.h \
@@ -61,7 +62,8 @@ HEADERS += \
     calcLibDistance.h \
     calcLibMatrixOp.h \
     calcTagTrack.h \
-    calcLibMath.h
+    calcLibMath.h \
+    armVersion/calcTagPosWeightTaylor_ARM.h
 
 FORMS += \
     mainwindow.ui
@@ -76,3 +78,4 @@ RESOURCES += \
     resource.qrc
 
 DISTFILES +=
+RC_ICONS = resource/icon/locAlg.ico
