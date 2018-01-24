@@ -24,49 +24,49 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-        main.cpp \
-    showStore.cpp \
-    uiCanvas.cpp \
-    uiMainWindow.cpp \
-    dataSensorIni.cpp \
-    showTagRelated.cpp \
-    dataDistanceLog.cpp \
-    calcTagPos.cpp \
-    calcTagNLOS.cpp \
-    uiUsrInfoBtn.cpp \
-    uiUsrFrame.cpp \
-    calcLibDistance.cpp \
-    _myheads.cpp \
-    calcTagTrack.cpp \
-    uiMainwindowTedious.cpp \
-    calcLibMatrixOp.cpp \
-    calcTagPosKalmanTaylor.cpp \
-    calcLibMath.cpp \
-    calcTagPosWeightedTaylor.cpp \
-    armVersion/calcTagPosWeightTaylor_ARM.c \
-    calcLibMatrixOpInverse.cpp
+        src/main.cpp \
+    src/showStore.cpp \
+    src/uiCanvas.cpp \
+    src/uiMainWindow.cpp \
+    src/dataSensorIni.cpp \
+    src/showTagRelated.cpp \
+    src/dataDistanceLog.cpp \
+    src/calcTagPos.cpp \
+    src/calcTagNLOS.cpp \
+    src/uiUsrInfoBtn.cpp \
+    src/uiUsrFrame.cpp \
+    src/calcLibDistance.cpp \
+    src/_myheads.cpp \
+    src/calcTagTrack.cpp \
+    src/uiMainwindowTedious.cpp \
+    src/calcLibMatrixOp.cpp \
+    src/calcTagPosKalmanTaylor.cpp \
+    src/calcLibMath.cpp \
+    src/calcTagPosWeightedTaylor.cpp \
+    src/armVersion/calcTagPosWeightTaylor_ARM.c \
+    src/calcLibMatrixOpInverse.cpp
 
 HEADERS += \
-    showStore.h \
-    _myheads.h \
-    uiMainWindow.h \
-    uiCanvas.h \
-    dataSensorIni.h \
-    showTagRelated.h \
-    dataDistanceLog.h \
-    calcTagPos.h \
-    calcTagNLOS.h \
-    dataType.h \
-    uiUsrInfoBtn.h \
-    uiUsrFrame.h \
-    calcLibDistance.h \
-    calcLibMatrixOp.h \
-    calcTagTrack.h \
-    calcLibMath.h \
-    armVersion/calcTagPosWeightTaylor_ARM.h
+    src/showStore.h \
+    src/_myheads.h \
+    src/uiMainWindow.h \
+    src/uiCanvas.h \
+    src/dataSensorIni.h \
+    src/showTagRelated.h \
+    src/dataDistanceLog.h \
+    src/calcTagPos.h \
+    src/calcTagNLOS.h \
+    src/dataType.h \
+    src/uiUsrInfoBtn.h \
+    src/uiUsrFrame.h \
+    src/calcLibDistance.h \
+    src/calcLibMatrixOp.h \
+    src/calcTagTrack.h \
+    src/calcLibMath.h \
+    src/armVersion/calcTagPosWeightTaylor_ARM.h
 
 FORMS += \
-    mainwindow.ui
+    src/mainwindow.ui
 
 
 
@@ -75,7 +75,7 @@ win64-msvc*:QMAKE_CXXFLAGS += /wd"4819"
 win32-msvc*:QMAKE_CXXFLAGS += /wd"4819"
 
 RESOURCES += \
-    resource.qrc
+    src/resource.qrc
 
 DISTFILES +=
 RC_ICONS = resource/icon/locAlg.ico

@@ -9,7 +9,7 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setWindowIcon(QIcon(":/icon/resource/icon/locAlg.png"));
+    setWindowIcon(QIcon(":/icon/../resource/icon/locAlg.png"));
     ui->previous->setToolTip("Shift + <");
     ui->next->setToolTip("Shift + >");
 

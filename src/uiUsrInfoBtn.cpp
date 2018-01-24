@@ -15,7 +15,7 @@ uiUsrInfoBtn::uiUsrInfoBtn(int tagId, bool isShowable, QWidget *parent) :
 void uiUsrInfoBtn::initial() {
     setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     setFixedSize(40, 60);
-    setIcon(QIcon(":/usr/resource/usr/usr_A.png"));
+    setIcon(QIcon(":/usr/../resource/usr/usr_A.png"));
     setIconSize(QSize(38, 38));
 
     QFont font;
@@ -39,16 +39,16 @@ void uiUsrInfoBtn::initial() {
 void uiUsrInfoBtn::setUsrStatus(USR_STATUS status) {
     switch (status) {
     case USR_STATUS::HAS_DISTANCE_DATA:
-        setIcon(QIcon(":/usr/resource/usr/usr_D.png"));
+        setIcon(QIcon(":/usr/../resource/usr/usr_D.png"));
         break;
     case USR_STATUS::HAS_MEASURE_DATA:
-        setIcon(QIcon(":/usr/resource/usr/usr_C.png"));
+        setIcon(QIcon(":/usr/../resource/usr/usr_C.png"));
         break;
     case USR_STATUS::HAS_TRACK_DATA:
-        setIcon(QIcon(":/usr/resource/usr/usr_B.png"));
+        setIcon(QIcon(":/usr/../resource/usr/usr_B.png"));
         break;
     default:
-        setIcon(QIcon(":/usr/resource/usr/usr_A.png"));
+        setIcon(QIcon(":/usr/../resource/usr/usr_A.png"));
         break;
     }
 }
