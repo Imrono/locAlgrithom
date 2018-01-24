@@ -7,11 +7,14 @@ echo delete .\release\
 rd /s /q .\release
 echo delete .\GeneratedFiles\
 rd /s /q .\GeneratedFiles
-echo delete .\build-locAlgrithom-Desktop_Qt_5_9_1_MSVC2015_64bit-Debug\
-rd /s /q .\build-locAlgrithom-Desktop_Qt_5_9_1_MSVC2015_64bit-Debug
-echo delete .\build-locAlgrithom-Desktop_Qt_5_9_1_MSVC2015_64bit-Release\
-rd /s /q .\build-locAlgrithom-Desktop_Qt_5_9_1_MSVC2015_64bit-Release
-echo delete .\build-test*
-rd /s /q .\build-test*
+
+set locAlgrithomBuild=build-locAlgrithom
+echo delete .\build-locAlgrithom ...
+for /f "delims=" %%i in ('dir %locAlgrithomBuild%* /ad/b') do rd "%%i" /s/q
+
+set testBuild=build-test
+echo delete .\build-test ...
+for /f "delims=" %%i in ('dir %testBuild%* /ad/b') do rd "%%i" /s/q
+
 echo clean finished
 pause
