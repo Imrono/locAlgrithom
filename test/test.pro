@@ -27,14 +27,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-    main.cpp \
     calcLibMatrixOp_TEST.cpp \
     ../src/_myheads.cpp \
     ../src/calcLibMatrixOp.cpp \
     ../src/calclibMatrixOpInverse.cpp \
     calcLibMath_ARM_TEST.cpp \
     ../src/armVersion/calcLibMath_ARM.c \
-    ../src/armVersion/calcTagPosWeightTaylor_ARM.c
+    ../src/armVersion/calcTagPosWeightedTaylor_ARM.c \
+    testMain.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
@@ -43,7 +43,7 @@ HEADERS += \
     ../src/_myheads.h \
     ../src/calcLibMatrixOp.h \
     calcLibMath_ARM_TEST.h \
-    ../src/armVersion/calcTagPosWeightTaylor_ARM.h
-
+    ../src/armVersion/calcTagPos_ARM.h
 
 QMAKE_CXXFLAGS += /wd"4819"
+QMAKE_CFLAGS += /wd"4819"

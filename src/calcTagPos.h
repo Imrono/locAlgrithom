@@ -9,7 +9,7 @@
 #include "calcTagNLOS.h"
 #include "calcLibDistance.h"
 extern "C"{
-#include "armVersion/calcTagPosWeightTaylor_ARM.h"
+#include "armVersion/calcTagPos_ARM.h"
 }
 
 class calcTagPos

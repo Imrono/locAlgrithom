@@ -1,4 +1,4 @@
-#include "calcTagPosWeightTaylor_ARM.h"
+#include "calcTagPos_ARM.h"
 #include <stdio.h>
 char Cal3DLoc(LPST_COL3D lpstCol3DRef, unsigned char nRefNum, unsigned char nRealNum,
               LPST_COL3D lpstCol3DLoc, char bInitLocIncluded ) {

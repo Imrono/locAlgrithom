@@ -43,9 +43,9 @@ SOURCES += \
     calcTagPosKalmanTaylor.cpp \
     calcLibMath.cpp \
     calcTagPosWeightedTaylor.cpp \
-    armVersion/calcTagPosWeightTaylor_ARM.c \
     calcLibMatrixOpInverse.cpp \
-    armVersion/calcLibMath_ARM.c
+    armVersion/calcLibMath_ARM.c \
+    armVersion/calcTagPosWeightedTaylor_ARM.c
 
 HEADERS += \
     showStore.h \
@@ -64,16 +64,13 @@ HEADERS += \
     calcLibMatrixOp.h \
     calcTagTrack.h \
     calcLibMath.h \
-    armVersion/calcTagPosWeightTaylor_ARM.h
+    armVersion/calcTagPos_ARM.h
 
 FORMS += \
     mainwindow.ui
 
-
-
-#win32-msvc*:QMAKE_CXXFLAGS += /wd"4819"
-win64-msvc*:QMAKE_CXXFLAGS += /wd"4819"
-win32-msvc*:QMAKE_CXXFLAGS += /wd"4819"
+QMAKE_CXXFLAGS += /wd"4819"
+QMAKE_CFLAGS += /wd"4819"
 
 RESOURCES += \
     resource.qrc

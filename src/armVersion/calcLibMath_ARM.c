@@ -1,11 +1,11 @@
-#include "calcTagPosWeightTaylor_ARM.h"
+#include "calcTagPos_ARM.h"
 
 float calcDistanceMSE(const LPST_COL3D lpstCol3DRef, const float *X, const int N) {
     float currD = 0.f;
     float ans = 0.f;
     int i = 0;
 
-    for (int i = 0; i < N; i++) {
+    for (i = 0; i < N; i++) {
         currD = sqrtf((X[0]-lpstCol3DRef[i].fX)*(X[0]-lpstCol3DRef[i].fX)
                     + (X[1]-lpstCol3DRef[i].fY)*(X[1]-lpstCol3DRef[i].fY));
         ans += (lpstCol3DRef[i].fDistance - currD) * (lpstCol3DRef[i].fDistance - currD);

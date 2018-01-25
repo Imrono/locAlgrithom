@@ -4,6 +4,9 @@
 
 int main(int argc, char *argv[])
 {
+    Q_UNUSED(argc);
+    Q_UNUSED(argv);
+
     calcLibMatrixOp_TEST matrixTest;
     QTest::qExec(&matrixTest);
 

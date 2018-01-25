@@ -3,7 +3,7 @@
 #include "calcLibMatrixOp.h"
 #include "calcLibMath.h"
 extern "C" {
-#include "armVersion/calcTagPosWeightTaylor_ARM.h"
+#include "armVersion/calcTagPos_ARM.h"
 }
 
 //dType calcTagPos::lastPos[2] = {0.f, 0.f};
