@@ -1,12 +1,1 @@
-<RCC>
-    <qresource prefix="/usr">
-        <file>../resource/usr/usr_A.png</file>
-        <file>../resource/usr/usr_B.png</file>
-        <file>../resource/usr/usr_C.png</file>
-        <file>../resource/usr/usr_D.png</file>
-        <file>../resource/usr/usr_origin.jpg</file>
-    </qresource>
-    <qresource prefix="/icon">
-        <file>../resource/icon/locAlg.png</file>
-    </qresource>
-</RCC>
+<RCC/>

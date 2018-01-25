@@ -46,3 +46,11 @@ void sortDistance(const int *distance, int *outDist, int *outIdx, const int N) {
     }
 }
 
+double SQR(double a){
+    double x=a,y=0.0;
+    while(fabs(x-y)>0.00001){
+        y=x;
+        x=0.5*(x+a/x);
+    }
+    return x;
+}

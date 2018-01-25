@@ -33,6 +33,9 @@ void uiMainWindow::connectUi() {
     // ZOOM
     connect(ui->actionZoomIn,  SIGNAL(triggered(bool)), this, SLOT(zoomIn(bool)));
     connect(ui->actionZoomOut, SIGNAL(triggered(bool)), this, SLOT(zoomOut(bool)));
+
+    // ARM
+    connect(ui->actioncalcTagPos_ARM, SIGNAL(triggered(bool)), this, SLOT(posCalc_ARM(bool)));
 /*************************************************************/
     connect(&timer, SIGNAL(timeout()), this, SLOT(handleModelDataUpdate()));
 
@@ -146,6 +149,7 @@ void uiMainWindow::checkData() {
         ui->actionTwoCenter->setDisabled(true);
         ui->actionTaylorSeries->setDisabled(true);
         ui->actionKalmanTaylor->setDisabled(true);
+        ui->actioncalcTagPos_ARM->setDisabled(true);
 
         ui->actionKalmanTrack->setDisabled(true);
         ui->actionKalmanLiteTrack->setDisabled(true);
@@ -161,6 +165,7 @@ void uiMainWindow::checkData() {
         ui->actionTwoCenter->setEnabled(true);
         ui->actionTaylorSeries->setEnabled(true);
         ui->actionKalmanTaylor->setEnabled(true);
+        ui->actioncalcTagPos_ARM->setEnabled(true);
 
         ui->actionKalmanTrack->setEnabled(true);
         ui->actionKalmanLiteTrack->setEnabled(true);
@@ -186,6 +191,7 @@ void uiMainWindow::resetUi(bool isPos, bool isTrack) {
         ui->actionTaylorSeries->setChecked(false);
         ui->actionWeightedTaylor->setChecked(false);
         ui->actionKalmanTaylor->setChecked(false);
+        ui->actioncalcTagPos_ARM->setChecked(false);
     } else {}
 
     if (isTrack) {

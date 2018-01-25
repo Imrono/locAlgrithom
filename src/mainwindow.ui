@@ -448,11 +448,18 @@
     <addaction name="actionRead_dist_2"/>
     <addaction name="actionRead_picture"/>
    </widget>
+   <widget class="QMenu" name="menuARM">
+    <property name="title">
+     <string>ARM</string>
+    </property>
+    <addaction name="actioncalcTagPos_ARM"/>
+   </widget>
    <addaction name="menu_3"/>
    <addaction name="menuNLOS"/>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menuview"/>
+   <addaction name="menuARM"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionFullCentroid">
@@ -593,6 +600,14 @@
    </property>
    <property name="text">
     <string>KalmanTaylor</string>
+   </property>
+  </action>
+  <action name="actioncalcTagPos_ARM">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>calcTagPos_ARM</string>
    </property>
   </action>
  </widget>

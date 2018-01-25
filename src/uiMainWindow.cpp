@@ -333,7 +333,9 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
         ui->actionWeightedTaylor->setChecked(true);
     } else if (CALC_POS_TYPE::KalmanTaylor == type) {
         ui->actionKalmanTaylor->setChecked(true);
-    }else {}
+    } else if (CALC_POS_TYPE::ARM_calcPos == type) {
+        ui->actioncalcTagPos_ARM->setChecked(true);
+    } else {}
 
     // determine the calculate method
     calcPos.calcPosType = type;
@@ -399,6 +401,11 @@ void uiMainWindow::posKalmanTaylor(bool checked) {
     Q_UNUSED(checked);
     posCalcPROCESS(CALC_POS_TYPE::KalmanTaylor);
 }
+void uiMainWindow::posCalc_ARM(bool checked) {
+    Q_UNUSED(checked);
+    posCalcPROCESS(CALC_POS_TYPE::ARM_calcPos);
+}
+
 /***********************************************************/
 // TRACK
 void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {

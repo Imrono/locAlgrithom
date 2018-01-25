@@ -14,7 +14,7 @@ dType calcDistanceSquare(const QPointF &a, const QPointF &b) {
     return ans;
 }
 
-dType calcDistanceMSE(const int *a, const dType *b, int N) {
+dType calcDistanceMSE(const dType *a, const dType *b, int N) {
     dType ans = 0.f;
     for (int i = 0; i < N; i++) {
         ans += (a[i] - b[i]) * (a[i] - b[i]);
@@ -22,7 +22,7 @@ dType calcDistanceMSE(const int *a, const dType *b, int N) {
     ans /= N;
     return ans;
 }
-dType calcDistanceMSE(const int *dist, const dType *X, const locationCoor *sensor, int N) {
+dType calcDistanceMSE(const dType *dist, const dType *X, const locationCoor *sensor, int N) {
     //dType *d_hat = new dType[N];
     dType d_hat[MAX_SENSOR];
     for (int i = 0; i < N; i++) {

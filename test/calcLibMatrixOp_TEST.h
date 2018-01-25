@@ -14,6 +14,9 @@ public:
 private Q_SLOTS:
     void matrix22_inverse_TEST();
     void matrix33_inverse_TEST();
+
+    void leastSquare22_TEST();
+    void leastSquare33_TEST();
 };
 
 #endif // CALCLIBMATRIXOP_TEST_H

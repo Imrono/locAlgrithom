@@ -101,6 +101,9 @@ private slots:
     void zoomIn(bool checked = false);
     void zoomOut(bool checked = false);
 
+    // ARM
+    void posCalc_ARM(bool checked);
+
 private slots:
     void handleModelDataUpdate(bool isUpdateCount = true);
     void oneUsrBtnClicked(int tagId, bool isShowable);

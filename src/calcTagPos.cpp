@@ -2,6 +2,9 @@
 #include <QtMath>
 #include "calcLibMatrixOp.h"
 #include "calcLibMath.h"
+extern "C" {
+#include "armVersion/calcTagPosWeightTaylor_ARM.h"
+}
 
 calcTagPos::~calcTagPos() {
     resetA();
@@ -185,13 +188,13 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
 
     bool isNlosIgnore = false;
     if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
-        lastPos[0] = {0.f};
-        lastPos[1] = {0.f};
+        //lastPos[0] = {0.f};
+        //lastPos[1] = {0.f};
         isNlosIgnore = false;
     }
     int nSensor = cfg_d->sensor.count();
-    locationCoor tmpX;
-    double mse = 0.f;
+    locationCoor tmpX = {0.f, 0.f, 0.f};
+    dType mse = 0.f;
 
     QVector<dist4Calc> distRefined;
     bool usedSensor[MAX_SENSOR];
@@ -200,6 +203,8 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
 
     const oneTag &tagDists = dist_d->tagsData[tagInfo->tagId];
     for (int i = 0; i < tagDists.distData.count(); i++) {
+        locationCoor tmpLastPos = tmpX;
+        qDebug() << i << tmpLastPos.toQPointF();
         dist4Calc tmpDist = {{0,0,0,0,0,0}};
         for (int j = 0; j < tagDists.distData[i].distance.count(); j++) {
             tmpDist.distance[j] = tagDists.distData[i].distance[j];
@@ -209,7 +214,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
         //qDebug() << "[" << i << "]" << tmpDist.toStringDist();
         QVector<QPointF> tmpTrace;
         dType T = tagDists.distData[i].time.toMSecsSinceEpoch();
-        tmpX = calcOnePosition(tmpDist.distance, mse, T, usedSensor, tmpTrace);
+        tmpX = calcOnePosition(tmpDist.distance, mse, T, tmpLastPos, usedSensor, tmpTrace);
         //qDebug() << tmpX.toString() << mse;
         if (i >= 1) {
             /* distance filter ITERATION */
@@ -218,7 +223,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
                 && calcNlos->posPrecisionNLOS(mse)) {   // MSE小于阈值，直接退出循环
                 // tmpDist 即是IN也是OUT；distRefined是保存历史修正后的值
                 if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
-                    tmpX = calcOnePosition(tmpDist.distance, mse, T, usedSensor, tmpTrace);
+                    tmpX = calcOnePosition(tmpDist.distance, mse, T, tmpLastPos, usedSensor, tmpTrace);
                 } else {}
             }
             /* distance filter END */
@@ -246,7 +251,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
     }
 }
 
-locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T,
+locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T, locationCoor lastPos,
                                          bool *usedSensor, QVector<QPointF> &iterTrace) {
     if (CALC_POS_TYPE::FullCentroid == calcPosType) {
         return calcFullCentroid(dist, MSE);
@@ -257,9 +262,11 @@ locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T,
     } else if (CALC_POS_TYPE::Taylor == calcPosType) {
         return calcTaylorSeries(dist, MSE);
     } else if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
-        return calcWeightedTaylor(dist, MSE, usedSensor, iterTrace);
+        return calcWeightedTaylor(dist, MSE, lastPos, usedSensor, iterTrace);
     } else if (CALC_POS_TYPE::KalmanTaylor == calcPosType) {
         return calcKalmanTaylor(dist, MSE, T);
+    } else if (CALC_POS_TYPE::ARM_calcPos == calcPosType) {
+        return calcPos_ARM(dist, MSE, lastPos);
     } else {
         return {0.f, 0.f, 0.f};
     }
@@ -419,13 +426,13 @@ locationCoor calcTagPos::calcTaylorSeries(const int *dist, dType &MSE) {
     return locationCoor{X[0], X[1], 0.f};
 }
 
-locationCoor calcTagPos::calcWeightedTaylor(const int *dist, dType &MSE,
+locationCoor calcTagPos::calcWeightedTaylor(const int *dist, dType &MSE, locationCoor lastPos,
                                             bool *usedSensor, QVector<QPointF> &iterTrace) {
 	for (int i = 0; i < fc_row; i++) {
 		W_taylor[i] = 0.0f;
 	}
 
-    calcWeightedTaylor(dist, cfg_d->sensor.data(),
+    calcWeightedTaylor(dist, cfg_d->sensor.data(), lastPos,
                        A_fc, A_fc_inverse_AT, B_fc, fc_row,
                        A_taylor, B_taylor, W_taylor, X[0], X[1], MSE, usedSensor, iterTrace);
 
@@ -437,4 +444,30 @@ locationCoor calcTagPos::calcKalmanTaylor(const int *dist, dType &MSE, dType T) 
                      A_fc, A_fc_inverse_AT, B_fc, fc_row,
                      A_taylor, B_taylor, W_taylor, X[0], X[1], MSE);
     return locationCoor{X[0], X[1], 0.f};
+}
+
+locationCoor calcTagPos::calcPos_ARM(const int *dist, dType &MSE, locationCoor lastPos) {
+    ST_COL3D data[MAX_SENSOR];
+    ST_COL3D lpstCol3DLoc;
+    char bInitLocIncluded;
+
+    for (int i = 0; i < fc_row; i++) {
+        data[i].fX = cfg_d->sensor[i].x;
+        data[i].fY = cfg_d->sensor[i].y;
+        data[i].fZ = cfg_d->sensor[i].z;
+        data[i].fDistance = dist[i];
+    }
+    if (qAbs(lastPos.x) < MY_EPS && qAbs(lastPos.y) < MY_EPS) {
+        bInitLocIncluded = TRUE;
+    } else {
+        bInitLocIncluded = FALSE;
+    }
+    lpstCol3DLoc.fX = lastPos.x;
+    lpstCol3DLoc.fY = lastPos.y;
+    lpstCol3DLoc.fZ = lastPos.z;
+
+    Cal3DLoc(data, fc_row, fc_row, &lpstCol3DLoc, bInitLocIncluded);
+
+    MSE = MY_EPS;
+    return locationCoor{lpstCol3DLoc.fX, lpstCol3DLoc.fY, 0.f};
 }

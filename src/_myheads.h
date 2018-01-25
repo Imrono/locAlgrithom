@@ -7,7 +7,7 @@
 #define MAX_SENSOR 10
 
 #ifndef dType
-#define dType double
+#define dType float
 #endif
 
 #ifndef MY_STR
@@ -29,6 +29,7 @@ enum CALC_POS_TYPE {
     Taylor = 3,
     WeightedTaylor,
     KalmanTaylor,
+    ARM_calcPos,
     NUM_CALC_POS
 };
 

@@ -44,7 +44,8 @@ SOURCES += \
     calcLibMath.cpp \
     calcTagPosWeightedTaylor.cpp \
     armVersion/calcTagPosWeightTaylor_ARM.c \
-    calcLibMatrixOpInverse.cpp
+    calcLibMatrixOpInverse.cpp \
+    armVersion/calcLibMath_ARM.c
 
 HEADERS += \
     showStore.h \

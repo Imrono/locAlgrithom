@@ -36,7 +36,7 @@ dType calcTagTrack::calcR(locationCoor v_t, locationCoor v_t_1, dType reliabilit
     //qDebug() << v_t.toString() << v_t_1.toString() << v_mod_square
     //         << "part1" << part1 << "part2" << part2 << reliability
     //         << "ans=" << ans;
-    dType lBound = 0.13;
+    dType lBound = 0.13f;
     ans = ans < lBound ? lBound : ans;
     return ans;
 }
@@ -53,17 +53,17 @@ dType calcTagTrack::calcR(dType reliability, const QString &methodName) {
     } else if (METHOD_WEIGHTED_TAYLOR_STR == methodName) {
         reliability /= 100.f;
     } else if (METHOD_KALMAN_TAYLOR_STR == methodName) {
-        reliability /= 100.f;
+        reliability /= 50.f;
     } else {}
 
     dType ans = 0.0f;
     if (reliability < 2.5f) {
-        ans = 0.05;
-    } else if (reliability < 8) {
-        ans = 0.2;
-    } else if (reliability < 20) {
-        ans = 0.5;
-    } else if (reliability >= 20) {
+        ans = 0.05f;
+    } else if (reliability < 8.f) {
+        ans = 0.2f;
+    } else if (reliability < 20.f) {
+        ans = 0.5f;
+    } else if (reliability >= 20.f) {
         ans = reliability / 40.0f;
     } else {}
 

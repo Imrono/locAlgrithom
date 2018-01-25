@@ -31,12 +31,19 @@ SOURCES += \
     calcLibMatrixOp_TEST.cpp \
     ../src/_myheads.cpp \
     ../src/calcLibMatrixOp.cpp \
-    ../src/calclibMatrixOpInverse.cpp
+    ../src/calclibMatrixOpInverse.cpp \
+    calcLibMath_ARM_TEST.cpp \
+    ../src/armVersion/calcLibMath_ARM.c \
+    ../src/armVersion/calcTagPosWeightTaylor_ARM.c
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \
     calcLibMatrixOp_TEST.h \
     ../src/_myheads.h \
-    ../src/calcLibMatrixOp.h
+    ../src/calcLibMatrixOp.h \
+    calcLibMath_ARM_TEST.h \
+    ../src/armVersion/calcTagPosWeightTaylor_ARM.h
 
+
+QMAKE_CXXFLAGS += /wd"4819"

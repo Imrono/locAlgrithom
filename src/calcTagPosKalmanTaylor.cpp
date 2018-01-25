@@ -34,7 +34,7 @@ void calcTagPos::calcKalmanTaylor(const int *distance, const locationCoor *senso
     locationCoor y_x_tilde;
 
     dType R;
-    dType Q = 0.01;
+    dType Q = 0.01f;
     dType S;
     dType Kx = 1.0f;
     dType Kv = 1.0f;
