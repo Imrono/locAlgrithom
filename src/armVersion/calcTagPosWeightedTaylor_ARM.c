@@ -21,7 +21,7 @@ char Cal3DLoc(LPST_COL3D lpstCol3DRef, unsigned char nRefNum, unsigned char nRea
     float currDist = 0.f;
     float diffDist = 0.f;
     float sensorDist = 0.f;
-    float X0[2];    //Taylor series expansion at x0 point
+    float X0[2];    //Taylor series expansion at X0
 
     // Marquardt damping parameter using trust region
     float minLamda = .5f;
