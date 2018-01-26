@@ -33,15 +33,22 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 
     // calculate weight
     int refIdx = (N+1)/2;
-    dType midDist = sortedDist[2];
-    dType littleDist = sortedDist[1];
+    dType midDist = sortedDist[refIdx];
+    dType littleDist = sortedDist[refIdx-1];
     for (int i = 0; i < N; i++) {
-        dType currDist = dType(sortedDist[i]);
-        if (currDist < midDist
-         && currDist > 0.3f * littleDist) {
-            W_taylor[i] = 1.f * qPow(qAbs(currDist-midDist)+1.f, 0.1);
+        dType currDist = sortedDist[i];
+
+        float diffDist = fabsf(currDist-midDist)+1.f;
+        if (i < refIdx) {
+            dType sensorDist = calcDistance(sensor[refIdx-1].toQPointF(), sensor[i].toQPointF());
+            if(qAbs(littleDist - sensorDist) * 0.1f < currDist) {
+                //W_taylor[i] = 1.f * qPow(diffDist, 0.1);
+                W_taylor[i] = 1.f + 0.01f*diffDist;
+            } else {
+                W_taylor[i] = 1.f / qSqrt(diffDist);
+            }
         } else {
-            W_taylor[i] = 1.f / qSqrt(qAbs(currDist-midDist)+1.f);
+            W_taylor[i] = 1.f / qSqrt(diffDist);
         }
     }
     int nUnuseableNlos = 0;
@@ -76,15 +83,20 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
         dType **tmpA = new dType *[N];
         for (int i = 0; i < N; i++) {
             tmpA[i] = new dType[3];
-            tmpA[i][0] = -2.f*sortedSensor[i].x;
-            tmpA[i][1] = -2.f*sortedSensor[i].y;
-            tmpA[i][2] = 1.f;
+            tmpA[i][0] = -2.f*sortedSensor[i].x * W_taylor[i];
+            tmpA[i][1] = -2.f*sortedSensor[i].y * W_taylor[i];
+            tmpA[i][2] =  1.f                   * W_taylor[i];
+            //qDebug() << tmpA[i][0] << tmpA[i][1] << tmpA[i][2];
         }
         for (int i = 0; i < N; i++) {
-            B[i] = qPow(sortedDist[i], 2) - qPow(sortedSensor[i].x, 2) - qPow(sortedSensor[i].y, 2);
+            B[i] = (qPow(sortedDist[i], 2)
+                  - qPow(sortedSensor[i].x, 2)
+                  - qPow(sortedSensor[i].y, 2)) * W_taylor[i];
+            //qDebug() << B[i];
         }
         //leastSquare(tmpA, B, X, matrixN, 3);
         leastSquare_ARM(tmpA, B, X, matrixN, 3, 0.f);
+        //qDebug() << X[0] << X[1] << matrixN;
 
         for (int i = 0; i < N; i++) {
             delete[]tmpA[i];
@@ -114,7 +126,7 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
     int count = 0;
     dType lamda = minLamda;
     do {
-        dType X0[2];    //迭代初值，由于有dX，所以要用X0暂存。
+        dType X0[2];    //Taylor series expansion at x0 point
         X0[0] = X[0]; X0[1] = X[1];
         mseLast = mse;
         // fill the matrix

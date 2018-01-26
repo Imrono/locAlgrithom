@@ -5,6 +5,15 @@ calcLibMath_ARM_TEST::calcLibMath_ARM_TEST()
 
 }
 
+void calcLibMath_ARM_TEST::invSqrt_TEST() {
+    float x = 0.45f;
+    float y1 = InvSqrt(x);
+    float y2 = 1.f / sqrtf(x);
+
+    qDebug() << "InvSqrt" << y1 << "System" << y2;
+    QVERIFY(qAbs(y1-y2) < MY_EPS);
+}
+
 void calcLibMath_ARM_TEST::ATA_TEST() {
     qDebug() << "### begin ###";
     float *A_data = new float[15];

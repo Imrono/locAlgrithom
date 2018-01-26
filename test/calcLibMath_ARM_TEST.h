@@ -13,6 +13,7 @@ public:
     calcLibMath_ARM_TEST();
 
 private Q_SLOTS:
+    void invSqrt_TEST();
     void ATA_TEST();
     void ATb_TEST();
     void matrix22_inverse_TEST();

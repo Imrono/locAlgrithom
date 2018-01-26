@@ -9,7 +9,7 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setWindowIcon(QIcon(":/icon/../resource/icon/locAlg.png"));
+    setWindowIcon(QIcon("../resource/icon/locAlg.png"));
     ui->previous->setToolTip("Shift + <");
     ui->next->setToolTip("Shift + >");
 
@@ -112,12 +112,9 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             }
             ui->canvas->setLines(tag.tagId, TRACKx_STR, tmpLines);
             */
-			qDebug() << distCount
-				<< oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF()
-				<< calcDistance(tag.distData[distCount].p_t.toQPointF(),
-					oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
-                    // << oneTagInfo->methodInfo[TRACKx_STR].Ans[distCount].toQPointF();
-            //qDebug() << "[@handleModelDataUpdate] " << distCount << tag.tagId << MEASUR_STR << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
+            qDebug() << "[@handleModelDataUpdate]" << distCount
+                     << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
+
             if (TRACK_METHOD::TRACK_NONE != calcTrack.calcTrackMethod) {
                 ui->canvas->setPosition(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].Ans[distCount].toQPointF());
                 ui->canvas->setLine(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines[distCount-1]);
