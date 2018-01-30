@@ -21,7 +21,7 @@ void calcTagTrack::calcMatrixMulit_KP(const dType Kx, const dType Kv,
 }
 
 dType calcTagTrack::calcQ() {//Q should be bigger if v is ultra high
-    return 0.01f;
+    return .01f;
 }
 
 dType calcTagTrack::calcR(locationCoor v_t, locationCoor v_t_1, dType reliability) {
@@ -190,7 +190,16 @@ void calcTagTrack::calcKalmanPosVectorLite(storeMethodInfo &tagMeasInfo, storeMe
                     .arg(Q, 6, 'g', 3);
         */
         // *. update for next
-        v_t_1 = v_t;
+        locationCoor a = (v_t - v_t_1) / T;
+        dType a_mod = qSqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+        if (a_mod > 100) {
+            v_t_1 = v_t * 0.3f + v_t_1 * 0.7f;
+            Q = 0.1f;
+        } else {
+            v_t_1 = v_t;
+            Q = .02f;
+        }
+        //v_t_1 = v_t;
         x_t_1 = x_t;
         R_x_1 = R_x;
     }

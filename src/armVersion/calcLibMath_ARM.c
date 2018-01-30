@@ -12,10 +12,19 @@ float InvSqrt(float x)
     return x;
 }
 
-float calcDistance(const LPST_COL3D p1, const LPST_COL3D p2) {
+float calcDistance_ARM(const LPST_COL3D p1, const LPST_COL3D p2) {
     return sqrtf((p1->fX - p2->fX) * (p1->fX - p2->fX)
                + (p1->fY - p2->fY) * (p1->fY - p2->fY));
 }
+float calcDistance2_ARM(float *a, float *b, int N) {
+    float ans = 0.f;
+    int i = 0;
+    for (i = 0; i < N; i++) {
+        ans += (a[i] - b[i]) * (a[i] - b[i]);
+    }
+    return sqrtf(ans);
+}
+
 
 float calcDistanceMSE(const LPST_COL3D lpstCol3DRef, const float *X, const int N) {
     float currD = 0.f;
