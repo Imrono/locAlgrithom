@@ -105,7 +105,9 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
         delete[]tmpA;
 	}
     X[2] = 0.f;
-    dType mse = calcDistanceMSE(sortedDist, X, sortedSensor, matrixN);
+    dType mse = 0.f;
+    dType mseKeep = 0.f;
+    mseKeep = calcDistanceMSE(sortedDist, X, sortedSensor, matrixN);
     //qDebug() << QPointF{X[0], X[1]} << mse;
     iterTrace.append(QPointF{X[0], X[1]});
 /*
@@ -119,17 +121,14 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
     /**********************************************************************/
     // Levenberg-Marquardt Method
     dType mu = .1f;
+    // iteration
+    int k_max = 15;
+    int k = 0;
     dType eps1 = 0.002f;
     dType eps2 = 4.f;
     dType eps3 = 10000.f;
 
-    int k_max = 20;
-
-    // iteration
-    int k = 0;
-    dType mseKeep = 0.f;
-    while (!found && k++ < k_max) {
-        mseKeep = mse;
+    while (k++ < k_max) {
         dType X0[2];    //Taylor series expansion at x0 point
         X0[0] = X[0]; X0[1] = X[1];
         //mseLast = mse;
@@ -153,17 +152,19 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
         if (mse < mseKeep) {
             X[0] = X_new[0];
             X[1] = X_new[1];
+
+            if (mse < eps1
+             || qSqrt(dX[0] * dX[0] + dX[1] * dX[1]) < eps2
+             || qAbs(mse - mseKeep) < eps1 * eps3) {
+                break;
+            }
+
             mu *= 0.9f;
+            mseKeep = mse;
             //qDebug() << lamda << QPointF{X[0], X[1]} << mse << mseLast;
             iterTrace.append(QPointF{X[0], X[1]});
         } else {
             mu *= 1.1f;
-        }
-
-        if (mse < eps1
-         || qSqrt(dX[0] * dX[0] + dX[1] * dX[1]) < eps2
-         || qAbs(mse - mseKeep) < eps1 * eps3) {
-            break;
         }
     };
 

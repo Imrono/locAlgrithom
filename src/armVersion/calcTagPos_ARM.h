@@ -28,7 +28,7 @@ typedef struct tagCol3D
 float InvSqrt(float x);
 float calcDistance_ARM(const LPST_COL3D p1, const LPST_COL3D p2);
 float calcDistance2_ARM(float *a, float *b, int N);
-float calcDistanceMSE(const LPST_COL3D lpstCol3DRef, const float *X, const int N);
+float calcDistanceMSE(const LPST_COL3D lpstCol3DRef, const LPST_COL3D X, const int N);
 void sortDistance(const LPST_COL3D lpstCol3DRef, LPST_COL3D lpstCol3DSorted, const int N);
 
 void calcATA_ARM(float const * const * const A, const int row, const int col, float **ATA);

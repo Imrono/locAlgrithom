@@ -26,14 +26,15 @@ float calcDistance2_ARM(float *a, float *b, int N) {
 }
 
 
-float calcDistanceMSE(const LPST_COL3D lpstCol3DRef, const float *X, const int N) {
+float calcDistanceMSE(const LPST_COL3D lpstCol3DRef, const LPST_COL3D X, const int N) {
     float currD = 0.f;
     float ans = 0.f;
     int i = 0;
 
     for (i = 0; i < N; i++) {
-        currD = sqrtf((X[0]-lpstCol3DRef[i].fX)*(X[0]-lpstCol3DRef[i].fX)
-                    + (X[1]-lpstCol3DRef[i].fY)*(X[1]-lpstCol3DRef[i].fY));
+        currD = sqrtf((X->fX-lpstCol3DRef[i].fX)*(X->fX-lpstCol3DRef[i].fX)
+                    + (X->fY-lpstCol3DRef[i].fY)*(X->fY-lpstCol3DRef[i].fY)
+                    + (X->fZ-lpstCol3DRef[i].fZ)*(X->fZ-lpstCol3DRef[i].fZ));
         ans += (lpstCol3DRef[i].fDistance - currD) * (lpstCol3DRef[i].fDistance - currD);
     }
     ans /= N;
