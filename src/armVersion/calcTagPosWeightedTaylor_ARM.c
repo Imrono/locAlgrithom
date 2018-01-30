@@ -11,8 +11,8 @@ char Cal3DLoc(LPST_COL3D lpstCol3DRef, unsigned char nRefNum, unsigned char nRea
     ST_COL3D g_sortedCol3D[MAX_REF_NUM];
     float g_W[MAX_REF_NUM];
 
-    float mse = 0.f;
-    float mseKeep = 0.f;
+    float mse = 0.f;        // mse = Δd^T Δd
+    float mseKeep = 0.f;    // last accepted x's mse
     int i = 0;
     float tmp = 0.f;
     int matrixN = nRefNum;
@@ -89,16 +89,16 @@ char Cal3DLoc(LPST_COL3D lpstCol3DRef, unsigned char nRefNum, unsigned char nRea
     // Levenberg-Marquardt Method
     while (k++ < k_max) {
         // fill the matrix
-        // f(x) = f(x0) + J(x0)h + O(h^2)
-        // l(h) = f(x0) + J(x0)h
-        // f(x) ≈ l(h)
+        // f(x) = f(x0) + J(x0)Δx + O(h^2)
+        // l(h) = f(x0) + J(x0)Δx
+        // f(x) ≈ l(h) => J(x0)Δx ≈ f(x) - f(x0) = Δd
         for (i = 0; i < nRefNum; i++) {
             tmp =  sqrtf((lpstCol3DLoc->fX - g_sortedCol3D[i].fX) * (lpstCol3DLoc->fX - g_sortedCol3D[i].fX)
                        + (lpstCol3DLoc->fY - g_sortedCol3D[i].fY) * (lpstCol3DLoc->fY - g_sortedCol3D[i].fY));
             g_A[i][0] = ((lpstCol3DLoc->fX - g_sortedCol3D[i].fX) / tmp) * g_W[i];
             g_A[i][1] = ((lpstCol3DLoc->fY - g_sortedCol3D[i].fY) / tmp) * g_W[i];
             g_A[i][2] = ((lpstCol3DLoc->fZ - g_sortedCol3D[i].fZ) / tmp) * g_W[i];
-            g_B[i]    = (g_sortedCol3D[i].fDistance - tmp)    * g_W[i];
+            g_B[i]    = (g_sortedCol3D[i].fDistance - tmp)               * g_W[i];
         }
 
         leastSquare_ARM(g_A, g_B, dX, matrixN, 2, lamda);
@@ -107,12 +107,15 @@ char Cal3DLoc(LPST_COL3D lpstCol3DRef, unsigned char nRefNum, unsigned char nRea
         X_new.fY = lpstCol3DLoc->fY + dX[1];
         X_new.fZ = lpstCol3DLoc->fZ;
 
+        // mse = Δd^T Δd
         mse = calcDistanceMSE(g_sortedCol3D, &X_new, matrixN);
 
-        if (mse < mseKeep) {
+        // if mse decreased, accept
+        if (mse < mseKeep) {    // accept condition
             // update x0 for next iteration
             (*lpstCol3DLoc) = X_new;
 
+            // iteration conditions
             if (mse < eps1
              || sqrtf(dX[0] * dX[0] + dX[1] * dX[1]) < eps2
              || fabsf(mse - mseKeep) < eps1 * eps3) {
@@ -121,7 +124,7 @@ char Cal3DLoc(LPST_COL3D lpstCol3DRef, unsigned char nRefNum, unsigned char nRea
 
             mseKeep = mse;
             lamda *= 0.9f;
-        } else {
+        } else {                // else reject
             lamda *= 1.1f;
         }
     };

@@ -417,13 +417,14 @@ void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
 
     // determine the calculate method
     calcTrack.calcTrackMethod = type;
-
+    // reset kalman parameter of existing tag
+    calcTrack.clearParam();
     QTime time;
     time.start();
     foreach (storeTagInfo *info, store.tags) {
         info->addOrResetMethodInfo(TRACKx_STR, TRACK_METHOD2STR[type]);
 /****** CALC TRACK MAIN ****************************************/
-        calcTrack.calcOneTrack(info->methodInfo[MEASUR_STR], info->methodInfo[TRACKx_STR]);
+        calcTrack.calcTrackVector(info->methodInfo[MEASUR_STR], info->methodInfo[TRACKx_STR]);
 /***********************************************************/
         ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_TRACK_DATA);
 
