@@ -24,5 +24,10 @@ set testBuild=build-test
 echo delete .\build-test ...
 for /f "delims=" %%i in ('dir %testBuild%* /ad/b') do rd "%%i" /s/q
 
+set mainProjBuild=build-mainProj
+echo delete .\build-mainProj ...
+for /f "delims=" %%i in ('dir %mainProjBuild%* /ad/b') do rd "%%i" /s/q
+
+
 echo clean finished
 pause

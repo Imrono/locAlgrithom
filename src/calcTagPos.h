@@ -9,7 +9,7 @@
 #include "calcTagNLOS.h"
 #include "calcLibDistance.h"
 extern "C"{
-#include "armVersion/calcTagPos_ARM.h"
+#include "armVersion/calcTagLoc_ARM.h"
 }
 
 class calcTagPos

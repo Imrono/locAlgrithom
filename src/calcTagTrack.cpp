@@ -204,7 +204,6 @@ void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
     dType Pv_pri_t;
     dType R_v;
     dType Q = 0.01f;
-    //dType Q_v = 0.0001f;
 
     // 1. x = Hx + Bu
     x_hat_t = trackParam.x_t_1 + (trackParam.v_t_1 * T);
@@ -214,11 +213,11 @@ void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
     Pv_pri_t = trackParam.Pvv + Q/T/T*4.f;
     // 3. y = z - Hx
     y_x_tilde = z_x_meas - x_hat_t;
-    z_v_meas = (z_x_meas - z_x_meas_1) / T;
+    z_v_meas = (z_x_meas - trackParam.x_t_1) / T;
     y_v_tilde = z_v_meas - v_hat_t;
     // 4. S = R + HPH
     S_x = R_x + Px_pri_t;
-    R_v = (R_x + trackParam.R_t_1) / (T * T);
+    R_v = (R_x + trackParam.Pxx) / (T * T);
     S_v = R_v + Pv_pri_t;
     // 5. k = PH/S
     recParam.Kx = Px_pri_t / S_x;
@@ -230,8 +229,12 @@ void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
     // 7. P = P - KHP
     trackParam.Pxx = Px_pri_t - Px_pri_t * recParam.Kx;
     trackParam.Pvv = Pv_pri_t - Pv_pri_t * recParam.Kv;
-    // *. update for next
-    trackParam.R_t_1 = R_x;
+
+    dType v_mod = qSqrt(trackParam.v_t.x * trackParam.v_t.x
+                      + trackParam.v_t.y * trackParam.v_t.y);
+    v_mod -= 90.f;
+    dType v_mod_k = qExp(-2.f * v_mod) /(qExp(-2.f * v_mod) + qExp(2.f * v_mod));
+    trackParam.v_t = trackParam.v_t_1 * (1.f - v_mod_k) + trackParam.v_t * v_mod_k;
 }
 
 void calcTagTrack::calcKalmanPosInfo(const locationCoor &z_x_meas,

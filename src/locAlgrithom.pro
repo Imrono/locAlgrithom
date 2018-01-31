@@ -45,7 +45,8 @@ SOURCES += \
     calcTagPosWeightedTaylor.cpp \
     calcLibMatrixOpInverse.cpp \
     armVersion/calcLibMath_ARM.c \
-    armVersion/calcTagPosWeightedTaylor_ARM.c
+    armVersion/calcTagTrack_ARM.c \
+    armVersion/calcTagPos_ARM.c
 
 HEADERS += \
     showStore.h \
@@ -64,7 +65,7 @@ HEADERS += \
     calcLibMatrixOp.h \
     calcTagTrack.h \
     calcLibMath.h \
-    armVersion/calcTagPos_ARM.h
+    armVersion/calcTagLoc_ARM.h
 
 FORMS += \
     mainwindow.ui

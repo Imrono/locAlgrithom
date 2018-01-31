@@ -3,7 +3,7 @@
 #include <QString>
 #include <QtTest>
 extern "C" {
-#include "../src/armVersion/calcTagPos_ARM.h"
+#include "../src/armVersion/calcTagLoc_ARM.h"
 }
 
 class calcLibMath_ARM_TEST : public QObject

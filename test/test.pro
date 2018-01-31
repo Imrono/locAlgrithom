@@ -33,7 +33,7 @@ SOURCES += \
     ../src/calclibMatrixOpInverse.cpp \
     calcLibMath_ARM_TEST.cpp \
     ../src/armVersion/calcLibMath_ARM.c \
-    ../src/armVersion/calcTagPosWeightedTaylor_ARM.c \
+    ../src/armVersion/calcTagPos_ARM.c \
     testMain.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"

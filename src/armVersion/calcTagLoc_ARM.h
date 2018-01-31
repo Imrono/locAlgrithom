@@ -24,6 +24,12 @@ typedef struct tagCol3D
     float fDistance;		// distance to reference node
 } ST_COL3D, *LPST_COL3D;
 
+typedef struct tagTrackCol3D {  // used for next point calulate
+    float Pxx;
+    float Pvv;
+    ST_COL3D v_t_1;
+    ST_COL3D x_t_1;
+} ST_TRACK3D, *LPST_TRACK3D;
 
 float InvSqrt(float x);
 float calcDistance_ARM(const LPST_COL3D p1, const LPST_COL3D p2);
@@ -40,14 +46,16 @@ char matrix22_inverse_ARM(float **A, float **A_inverse);
 char matrix33_inverse_ARM(float **A, float **A_inverse);
 char leastSquare_ARM(float const * const * const A, float const * const b,
                      float * const x, long nRow, long nCol, float lamda);
+
+/******************************************************************************/
 // LPST_COL3D lpstCol3DRef : 输入结构数组，包含探测器坐标和标签到探测器的距离
 // unsigned char nRefNum   : 输入结构数量，及参考节点数量
 // unsigned char nRealNum  : 输入结构实际有效数量 (可以先不管这个参数，自己在程序里处理，后面在优化）
 // LPST_COL3D lpstCol3DLoc : 输入上一次位置，输出此次计算新位置
 // char bInitLocIncluded   : TRUE表示首次计算，需要初始化
 extern char Cal3DLoc(LPST_COL3D lpstCol3DRef, unsigned char nRefNum, unsigned char nRealNum,
-                     LPST_COL3D lpstCol3DLoc, char bInitLocIncluded );
-
-
-
+                     LPST_COL3D lpstCol3DLoc, char bInitLocIncluded);
+/******************************************************************************/
+extern char Cal3DTrack(LPST_COL3D lpstCol3DLoc, float T, float Rx, LPST_TRACK3D param, char bInitLocIncluded);
+/******************************************************************************/
 #endif // CALCTAGPOS_WEIGHTTAYLOR_ARMVERSION_H
