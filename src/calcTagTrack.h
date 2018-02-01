@@ -56,7 +56,6 @@ public:
 
     void calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo);
     void calcOneTrack(const locationCoor &z_x_meas,
-                      const locationCoor &z_x_meas_1,
                       dType T, dType Rx,
                       trackParams &tagParam,
                       tagTrackRecord &recParam);
@@ -65,7 +64,6 @@ public:
                                   trackParams &tagParam,
                                   tagTrackRecord &recParam);
     static void calcKalmanPosLite(const locationCoor &z_x_meas,
-                                  const locationCoor &z_x_meas_1,
                                   dType T, dType Rx,
                                   trackParams &tagParam,
                                   tagTrackRecord &recParam);

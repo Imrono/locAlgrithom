@@ -109,11 +109,10 @@ void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo
             tagKalmanInfo.Ans.append(tagMeasInfo.Ans[0]);
         } else {
             locationCoor z_x_meas = tagMeasInfo.Ans[i];
-            locationCoor z_x_meas_1 = tagMeasInfo.Ans[i-1];
             T = dType(tagMeasInfo.time[i].toMSecsSinceEpoch()
                     - tagMeasInfo.time[i-1].toMSecsSinceEpoch()) / 1000.f;
             Rx = calcR(tagMeasInfo.data[0][i], tagMeasInfo.methodName);
-            calcOneTrack(z_x_meas, z_x_meas_1, T, Rx, tagTrackParam, recParam);
+            calcOneTrack(z_x_meas, T, Rx, tagTrackParam, recParam);
             // kalman info only
             tagTrackParam.Kx = recParam.Kx;
             tagTrackParam.Kv = recParam.Kv;
@@ -130,7 +129,6 @@ void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo
 }
 
 void calcTagTrack::calcOneTrack(const locationCoor &z_x_meas,
-                                const locationCoor &z_x_meas_1,
                                 dType T, dType Rx,
                                 trackParams &trackParam,
                                 tagTrackRecord &recParam) {
@@ -140,7 +138,7 @@ void calcTagTrack::calcOneTrack(const locationCoor &z_x_meas,
     if (TRACK_METHOD::TRACK_KALMAN == calcTrackMethod) {
         calcKalmanPos    (z_x_meas, T, Rx, trackParam, recParam);
     } else if (TRACK_METHOD::TRACK_KALMAN_LITE == calcTrackMethod) {
-        calcKalmanPosLite(z_x_meas, z_x_meas_1, T, Rx, trackParam, recParam);
+        calcKalmanPosLite(z_x_meas, T, Rx, trackParam, recParam);
     } else if (TRACK_METHOD::TRACK_KALMAN_INFO == calcTrackMethod) {
         calcKalmanPosInfo(z_x_meas, T, trackParam, recParam);
     } else {}
@@ -186,7 +184,6 @@ void calcTagTrack::calcKalmanPos(const locationCoor &z_x_meas,
 }
 
 void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
-                                     const locationCoor &z_x_meas_1,
                                      dType T, dType R_x,
                                      trackParams &trackParam,
                                      tagTrackRecord &recParam) {
