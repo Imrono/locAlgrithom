@@ -63,9 +63,9 @@ void uiUsrInfoBtn::setUsrStatus(USR_STATUS status) {
 
 void uiUsrInfoBtn::syncShowable() {
     if (isShowable) {
-        setStyleSheet("background-color:GhostWhite;");
+        setStyleSheet("QToolButton{background-color:GhostWhite;}");
     } else {
-        setStyleSheet("background-color:DimGray;");
+        setStyleSheet("QToolButton{background-color:DimGray;}");
     }
 }
 
@@ -96,6 +96,8 @@ void uiUsrInfoBtn::keyPressEvent(QKeyEvent *e) {
 }
 
 void uiUsrInfoBtn::contextMenuEvent(QContextMenuEvent *e) {
+    setStyleSheet("QMenu{color: black;}"
+                  "QMenu::item:selected{background-color: lightgray;}");
     contextMenu->clear();
     contextMenu->addAction(showML_Action);
 
