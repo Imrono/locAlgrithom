@@ -15,7 +15,7 @@ uiUsrInfoBtn::uiUsrInfoBtn(int tagId, bool isShowable, QWidget *parent) :
 void uiUsrInfoBtn::initial() {
     setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     setFixedSize(40, 60);
-    setIcon(QIcon("../resource/usr/usr_A.png"));
+    setIcon(QIcon(":/resource/usr/usr_A.png"));
     setIconSize(QSize(38, 38));
 
     QFont font;
@@ -34,21 +34,29 @@ void uiUsrInfoBtn::initial() {
     connect(this, &QToolButton::clicked, this, [this](void) {
         emit oneUsrBtnClicked(this->tagId);
     });
+
+    contextMenu = new QMenu(this);
+    showML_Action = new QAction(this);
+    showML_Action->setText("show/hide LM");
+
+    connect(showML_Action, &QAction::triggered, this, [this](void) {
+        emit oneUsrShowML(this->tagId);
+    });
 }
 
 void uiUsrInfoBtn::setUsrStatus(USR_STATUS status) {
     switch (status) {
     case USR_STATUS::HAS_DISTANCE_DATA:
-        setIcon(QIcon("../resource/usr/usr_D.png"));
+        setIcon(QIcon(":/resource/usr/usr_D.png"));
         break;
     case USR_STATUS::HAS_MEASURE_DATA:
-        setIcon(QIcon("../resource/usr/usr_C.png"));
+        setIcon(QIcon(":/resource/usr/usr_C.png"));
         break;
     case USR_STATUS::HAS_TRACK_DATA:
-        setIcon(QIcon("../resource/usr/usr_B.png"));
+        setIcon(QIcon(":/resource/usr/usr_B.png"));
         break;
     default:
-        setIcon(QIcon("../resource/usr/usr_A.png"));
+        setIcon(QIcon(":/resource/usr/usr_A.png"));
         break;
     }
 }
@@ -85,4 +93,12 @@ void uiUsrInfoBtn::keyPressEvent(QKeyEvent *e) {
         break;
     }
     QToolButton::keyPressEvent(e);
+}
+
+void uiUsrInfoBtn::contextMenuEvent(QContextMenuEvent *e) {
+    contextMenu->clear();
+    contextMenu->addAction(showML_Action);
+
+    contextMenu->exec(QCursor::pos());
+    e->accept();
 }

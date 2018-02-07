@@ -46,7 +46,8 @@ SOURCES += \
     calcLibMatrixOpInverse.cpp \
     armVersion/calcLibMath_ARM.c \
     armVersion/calcTagTrack_ARM.c \
-    armVersion/calcTagPos_ARM.c
+    armVersion/calcTagPos_ARM.c \
+    calcTagPosLMedS.cpp
 
 HEADERS += \
     showStore.h \

@@ -2,6 +2,8 @@
 #define UIUSRINFOBTN_H
 #include "_myheads.h"
 #include <QToolButton>
+#include <QMenu>
+#include <QAction>
 
 class uiUsrInfoBtn : public QToolButton
 {
@@ -19,6 +21,7 @@ public:
     void clrColorA() {isColorA_ready = false;}
 signals:
     void oneUsrBtnClicked(int tagId);
+    void oneUsrShowML(int tagId);
 
 private:
     void initial();
@@ -29,9 +32,14 @@ private:
 
     void paintEvent(QPaintEvent *event);
     void keyPressEvent (QKeyEvent *e);
+    void contextMenuEvent(QContextMenuEvent *e);
 
     QColor colorA;
     bool isColorA_ready{false};
+
+    QMenu *contextMenu{nullptr};
+    QAction *showML_Action{nullptr};
+    bool isShowingML{false};
 };
 
 #endif // UIUSRINFOBTN_H

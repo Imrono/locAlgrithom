@@ -29,6 +29,7 @@ enum CALC_POS_TYPE {
     Taylor = 3,
     WeightedTaylor,
     KalmanTaylor,
+    LMedS,
     ARM_calcPos,
     NUM_CALC_POS
 };
@@ -39,6 +40,7 @@ enum CALC_POS_TYPE {
 #define METHOD_TAYLOR_SERIES_STR   "{method:TaylorSeries}"
 #define METHOD_WEIGHTED_TAYLOR_STR "{method:WeightedTaylor}"
 #define METHOD_KALMAN_TAYLOR_STR   "{method:KalmanTaylor}"
+#define METHOD_LMEDS_STR           "{method:LMedS}"
 extern QString CALC_POS2STR[CALC_POS_TYPE::NUM_CALC_POS];
 
 enum POINTS_NLOS {

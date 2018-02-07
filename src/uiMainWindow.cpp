@@ -37,14 +37,14 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     setStatusIter(0, 0.f);
 
     // CFG DATA
-    //loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
-    loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/config/石煤测试5.ini"));
+    loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
+    //loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/config/石煤测试5.ini"));
     //loadIniConfigFile(true, "D:\\code\\kelmanLocationData\\configExample.ini");
 
     // DIST DATA
-    //loadLogDistanceFile_2(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
+    loadLogDistanceFile_2(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
     //loadLogDistanceFile_2(true, "D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705191135.log");
-    loadLogDistanceFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/distance/201712201435.log"));
+    //loadLogDistanceFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/distance/201712201435.log"));
     //loadLogDistanceFile(true, "D:\\code\\kelmanLocationData\\201712111515.log");
 
     // SET NLOS FOR calcPos
@@ -73,6 +73,11 @@ void uiMainWindow::oneUsrBtnClicked(int tagId, bool isShowable) {
     Q_UNUSED(tagId);
     Q_UNUSED(isShowable);
     ui->canvas->syncWithUiFrame(ui->UsrFrm);
+    handleModelDataUpdate(false);
+}
+void uiMainWindow::oneUsrShowML(int tagId, bool isShowML) {
+    Q_UNUSED(tagId);
+    ui->canvas->setShowLM(isShowML);
     handleModelDataUpdate(false);
 }
 
@@ -126,6 +131,7 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             ui->canvas->setDistance(tag.tagId,
                                     distData.get_q()->tagsData[tag.tagId].distData[distCount].distance.data(),
                                     oneTagInfo->usedSeneor[distCount].data());
+            ui->canvas->setWeight(tag.tagId, oneTagInfo->weight[distCount]);
 
             ui->canvas->setIterPoints(tag.tagId, oneTagInfo->iterPoints[distCount]);
             setStatusIter(oneTagInfo->iterPoints[distCount].count(),
@@ -181,6 +187,9 @@ void uiMainWindow::loadIniConfigFile(bool checked, QString pathIn) {
     } else {
         path = pathIn;
     }
+    if (0 == path.length()) {
+        return;
+    }
     qDebug() << "[@uiMainWindow::loadIniConfigFile] Path:" << path;
     cfgData.loadNewFile(path);
     calcPos.setConfigData(cfgData.get_q());
@@ -203,6 +212,9 @@ void uiMainWindow::loadLogDistanceFile(bool checked, QString pathIn) {
         path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "distance file(*.log)");
     } else {
         path = pathIn;
+    }
+    if (0 == path.length()) {
+        return;
     }
     qDebug() << "[@uiMainWindow::loadLogDistanceFile] Path:" << path;
 
@@ -230,6 +242,9 @@ void uiMainWindow::loadLogDistanceFile_2(bool checked, QString pathIn) {
         path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "distance file(*.log)");
     } else {
         path = pathIn;
+    }
+    if (0 == path.length()) {
+        return;
     }
     qDebug() << "[@uiMainWindow::loadLogDistanceFile_2] Path:" << path;
 
@@ -330,6 +345,8 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
         ui->actionWeightedTaylor->setChecked(true);
     } else if (CALC_POS_TYPE::KalmanTaylor == type) {
         ui->actionKalmanTaylor->setChecked(true);
+    } else if (CALC_POS_TYPE::LMedS == type) {
+        ui->actionLMedS->setChecked(true);
     } else if (CALC_POS_TYPE::ARM_calcPos == type) {
         ui->actioncalcTagPos_ARM->setChecked(true);
     } else {}
@@ -398,6 +415,11 @@ void uiMainWindow::posKalmanTaylor(bool checked) {
     Q_UNUSED(checked);
     posCalcPROCESS(CALC_POS_TYPE::KalmanTaylor);
 }
+void uiMainWindow::posLMedS(bool checked) {
+    Q_UNUSED(checked);
+    posCalcPROCESS(CALC_POS_TYPE::LMedS);
+}
+// ARM VERSION /////////////////////////////////////////////////////////////////
 void uiMainWindow::posCalc_ARM(bool checked) {
     Q_UNUSED(checked);
     posCalcPROCESS(CALC_POS_TYPE::ARM_calcPos);

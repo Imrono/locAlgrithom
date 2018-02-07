@@ -1,4 +1,6 @@
 ﻿#include "showTagRelated.h"
+#include "calcLibMath.h"
+#include <QtMath>
 
 QList<oneTagView> tagsView::viewDatabase;
 int tagsView::count = 0;
@@ -64,10 +66,8 @@ void showTagRelated::drawPoint(QPainter &painter, dType ratio,
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setBrush(QBrush(oneMethod.posColor));
         painter.setPen  (QPen  (QColor(Qt::darkGray), 2));
-        //painter.drawEllipse(oneMethod.pos*ratio, shapeSize, shapeSize);
         painter.drawEllipse(toZoomedPoint(oneMethod.pos, ratio, zoom, offset),
                             shapeSize, shapeSize);
-        //qDebug() << oneMethod.pos*ratio-offset << offset;
     }
 }
 void showTagRelated::drawIterPoints(QPainter &painter, dType ratio,
@@ -127,7 +127,7 @@ void showTagRelated::drawLines(QPainter &painter, dType ratio,
 
 void showTagRelated::drawCircle(QPainter &painter, const QVector<locationCoor> &sensor,
                                 dType ratio, dType zoom, QPointF offset) const {
-    QPen tmpPen = QPen(Qt::black, 1);
+    QPen tmpPen = QPen(Qt::darkGray, 1);
     painter.setBrush(Qt::NoBrush);
     for (int i = 0; i < distance.count(); i++) {
         if (usedSensor[i]) {
@@ -143,7 +143,7 @@ void showTagRelated::drawCircle(QPainter &painter, const QVector<locationCoor> &
 
 void showTagRelated::drawCircleBold(QPainter &painter, const locationCoor &sensor,
                                     int distIdx, dType ratio, dType zoom, QPointF offset) const {
-    QPen tmpPen = QPen(Qt::black, 3);
+    QPen tmpPen = QPen(Qt::darkGray, 3);
     painter.setBrush(Qt::NoBrush);
     if (usedSensor[distIdx]) {
         tmpPen.setStyle(Qt::SolidLine);
@@ -154,4 +154,57 @@ void showTagRelated::drawCircleBold(QPainter &painter, const locationCoor &senso
 
     painter.drawEllipse(toZoomedPoint(sensor.toQPointF(), ratio, zoom, offset),
                         distance[distIdx] * ratio * zoom, distance[distIdx] * ratio * zoom);
+}
+
+void showTagRelated::drawLM(QPainter &painter, const QVector<locationCoor> &sensor, int w, int h,
+                            dType ratio, dType zoom, QPointF offset) const {
+    QVector<QPointF> zoomedSensor;
+    QVector<double> zoomedDistance;
+    QVector<double> zoomedWeight;
+
+    for (int i = 0; i < sensor.count(); i++) {
+        if (usedSensor[i]) {
+            zoomedDistance.append(distance[i] * ratio * zoom);
+            zoomedSensor.append(toZoomedPoint(sensor[i].toQPointF(), ratio, zoom, offset));
+            zoomedWeight.append(weight[i]);
+        }
+        //qDebug() << i << "drawLM" << weight[i] << usedSensor[i];
+    }
+
+    double **matrix = new double*[w];
+    for (int i = 0; i < w; i++) {
+        matrix[i] = new double[h];
+    }
+    int div = 2;
+    double tmpMax = 0.;
+	int zoomedCount = zoomedSensor.count();
+    for (int i = 0; i < w/div; i++) {
+        for (int j = 0; j < h/div; j++) {
+            QPointF p = QPointF(div*i, div*j);
+            double z = 1.;
+            for (int k = 0; k < zoomedCount; k++) {
+                z *= normalDistribution(p, zoomedSensor[k], zoomedDistance[k],
+                                        400.*ratio*zoom / zoomedWeight[k]);
+            }
+            matrix[i][j] = z * 100000000.;
+            tmpMax = matrix[i][j] > tmpMax ? matrix[i][j] : tmpMax;
+        }
+    }
+	// black background
+	painter.setBrush(QBrush(Qt::black));
+	painter.drawRect(0, 0, w, h);
+    for (int i = 0; i < w/div; i++) {
+        for (int j = 0; j < h/div; j++) {
+            int gray = static_cast<int>(255. * matrix[i][j] / tmpMax);
+			if (gray > 5) {
+				painter.setPen(QPen(QColor(gray, gray, gray), div));
+				painter.drawPoint(div*i, div*j);
+			}
+        }
+    }
+    // clear matrix
+    for (int i = 0; i < w; i++) {
+        delete []matrix[i];
+    }
+    delete []matrix;
 }

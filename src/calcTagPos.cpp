@@ -188,8 +188,6 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
 
     bool isNlosIgnore = false;
     if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
-        //lastPos[0] = {0.f};
-        //lastPos[1] = {0.f};
         isNlosIgnore = false;
     }
     int nSensor = cfg_d->sensor.count();
@@ -211,11 +209,10 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
         }
         tagInfo->RawPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
 
-        //qDebug() << "[" << i << "]" << tmpDist.toStringDist();
         QVector<QPointF> tmpTrace;
+        QVector<dType> tmpWeight;
         dType T = tagDists.distData[i].time.toMSecsSinceEpoch();
-        tmpX = calcOnePosition(tmpDist.distance, mse, T, tmpLastPos, usedSensor, tmpTrace);
-        //qDebug() << tmpX.toString() << mse;
+        tmpX = calcOnePosition(tmpDist.distance, mse, T, tmpLastPos, usedSensor, tmpTrace, tmpWeight);
         if (i >= 1) {
             /* distance filter ITERATION */
             int iterCount = 1;
@@ -223,7 +220,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
                 && calcNlos->posPrecisionNLOS(mse)) {   // MSE小于阈值，直接退出循环
                 // tmpDist 即是IN也是OUT；distRefined是保存历史修正后的值
                 if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
-                    tmpX = calcOnePosition(tmpDist.distance, mse, T, tmpLastPos, usedSensor, tmpTrace);
+                    tmpX = calcOnePosition(tmpDist.distance, mse, T, tmpLastPos, usedSensor, tmpTrace, tmpWeight);
                 } else {}
             }
             /* distance filter END */
@@ -238,6 +235,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
         //qDebug() << tmpX.toString();
         //qDebug() << tagInfo->methodInfo[MEASUR_STR].Ans[tagInfo->methodInfo[MEASUR_STR].Ans.count() - 1].toString();
         tagInfo->iterPoints.append(tmpTrace);
+        tagInfo->weight.append(tmpWeight);
         if (i > 0) {
             tagInfo->methodInfo[MEASUR_STR].AnsLines
                     .append(QLineF(tagInfo->methodInfo[MEASUR_STR].Ans[i-1].toQPointF(),
@@ -252,7 +250,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
 }
 
 locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T, locationCoor lastPos,
-                                         bool *usedSensor, QVector<QPointF> &iterTrace) {
+                                         bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight) {
     if (CALC_POS_TYPE::FullCentroid == calcPosType) {
         return calcFullCentroid(dist, MSE);
     } else if (CALC_POS_TYPE::SubLS == calcPosType) {
@@ -262,7 +260,9 @@ locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T, l
     } else if (CALC_POS_TYPE::Taylor == calcPosType) {
         return calcTaylorSeries(dist, MSE);
     } else if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
-        return calcWeightedTaylor(dist, MSE, lastPos, usedSensor, iterTrace);
+        return calcWeightedTaylor(dist, MSE, lastPos, usedSensor, iterTrace, weight);
+    } else if (CALC_POS_TYPE::LMedS == calcPosType) {
+        return calcKalmanTaylor(dist, MSE, T);
     } else if (CALC_POS_TYPE::KalmanTaylor == calcPosType) {
         return calcKalmanTaylor(dist, MSE, T);
     } else if (CALC_POS_TYPE::ARM_calcPos == calcPosType) {
@@ -427,14 +427,16 @@ locationCoor calcTagPos::calcTaylorSeries(const int *dist, dType &MSE) {
 }
 
 locationCoor calcTagPos::calcWeightedTaylor(const int *dist, dType &MSE, locationCoor lastPos,
-                                            bool *usedSensor, QVector<QPointF> &iterTrace) {
+                                            bool *usedSensor, QVector<QPointF> &iterTrace,
+                                            QVector<dType> &weight) {
 	for (int i = 0; i < fc_row; i++) {
 		W_taylor[i] = 0.0f;
 	}
 
     calcWeightedTaylor(dist, cfg_d->sensor.data(), lastPos,
                        A_fc, A_fc_inverse_AT, B_fc, fc_row,
-                       A_taylor, B_taylor, W_taylor, X[0], X[1], MSE, usedSensor, iterTrace);
+                       A_taylor, B_taylor, W_taylor, X[0], X[1], MSE,
+                       usedSensor, iterTrace, weight);
 
     return locationCoor{X[0], X[1], 0.f};
 }
@@ -443,6 +445,12 @@ locationCoor calcTagPos::calcKalmanTaylor(const int *dist, dType &MSE, dType T) 
     calcKalmanTaylor(dist, cfg_d->sensor.data(), T,
                      A_fc, A_fc_inverse_AT, B_fc, fc_row,
                      A_taylor, B_taylor, W_taylor, X[0], X[1], MSE);
+    return locationCoor{X[0], X[1], 0.f};
+}
+
+locationCoor calcTagPos::calcLMedS (const int *dist, dType &MSE, locationCoor lastPos,
+                                    bool *usedSensor, QVector<QPointF> &iterTrace) {
+
     return locationCoor{X[0], X[1], 0.f};
 }
 

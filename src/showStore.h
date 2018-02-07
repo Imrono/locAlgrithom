@@ -42,6 +42,7 @@ struct storeTagInfo {
     QVector<dType>                 data_y;
     QVector<QVector<bool>>         usedSeneor;
     QVector<QVector<QPointF>>      iterPoints;
+    QVector<QVector<dType>>        weight;
 
     QVector<QVector<locationCoor>> RawPoints;
     QVector<QVector<locationCoor>> RefinedPoints;
@@ -64,6 +65,7 @@ struct storeTagInfo {
         methodInfo.clear();
         RawPoints.clear();
         RefinedPoints.clear();
+        weight.clear();
         calcPosType = CALC_POS_TYPE::POS_NONE;
     }
     void addOrResetMethodInfo(const QString &methodType, const QString &method);

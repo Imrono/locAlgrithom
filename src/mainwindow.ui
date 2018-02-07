@@ -413,6 +413,7 @@
     <addaction name="actionWeightedTaylor"/>
     <addaction name="separator"/>
     <addaction name="actionKalmanTaylor"/>
+    <addaction name="actionLMedS"/>
    </widget>
    <widget class="QMenu" name="menuview">
     <property name="title">
@@ -608,6 +609,14 @@
    </property>
    <property name="text">
     <string>calcTagPos_ARM</string>
+   </property>
+  </action>
+  <action name="actionLMedS">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>LMedS</string>
    </property>
   </action>
  </widget>

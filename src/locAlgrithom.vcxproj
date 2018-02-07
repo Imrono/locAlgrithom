@@ -175,9 +175,11 @@
     <ClCompile Include="calcTagNLOS.cpp" />
     <ClCompile Include="calcTagPos.cpp" />
     <ClCompile Include="calcTagPosKalmanTaylor.cpp" />
+    <ClCompile Include="calcTagPosLMedS.cpp" />
     <ClCompile Include="calcTagPosWeightedTaylor.cpp" />
-    <ClCompile Include="armVersion\calcTagPosWeightedTaylor_ARM.c" />
+    <ClCompile Include="armVersion\calcTagPos_ARM.c" />
     <ClCompile Include="calcTagTrack.cpp" />
+    <ClCompile Include="armVersion\calcTagTrack_ARM.c" />
     <ClCompile Include="dataDistanceLog.cpp" />
     <ClCompile Include="dataSensorIni.cpp" />
     <ClCompile Include="main.cpp" />
@@ -195,9 +197,9 @@
     <ClInclude Include="calcLibDistance.h" />
     <ClInclude Include="calcLibMath.h" />
     <ClInclude Include="calcLibMatrixOp.h" />
+    <ClInclude Include="armVersion\calcTagLoc_ARM.h" />
     <ClInclude Include="calcTagNLOS.h" />
     <ClInclude Include="calcTagPos.h" />
-    <ClInclude Include="armVersion\calcTagPos_ARM.h" />
     <ClInclude Include="calcTagTrack.h" />
     <ClInclude Include="dataDistanceLog.h" />
     <ClInclude Include="dataSensorIni.h" />
@@ -279,15 +281,31 @@
   <ItemGroup>
     <CustomBuild Include="resource.qrc">
       <FileType>Document</FileType>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(FullPath);%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(FullPath);.\resource\usr\usr_A.png;.\resource\usr\usr_B.png;.\resource\usr\usr_C.png;.\resource\usr\usr_D.png;%(AdditionalInputs)</AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\rcc.exe" -name "%(Filename)" -no-compress "%(FullPath)" -o .\..\GeneratedFiles\qrc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Rcc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\GeneratedFiles\qrc_%(Filename).cpp;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(FullPath);%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(FullPath);.\resource\usr\usr_A.png;.\resource\usr\usr_B.png;.\resource\usr\usr_C.png;.\resource\usr\usr_D.png;%(AdditionalInputs)</AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\rcc.exe" -name "%(Filename)" -no-compress "%(FullPath)" -o .\..\GeneratedFiles\qrc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Rcc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\GeneratedFiles\qrc_%(Filename).cpp;%(Outputs)</Outputs>
     </CustomBuild>
+    <None Include="resource\usr\usr_A.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="resource\usr\usr_B.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="resource\usr\usr_C.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="resource\usr\usr_D.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="C:\Users\rono_\Desktop\locAlgrithom\src\locAlgrithom_resource.rc" />

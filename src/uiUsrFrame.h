@@ -25,15 +25,18 @@ public:
 
 signals:
     void oneUsrBtnClicked_siganl(int tagId, bool isShowable);
+    void oneUsrShowML_siganl(int tagId, bool isShowable);
 
 private slots:
     void oneUsrBtnClicked_slot(int tagId);
+    void oneUsrShowML_slot(int tagId);
 
 private:
     QList<uiUsrInfoBtn *> usrBtns;
     int nShowableBtns{0};
 
     const static int MAX_SHOWABLE_NUM;
+    int tagShowLM{-1};
 };
 
 #endif // UIUSRFRAME_H

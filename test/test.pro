@@ -18,7 +18,7 @@ TEMPLATE = app
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
-DEFINES += QT_NO_DEBUG_OUTPUT
+#DEFINES += QT_NO_DEBUG_OUTPUT
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -30,11 +30,13 @@ SOURCES += \
     calcLibMatrixOp_TEST.cpp \
     ../src/_myheads.cpp \
     ../src/calcLibMatrixOp.cpp \
+    ../src/calcLibMath.cpp \
     ../src/calclibMatrixOpInverse.cpp \
     calcLibMath_ARM_TEST.cpp \
     ../src/armVersion/calcLibMath_ARM.c \
     ../src/armVersion/calcTagPos_ARM.c \
-    testMain.cpp
+    testMain.cpp \
+    calcLibMath_TEST.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
@@ -42,8 +44,10 @@ HEADERS += \
     calcLibMatrixOp_TEST.h \
     ../src/_myheads.h \
     ../src/calcLibMatrixOp.h \
+    ../src/calcLibMath.h \
     calcLibMath_ARM_TEST.h \
-    ../src/armVersion/calcTagPos_ARM.h
+    ../src/armVersion/calcTagPos_ARM.h \
+    calcLibMath_TEST.h
 
 QMAKE_CXXFLAGS += /wd"4819"
 QMAKE_CFLAGS += /wd"4819"

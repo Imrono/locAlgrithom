@@ -103,9 +103,14 @@ public:
         usedSensor = used;
     }
 
+    void setWeight(const QVector<dType> &w) {
+        weight = w;
+    }
+
     void clearData() {
         oneTagMethod.clear();
         distance.clear();
+        weight.clear();
     }
 
 /******************************************************************/
@@ -125,6 +130,9 @@ public:
                     dType ratio = 1.f, dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
     void drawCircleBold(QPainter &painter, const locationCoor &sensor, int distIdx,
                         dType ratio = 1.f, dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
+    void drawLM(QPainter &painter, const QVector<locationCoor> &sensor, int w, int h,
+                dType ratio = 1.f, dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
+
     static QPointF toZoomedPoint(QPointF p, dType ratio, dType zoom, QPointF offset) {
         return p*ratio*zoom+(1-zoom)*offset;
     }
@@ -140,6 +148,7 @@ private:
     // 画圆，直观显示坐标计算过程
     QVector<int>  distance;
     QVector<bool> usedSensor;
+    QVector<dType> weight;
 
     QVector<QPointF> iterPoints;
 

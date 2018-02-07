@@ -24,6 +24,7 @@ void uiMainWindow::connectUi() {
     connect(ui->actionTaylorSeries,   SIGNAL(triggered(bool)), this, SLOT(posTaylorSeries(bool)));
     connect(ui->actionWeightedTaylor, SIGNAL(triggered(bool)), this, SLOT(posWeightedTaylor(bool)));
     connect(ui->actionKalmanTaylor,   SIGNAL(triggered(bool)), this, SLOT(posKalmanTaylor(bool)));
+    connect(ui->actionLMedS,          SIGNAL(triggered(bool)), this, SLOT(posLMedS(bool)));
 
     // TRACK
     connect(ui->actionKalmanTrack,     SIGNAL(triggered(bool)), this, SLOT(trackKalman(bool)));
@@ -105,7 +106,10 @@ void uiMainWindow::connectUi() {
         handleModelDataUpdate(false);
     });
 
-    connect(ui->UsrFrm, SIGNAL(oneUsrBtnClicked_siganl(int, bool)), this, SLOT(oneUsrBtnClicked(int, bool)));
+    connect(ui->UsrFrm, SIGNAL(oneUsrBtnClicked_siganl(int, bool)),
+            this, SLOT(oneUsrBtnClicked(int, bool)));
+    connect(ui->UsrFrm, SIGNAL(oneUsrShowML_siganl(int, bool)),
+            this, SLOT(oneUsrShowML(int, bool)));
 }
 
 void uiMainWindow::keyPressEvent(QKeyEvent *e) {

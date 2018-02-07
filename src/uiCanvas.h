@@ -60,6 +60,11 @@ public:
             tags[tagId].setDistance(d, used);
         }
     }
+    void setWeight(int tagId, const QVector<dType> &weight) {
+        if (tags.contains(tagId)) {
+            tags[tagId].setWeight(weight);
+        }
+    }
     void clearData(int tagId) {
         if (tags.contains(tagId)) {
             tags[tagId].clearData();
@@ -89,6 +94,9 @@ public:
     bool reverseShowTrack() {
         isShowTrace = !isShowTrace;
         return isShowTrace;
+    }
+    void setShowLM(bool lm) {
+        isShowLM = lm;
     }
 
     void loadPicture(QString path);
@@ -143,6 +151,7 @@ private:
     QMap<int, showTagRelated> tags;
     bool isShowPath{false};
     bool isShowAllPos{false};
+    bool isShowLM{false};
     int nCount{0};
 
     void paintEvent(QPaintEvent *event);
@@ -156,6 +165,8 @@ private:
         return p.toQPointF() * ratioShow;
     }
     void cfg_actualData2showData();
+
+    void showSensors(QPainter &painter);
 };
 
 #endif // UI_CANVAS_H

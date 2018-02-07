@@ -23,6 +23,7 @@ void uiUsrFrame::addOneUsr(int tagId, USR_STATUS status) {
 
     usrBtns.append(usrBtn);
     connect(usrBtn, SIGNAL(oneUsrBtnClicked(int)), this, SLOT(oneUsrBtnClicked_slot(int)));
+    connect(usrBtn, SIGNAL(oneUsrShowML(int)), this, SLOT(oneUsrShowML_slot(int)));
 
     update();
 }
@@ -40,12 +41,15 @@ void uiUsrFrame::removeOneUsr(int tagId) {
 }
 
 void uiUsrFrame::removeAll() {
+    tagShowLM = -1;
+	emit oneUsrShowML_siganl(tagShowLM, false);
+
     for (int i = 0; i < usrBtns.count(); i++) {
         delete usrBtns[i];
     }
     usrBtns.clear();
-
     nShowableBtns = 0;
+
     update();
 }
 
@@ -108,4 +112,40 @@ void uiUsrFrame::oneUsrBtnClicked_slot(int tagId) {
             }
         }
     }
+}
+
+void uiUsrFrame::oneUsrShowML_slot(int tagId) {
+    if (tagShowLM == tagId) {
+        tagShowLM = -1;
+    } else {
+        tagShowLM = tagId;
+    }
+
+    for (int i = 0; i < usrBtns.count(); i++) {
+        if (usrBtns[i]->getTagId() != tagId) {
+            if (usrBtns[i]->getShowable()) {    //disable all usr's show
+                usrBtns[i]->setShowable(false);
+                emit oneUsrBtnClicked_siganl(tagId, false);
+                nShowableBtns --;
+            } else {}
+        }
+    }
+
+    for (int i = 0; i < usrBtns.count(); i++) {
+        if (usrBtns[i]->getTagId() == tagId) {
+            if (!usrBtns[i]->getShowable()) {
+                usrBtns[i]->setShowable(true);
+                nShowableBtns ++;
+            }
+            emit oneUsrBtnClicked_siganl(tagId, true);
+		} else {
+			if (usrBtns[i]->getShowable()) {
+				usrBtns[i]->setShowable(false);
+                nShowableBtns --;
+			}
+			emit oneUsrBtnClicked_siganl(tagId, false);
+		}
+    }
+
+    emit oneUsrShowML_siganl(tagId, -1 != tagShowLM);
 }

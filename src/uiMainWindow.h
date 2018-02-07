@@ -90,6 +90,7 @@ private slots:
     void posTaylorSeries(bool checked);
     void posWeightedTaylor(bool checked);
     void posKalmanTaylor(bool checked);
+    void posLMedS(bool checked);
 
     // TRACK
     void trackCalcPROCESS(TRACK_METHOD type);
@@ -107,6 +108,7 @@ private slots:
 private slots:
     void handleModelDataUpdate(bool isUpdateCount = true);
     void oneUsrBtnClicked(int tagId, bool isShowable);
+    void oneUsrShowML(int tagId, bool isShowML);
 
     void showMousePos(int x, int y);
 };

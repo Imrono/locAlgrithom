@@ -109,6 +109,24 @@ void uiCanvas::resizeEvent(QResizeEvent *event) {
     update();
 }
 
+void uiCanvas::showSensors(QPainter &painter) {
+    QFont font;
+    font.setBold(true);
+    painter.setFont(font);
+    if (isShowSensor) {
+        painter.setBrush(QColor(0, 0, 0));
+        for (int i = 0; i < this->cfg_d->sensor.count(); i++) {
+            painter.setPen(QPen(QColor(0, 0, 0), 2));
+            painter.drawEllipse(toZoomedPoint(sensorShow[i]), 6, 6);
+            // index the anchor
+            painter.setPen(Qt::white);
+            painter.drawText(toZoomedPoint(sensorShow[i]).rx()-6,
+                             toZoomedPoint(sensorShow[i]).ry()-6,
+                             12, 12, Qt::AlignCenter, QString::number(i, 10));
+        }
+    }
+}
+
 void uiCanvas::paintEvent(QPaintEvent *event) {
     Q_UNUSED(event);
 
@@ -126,67 +144,54 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     //painter.drawText(5, 15, 50, 10, Qt::AlignLeft, KALMAN_STR);
 
     painter.setPen(QPen(Qt::black, 0, Qt::NoPen));
-    // [Alarm]
-    painter.setBrush(QBrush(Qt::yellow));
-    QPainterPath alarmPath;
-    for (int i = 0; i < alarmShow.count(); i++) {
-        QPolygonF tmpAlarm;
-        for (int j = 0; j < alarmShow[i].count(); j++) {
-            tmpAlarm << toZoomedPoint(alarmShow[i][j]);
-        }
-        alarmPath.addPolygon(tmpAlarm);
-    }
-    painter.drawPath(alarmPath);
 
-    // [Stop]
-    painter.setBrush(QBrush(Qt::red));
-    QPainterPath stopPath;
-    for (int i = 0; i < stopShow.count(); i++) {
-        QPolygonF tmpStop;
-        for (int j = 0; j < stopShow[i].count(); j++) {
-            tmpStop << toZoomedPoint(stopShow[i][j]);
+    if (!isShowLM) {
+        // [Alarm]
+        painter.setBrush(QBrush(Qt::yellow));
+        QPainterPath alarmPath;
+        for (int i = 0; i < alarmShow.count(); i++) {
+            QPolygonF tmpAlarm;
+            for (int j = 0; j < alarmShow[i].count(); j++) {
+                tmpAlarm << toZoomedPoint(alarmShow[i][j]);
+            }
+            alarmPath.addPolygon(tmpAlarm);
         }
-        stopPath.addPolygon(tmpStop);
-    }
-    painter.drawPath(stopPath);
+        painter.drawPath(alarmPath);
 
-    // [Oper]
-    painter.setBrush(QBrush(Qt::green));
-    QPainterPath operPath;
-    for (int i = 0; i < operShow.count(); i++) {
-        QPolygonF tmpOper;
-        for (int j = 0; j < operShow[i].count(); j++) {
-            tmpOper << toZoomedPoint(operShow[i][j]);
+        // [Stop]
+        painter.setBrush(QBrush(Qt::red));
+        QPainterPath stopPath;
+        for (int i = 0; i < stopShow.count(); i++) {
+            QPolygonF tmpStop;
+            for (int j = 0; j < stopShow[i].count(); j++) {
+                tmpStop << toZoomedPoint(stopShow[i][j]);
+            }
+            stopPath.addPolygon(tmpStop);
         }
-        operPath.addPolygon(tmpOper);
-    }
-    painter.drawPath(operPath);
+        painter.drawPath(stopPath);
 
-    // 画背景
-    if (!backgroundImg.isNull()) {
-        toZoomedPoint(QPointF(0.f, 0.f));
-        QRect rect(toZoomedPoint(QPointF(0.f, 0.f)).x(),
-                   toZoomedPoint(QPointF(0.f, 0.f)).y(),
-                   width() * zoom(), height() * zoom());
-        painter.drawImage(rect, backgroundImg);
-    }
-
-    // [Sensor]
-    QFont font;
-    font.setBold(true);
-    painter.setFont(font);
-    if (isShowSensor) {
-        painter.drawText(0, 100, 50, 10, Qt::AlignLeft, QString("%0").arg(this->width()));
-        painter.setBrush(QColor(0, 0, 0));
-        for (int i = 0; i < this->cfg_d->sensor.count(); i++) {
-            painter.setPen(QPen(QColor(0, 0, 0), 2));
-            painter.drawEllipse(toZoomedPoint(sensorShow[i]), 6, 6);
-            // index the anchor
-            painter.setPen(Qt::white);
-            painter.drawText(toZoomedPoint(sensorShow[i]).rx()-6,
-                             toZoomedPoint(sensorShow[i]).ry()-6,
-                             12, 12, Qt::AlignCenter, QString::number(i, 10));
+        // [Oper]
+        painter.setBrush(QBrush(Qt::green));
+        QPainterPath operPath;
+        for (int i = 0; i < operShow.count(); i++) {
+            QPolygonF tmpOper;
+            for (int j = 0; j < operShow[i].count(); j++) {
+                tmpOper << toZoomedPoint(operShow[i][j]);
+            }
+            operPath.addPolygon(tmpOper);
         }
+        painter.drawPath(operPath);
+
+        // 画背景
+        if (!backgroundImg.isNull()) {
+            toZoomedPoint(QPointF(0.f, 0.f));
+            QRect rect(toZoomedPoint(QPointF(0.f, 0.f)).x(),
+                       toZoomedPoint(QPointF(0.f, 0.f)).y(),
+                       width() * zoom(), height() * zoom());
+            painter.drawImage(rect, backgroundImg);
+        }
+        // [Sensor]
+        showSensors(painter);
     }
 
     // real time Point at TOP
@@ -197,6 +202,20 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     }
 
     foreach (showTagRelated tag, tags) {
+        if (isShowAllPos) {
+            tag.drawPointsRaw(painter, ratioShow, zoom(), center);
+            tag.drawPointsRefined(painter, ratioShow, zoom(), center);
+        }
+
+        if (isShowLM) {
+            tag.drawLM(painter, cfg_d->sensor, width(), height(),
+                       ratioShow, zoom(), center);
+        }
+
+        if (isShowTrace) {
+            tag.drawIterPoints(painter, ratioShow, zoom(), center);
+        }
+
         if (isShowRadius) {
             tag.drawCircle(painter, cfg_d->sensor, ratioShow, zoom(), center);
         }
@@ -205,18 +224,13 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
                                ratioShow, zoom(), center);
         }
 
-        if (isShowTrace) {
-            tag.drawIterPoints(painter, ratioShow, zoom(), center);
-        }
-
-        tag.drawPoint(painter, ratioShow, zoom(), center);
         tag.drawLine(painter, ratioShow, zoom(), center);
-
-        if (isShowAllPos) {
-            tag.drawPointsRaw(painter, ratioShow, zoom(), center);
-            tag.drawPointsRefined(painter, ratioShow, zoom(), center);
-        }
+        tag.drawPoint(painter, ratioShow, zoom(), center);
     }
+
+    // [Sensor]
+    if (isShowLM)
+        showSensors(painter);
 }
 
 void uiCanvas::mouseMoveEvent(QMouseEvent *event) {
