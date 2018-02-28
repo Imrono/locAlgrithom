@@ -101,6 +101,7 @@ private slots:
     // ZOOM
     void zoomIn(bool checked = false);
     void zoomOut(bool checked = false);
+    void captureCanvas(bool checked = false);
 
     // ARM
     void posCalc_ARM(bool checked);

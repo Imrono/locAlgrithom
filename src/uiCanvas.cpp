@@ -5,6 +5,12 @@
 
 uiCanvas::uiCanvas(QWidget *parent) : QWidget(parent)
 {
+    // white background
+    //QPalette pal(palette());
+    //pal.setColor(QPalette::Background, Qt::white);
+    //setAutoFillBackground(true);
+    //setPalette(pal);
+
     widthCanvas = width();
     heightCanvas = height();
     ratioShow = static_cast<dType>(width()) / widthActual;

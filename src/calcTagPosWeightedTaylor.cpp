@@ -20,6 +20,12 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
     dType tmpD = 0.f;
     //dType mse = 0.f;
     //dType mseLast = 0.f;
+	if (605 == distance[0] && distance[1] == 415 && distance[2] == 504) {
+		N = 2;
+	}
+	if (607 == distance[0] && distance[1] == 413 && distance[2] == 501) {
+		N = 1;
+	}
 
     // sort distance
     int idx[MAX_SENSOR] = {0};
@@ -61,6 +67,12 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
             }
         }
         weight[idx[i]] = W_taylor[i];
+        weight[idx[i]] = 1.f;
+        if (478 == distance[0] && distance[1] == 1046 && distance[2] == 830) {
+            if (4 == i) {
+                //weight[idx[i]] = 1.f;
+            }
+        }
     }
     /*
     qDebug() << distance[0] << distance[1] << distance[2] << distance[3] << distance[4] << distance[5] << ","
@@ -73,32 +85,26 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 
     /**********************************************************************/
     // initial point
-    dType **tmpA = new dType *[N];
-    for (int i = 0; i < N; i++) {
-        tmpA[i] = new dType[3];
-        tmpA[i][0] = -2.f*sortedSensor[i].x * W_taylor[i];
-        tmpA[i][1] = -2.f*sortedSensor[i].y * W_taylor[i];
-        tmpA[i][2] =  1.f                   * W_taylor[i];
-        //qDebug() << tmpA[i][0] << tmpA[i][1] << tmpA[i][2];
-    }
-    for (int i = 0; i < N; i++) {
-        B[i] = (qPow(sortedDist[i], 2)
-              - qPow(sortedSensor[i].x, 2)
-              - qPow(sortedSensor[i].y, 2)) * W_taylor[i];
-        //qDebug() << B[i];
-    }
-    //leastSquare(tmpA, B, X, matrixN, 3);
-    leastSquare_ARM(tmpA, B, X, matrixN, 3, 0.f);
-    //qDebug() << X[0] << X[1] << matrixN;
-
-    for (int i = 0; i < N; i++) {
-        delete[]tmpA[i];
-    }
-    delete[]tmpA;
     if (qAbs(lastPos.x) > MY_EPS && qAbs(lastPos.y) > MY_EPS) {
-        X[0] = (X[0] + lastPos.x * 2) / 3.f;
-        X[1] = (X[1] + lastPos.y * 2) / 3.f;
-    }
+        X[0] = lastPos.x;
+        X[1] = lastPos.y;
+	} else {
+		dType **tmpA = new dType *[N];
+		for (int i = 0; i < N; i++) {
+			tmpA[i] = new dType[3];
+			tmpA[i][0] = -2.f*sortedSensor[i].x * W_taylor[i];
+			tmpA[i][1] = -2.f*sortedSensor[i].y * W_taylor[i];
+			tmpA[i][2] = 1.f                    * W_taylor[i];
+			B[i] = (qPow(sortedDist[i], 2) - qPow(sortedSensor[i].x, 2)	- qPow(sortedSensor[i].y, 2)) * W_taylor[i];
+		}
+		leastSquare_ARM(tmpA, B, X, matrixN, 3, 0.f);
+		//qDebug() << X[0] << X[1] << matrixN;
+
+		for (int i = 0; i < N; i++) {
+			delete[]tmpA[i];
+		}
+		delete[]tmpA;
+	}
 
     X[2] = 0.f;
     dType mse = 0.f;

@@ -1,6 +1,7 @@
 #include "uiMainWindow.h"
 #include "ui_mainwindow.h"
 #include <QEvent>
+#include <QClipboard>
 
 void uiMainWindow::connectUi() {
     connect(ui->canvas, SIGNAL(mouseChange(int,int)), this, SLOT(showMousePos(int, int)));
@@ -34,6 +35,9 @@ void uiMainWindow::connectUi() {
     // ZOOM
     connect(ui->actionZoomIn,  SIGNAL(triggered(bool)), this, SLOT(zoomIn(bool)));
     connect(ui->actionZoomOut, SIGNAL(triggered(bool)), this, SLOT(zoomOut(bool)));
+
+    // CANVAS CAPTURE PICTURE
+    connect(ui->actionCapPix, SIGNAL(triggered(bool)), this, SLOT(captureCanvas(bool)));
 
     // ARM
     connect(ui->actioncalcTagPos_ARM, SIGNAL(triggered(bool)), this, SLOT(posCalc_ARM(bool)));
@@ -242,6 +246,10 @@ void uiMainWindow::zoomIn(bool) {
 void uiMainWindow::zoomOut(bool) {
     ui->canvas->zoomChange(-20);
     setStatusZoom();
+}
+void uiMainWindow::captureCanvas(bool) {
+    QPixmap pix = QPixmap::grabWidget(ui->canvas);
+    QApplication::clipboard()->setPixmap(pix);
 }
 
 void uiMainWindow::showMousePos(int x, int y) {

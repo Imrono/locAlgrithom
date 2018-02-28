@@ -119,15 +119,20 @@ void showTagRelated::drawLines(QPainter &painter, dType ratio,
                                dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setPen(QPen(oneMethod.linesColor, 2));
-        for (int j = 0; j < oneMethod.lines.count(); j++)
-            painter.drawLine(QLineF{toZoomedPoint(oneMethod.lines[j].p1(), ratio, zoom, offset),
-                                    toZoomedPoint(oneMethod.lines[j].p2(), ratio, zoom, offset)});
+		int lineCount = oneMethod.lines.count();
+		for (int j = 0; j < lineCount; j++) {
+			painter.drawLine(QLineF{toZoomedPoint(oneMethod.lines[j].p1(), ratio, zoom, offset),
+									toZoomedPoint(oneMethod.lines[j].p2(), ratio, zoom, offset)});
+			qDebug() << j << toZoomedPoint(oneMethod.lines[j].p1(), ratio, zoom, offset)
+				          << toZoomedPoint(oneMethod.lines[j].p2(), ratio, zoom, offset);
+		}
     }
 }
 
 void showTagRelated::drawCircle(QPainter &painter, const QVector<locationCoor> &sensor,
                                 dType ratio, dType zoom, QPointF offset) const {
     QPen tmpPen = QPen(Qt::darkGray, 1);
+    //QPen tmpPen = QPen(Qt::black, 1);
     painter.setBrush(Qt::NoBrush);
     for (int i = 0; i < distance.count(); i++) {
         if (usedSensor[i]) {
