@@ -105,8 +105,8 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             } else {}
             QPointF tmpOK = tag.distData[distCount].p_t.toQPointF();
             tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - tag.distData[distCount].p_t.toQPointF();
-            ui->canvas->setPosition(tag.tagId, TRACKx_STR, tmpOK);
-            ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
+            //ui->canvas->setPosition(tag.tagId, TRACKx_STR, tmpOK);
+            //ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
             /*
             QVector<QLineF> tmpLines;
             for (int i = 0; i < tag.distData.count(); i++) {
