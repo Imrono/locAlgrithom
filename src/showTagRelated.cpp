@@ -131,14 +131,14 @@ void showTagRelated::drawLines(QPainter &painter, dType ratio,
 
 void showTagRelated::drawCircle(QPainter &painter, const QVector<locationCoor> &sensor,
                                 dType ratio, dType zoom, QPointF offset) const {
-    QPen tmpPen = QPen(Qt::darkGray, 1);
-    //QPen tmpPen = QPen(Qt::black, 1);
+    //QPen tmpPen = QPen(Qt::darkGray, 1);
+    QPen tmpPen = QPen(Qt::black, 1);
     painter.setBrush(Qt::NoBrush);
     for (int i = 0; i < distance.count(); i++) {
         if (usedSensor[i]) {
             tmpPen.setStyle(Qt::SolidLine);
         } else {
-            tmpPen.setStyle(Qt::DotLine);
+            tmpPen.setStyle(Qt::SolidLine);
         }
         painter.setPen(tmpPen);
         painter.drawEllipse(toZoomedPoint(sensor[i].toQPointF(), ratio, zoom, offset),
@@ -180,7 +180,7 @@ void showTagRelated::drawLM(QPainter &painter, const QVector<locationCoor> &sens
     for (int i = 0; i < w; i++) {
         matrix[i] = new double[h];
     }
-    int div = 2;
+    int div = 1;
     double tmpMax = 0.;
 	int zoomedCount = zoomedSensor.count();
     for (int i = 0; i < w/div; i++) {
@@ -189,7 +189,7 @@ void showTagRelated::drawLM(QPainter &painter, const QVector<locationCoor> &sens
             double z = 1.;
             for (int k = 0; k < zoomedCount; k++) {
                 z *= normalDistribution(p, zoomedSensor[k], zoomedDistance[k],
-                                        400.*ratio*zoom / zoomedWeight[k]);
+                                        300.*ratio*zoom / zoomedWeight[k]);
             }
             matrix[i][j] = z * 100000000.;
             tmpMax = matrix[i][j] > tmpMax ? matrix[i][j] : tmpMax;

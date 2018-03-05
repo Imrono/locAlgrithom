@@ -37,15 +37,12 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     setStatusIter(0, 0.f);
 
     // CFG DATA
-    //loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
-    loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/config/石煤测试5.ini"));
-    //loadIniConfigFile(true, "D:\\code\\kelmanLocationData\\configExample.ini");
+    loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
+    //loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/config/石煤测试5.ini"));
 
     // DIST DATA
-    //loadLogDistanceFile_2(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
-    //loadLogDistanceFile_2(true, "D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705191135.log");
-    loadLogDistanceFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/distance/201712201435.log"));
-    //loadLogDistanceFile(true, "D:\\code\\kelmanLocationData\\201712111515.log");
+    loadLogDistanceFile_2(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
+    //loadLogDistanceFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/distance/201712201435.log"));
 
     // SET NLOS FOR calcPos
     calcPos.setNlosJudge(&calcNlos);
@@ -106,10 +103,10 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
                 ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
                 ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
             } else {}
-            //QPointF tmpOK = tag.distData[distCount].p_t.toQPointF();
-            //tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - tag.distData[distCount].p_t.toQPointF();
-            //ui->canvas->setPosition(tag.tagId, TRACKx_STR, tmpOK);
-            //ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
+            QPointF tmpOK = tag.distData[distCount].p_t.toQPointF();
+            tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - tag.distData[distCount].p_t.toQPointF();
+            ui->canvas->setPosition(tag.tagId, TRACKx_STR, tmpOK);
+            ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
             /*
             QVector<QLineF> tmpLines;
             for (int i = 0; i < tag.distData.count(); i++) {
@@ -121,8 +118,8 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
                      << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
 
             if (TRACK_METHOD::TRACK_NONE != calcTrack.calcTrackMethod) {
-                ui->canvas->setPosition(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].Ans[distCount].toQPointF());
-                ui->canvas->setLine(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines[distCount-1]);
+                //ui->canvas->setPosition(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].Ans[distCount].toQPointF());
+                //ui->canvas->setLine(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines[distCount-1]);
             } else {}
 
             ui->canvas->setPointsRaw(tag.tagId, MEASUR_STR, oneTagInfo->RawPoints[distCount]);
@@ -138,34 +135,77 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
                           oneTagInfo->methodInfo[MEASUR_STR].data[0][distCount]);
 
             ui->canvas->setLines(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines);
-            ui->canvas->setLines(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines);
+            //ui->canvas->setLines(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines);
 
             switch (tag.distData[distCount].distance.count()) {
-            case 6:ui->raw_5->setText(QString::number(tag.distData[distCount].distance[5]));
-            case 5:ui->raw_4->setText(QString::number(tag.distData[distCount].distance[4]));
-            case 4:ui->raw_3->setText(QString::number(tag.distData[distCount].distance[3]));
-            case 3:ui->raw_2->setText(QString::number(tag.distData[distCount].distance[2]));
-            case 2:ui->raw_1->setText(QString::number(tag.distData[distCount].distance[1]));
-            case 1:ui->raw_0->setText(QString::number(tag.distData[distCount].distance[0]));
+            case 6:
+                if ("1" == QString::number(oneTagInfo->weight[distCount][5])) {
+                    ui->raw_5->setStyleSheet("color:red");
+                } else {
+                    ui->raw_5->setStyleSheet("color:black");
+                }
+                ui->raw_5->setText(QString::number(tag.distData[distCount].distance[5])
+                        +QString("|")+QString::number(oneTagInfo->weight[distCount][5]).left(4));
+            case 5:
+                if ("1" == QString::number(oneTagInfo->weight[distCount][4])) {
+                    ui->raw_4->setStyleSheet("color:red");
+                } else {
+                    ui->raw_4->setStyleSheet("color:black");
+                }
+                ui->raw_4->setText(QString::number(tag.distData[distCount].distance[4])
+                        +QString("|")+QString::number(oneTagInfo->weight[distCount][4]).left(4));
+            case 4:
+                if ("1" == QString::number(oneTagInfo->weight[distCount][3])) {
+                    ui->raw_3->setStyleSheet("color:red");
+                } else {
+                    ui->raw_3->setStyleSheet("color:black");
+                }
+                ui->raw_3->setText(QString::number(tag.distData[distCount].distance[3])
+                        +QString("|")+QString::number(oneTagInfo->weight[distCount][3]).left(4));
+            case 3:
+                if ("1" == QString::number(oneTagInfo->weight[distCount][2])) {
+                    ui->raw_2->setStyleSheet("color:red");
+                } else {
+                    ui->raw_2->setStyleSheet("color:black");
+                }
+                ui->raw_2->setText(QString::number(tag.distData[distCount].distance[2])
+                        +QString("|")+QString::number(oneTagInfo->weight[distCount][2]).left(4));
+            case 2:
+                if ("1" == QString::number(oneTagInfo->weight[distCount][1])) {
+                    ui->raw_1->setStyleSheet("color:red");
+                } else {
+                    ui->raw_1->setStyleSheet("color:black");
+                }
+                ui->raw_1->setText(QString::number(tag.distData[distCount].distance[1])
+                        +QString("|")+QString::number(oneTagInfo->weight[distCount][1]).left(4));
+            case 1:
+                if ("1" == QString::number(oneTagInfo->weight[distCount][0])) {
+                    ui->raw_0->setStyleSheet("color:red");
+                } else {
+                    ui->raw_0->setStyleSheet("color:black");
+                }
+                ui->raw_0->setText(QString::number(tag.distData[distCount].distance[0])
+                        +QString("|")+QString::number(oneTagInfo->weight[distCount][0]).left(4));
             default:
                 break;
             }
 
             switch (tag.distData[distCount].distance.count()) {
-				/*
+
             case 6:ui->refine_5->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[5])));
             case 5:ui->refine_4->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[4])));
             case 4:ui->refine_3->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[3])));
             case 3:ui->refine_2->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[2])));
             case 2:ui->refine_1->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[1])));
             case 1:ui->refine_0->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[0])));
-				*/
+                /*
 			case 6:ui->refine_5->setText(QString::number(qAbs(calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[5]) - tag.distData[distCount].distance[5])));
 			case 5:ui->refine_4->setText(QString::number(qAbs(calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[4]) - tag.distData[distCount].distance[4])));
 			case 4:ui->refine_3->setText(QString::number(qAbs(calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[3]) - tag.distData[distCount].distance[3])));
 			case 3:ui->refine_2->setText(QString::number(qAbs(calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[2]) - tag.distData[distCount].distance[2])));
 			case 2:ui->refine_1->setText(QString::number(qAbs(calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[1]) - tag.distData[distCount].distance[1])));
 			case 1:ui->refine_0->setText(QString::number(qAbs(calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[0]) - tag.distData[distCount].distance[0])));
+                */
             default:
                 break;
             }

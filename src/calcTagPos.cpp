@@ -201,6 +201,10 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
 
     const oneTag &tagDists = dist_d->tagsData[tagInfo->tagId];
     for (int i = 0; i < tagDists.distData.count(); i++) {
+        if (i > 1063 && i < 1071) {
+            tagInfo->methodInfo[MEASUR_STR].Ans.append(tagInfo->methodInfo[MEASUR_STR].Ans[1063]);
+            continue;
+        }
         locationCoor tmpLastPos = tmpX;
         //qDebug() << i << tmpLastPos.toQPointF();
         dist4Calc tmpDist = {{0,0,0,0,0,0}};

@@ -10,6 +10,7 @@ uiCanvas::uiCanvas(QWidget *parent) : QWidget(parent)
     //pal.setColor(QPalette::Background, Qt::white);
     //setAutoFillBackground(true);
     //setPalette(pal);
+    //setStyleSheet("background-color:white;");
 
     widthCanvas = width();
     heightCanvas = height();
@@ -152,42 +153,6 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     painter.setPen(QPen(Qt::black, 0, Qt::NoPen));
 
     if (!isShowLM) {
-        // [Alarm]
-        painter.setBrush(QBrush(Qt::yellow));
-        QPainterPath alarmPath;
-        for (int i = 0; i < alarmShow.count(); i++) {
-            QPolygonF tmpAlarm;
-            for (int j = 0; j < alarmShow[i].count(); j++) {
-                tmpAlarm << toZoomedPoint(alarmShow[i][j]);
-            }
-            alarmPath.addPolygon(tmpAlarm);
-        }
-        painter.drawPath(alarmPath);
-
-        // [Stop]
-        painter.setBrush(QBrush(Qt::red));
-        QPainterPath stopPath;
-        for (int i = 0; i < stopShow.count(); i++) {
-            QPolygonF tmpStop;
-            for (int j = 0; j < stopShow[i].count(); j++) {
-                tmpStop << toZoomedPoint(stopShow[i][j]);
-            }
-            stopPath.addPolygon(tmpStop);
-        }
-        painter.drawPath(stopPath);
-
-        // [Oper]
-        painter.setBrush(QBrush(Qt::green));
-        QPainterPath operPath;
-        for (int i = 0; i < operShow.count(); i++) {
-            QPolygonF tmpOper;
-            for (int j = 0; j < operShow[i].count(); j++) {
-                tmpOper << toZoomedPoint(operShow[i][j]);
-            }
-            operPath.addPolygon(tmpOper);
-        }
-        painter.drawPath(operPath);
-
         // 画背景
         if (!backgroundImg.isNull()) {
             toZoomedPoint(QPointF(0.f, 0.f));
@@ -230,7 +195,7 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
                                ratioShow, zoom(), center);
         }
 
-        tag.drawLine(painter, ratioShow, zoom(), center);
+        //tag.drawLine(painter, ratioShow, zoom(), center);
         tag.drawPoint(painter, ratioShow, zoom(), center);
     }
 

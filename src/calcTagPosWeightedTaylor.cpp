@@ -6,8 +6,6 @@ extern "C" {
 #include "armVersion/calcTagLoc_ARM.h"
 }
 
-//dType calcTagPos::lastPos[2] = {0.f, 0.f};
-
 void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sensor, locationCoor lastPos,
                                     dType **A, dType **coA, dType *B, int N,
                                     dType **A_taylor, dType *B_taylor, dType *W_taylor,
@@ -50,12 +48,12 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
         if (i < refIdx) {
             usedSensor[idx[i]] = true;
             dType sensorDist = calcDistance(sensor[refIdx-1].toQPointF(), sensor[i].toQPointF());
-            if(qAbs(littleDist - sensorDist) * 0.1f < currDist) {
+            //if(qAbs(littleDist - sensorDist) * 0.1f < currDist) {
                 //W_taylor[i] = 1.f * qPow(diffDist, 0.1);
                 W_taylor[i] = (1.f + 0.01f*diffDist);
-            } else {
-                W_taylor[i] = 1.f / qSqrt(diffDist);
-            }
+            //} else {
+            //    W_taylor[i] = 1.f / qSqrt(diffDist);
+            //}
         } else {
             if (sortedDist[i] > sortedDist[refIdx] * 1.4f) {
                 nUnuseableNlos++;
@@ -67,13 +65,50 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
             }
         }
         weight[idx[i]] = W_taylor[i];
-        weight[idx[i]] = 1.f;
+        // test begin //
+        //weight[idx[i]] = 1.f;
         if (478 == distance[0] && distance[1] == 1046 && distance[2] == 830) {
             if (4 == i) {
                 //weight[idx[i]] = 1.f;
             }
         }
+        // test end //
     }
+    dType minSum = sortedDist[0] + sortedDist[1];
+    dType minL = calcDistance(sensor[idx[0]].toQPointF(), sensor[idx[1]].toQPointF());
+    if (minSum * 1.35 < minL) {
+        if (qAbs(lastPos.x) > MY_EPS && qAbs(lastPos.y) > MY_EPS) {
+            dType l0 = calcDistance(sensor[idx[0]].toQPointF(), lastPos.toQPointF());
+            dType l1 = calcDistance(sensor[idx[1]].toQPointF(), lastPos.toQPointF());
+            if (qAbs(l0 - sortedDist[0]) > qAbs(l1 - sortedDist[1])) {
+                W_taylor[0] = 0.f;
+                weight[idx[0]] = 0.f;
+                usedSensor[idx[0]] = false;
+            } else {
+                W_taylor[1] = 0.f;
+                weight[idx[1]] = 0.f;
+                usedSensor[idx[1]] = false;
+            }
+        }
+    }
+    minSum = sortedDist[0] + sortedDist[2];
+    minL = calcDistance(sensor[idx[0]].toQPointF(), sensor[idx[2]].toQPointF());
+    if (minSum * 1.35 < minL) {
+        if (qAbs(lastPos.x) > MY_EPS && qAbs(lastPos.y) > MY_EPS) {
+            dType l0 = calcDistance(sensor[idx[0]].toQPointF(), lastPos.toQPointF());
+            dType l2 = calcDistance(sensor[idx[2]].toQPointF(), lastPos.toQPointF());
+            if (qAbs(l0 - sortedDist[0]) > qAbs(l2 - sortedDist[2])) {
+                W_taylor[0] = 0.f;
+                weight[idx[0]] = 0.f;
+                usedSensor[idx[0]] = false;
+            } else {
+                W_taylor[2] = 0.f;
+                weight[idx[2]] = 0.f;
+                usedSensor[idx[2]] = false;
+            }
+        }
+    }
+
     /*
     qDebug() << distance[0] << distance[1] << distance[2] << distance[3] << distance[4] << distance[5] << ","
              << sortedDist[0] << sortedDist[1] << sortedDist[2] << sortedDist[3] << sortedDist[4] << sortedDist[5] << ","
@@ -122,7 +157,7 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 
     /**********************************************************************/
     // Levenberg-Marquardt Method
-    dType mu = .3f;
+    dType mu = 0.3f;
     // iteration
     int k_max = 20;
     int k = 0;
