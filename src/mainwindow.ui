@@ -144,7 +144,7 @@
       <height>170</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout" columnstretch="1,7,7">
+    <layout class="QGridLayout" name="gridLayout" columnstretch="1,8,7">
      <item row="4" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">

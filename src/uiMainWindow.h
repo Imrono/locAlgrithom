@@ -18,6 +18,23 @@
 #include "calcTagNLOS.h"
 #include "calcTagTrack.h"
 
+#define SHOW_DIST_WEIGHT(n) \
+    if ("1" == QString::number(oneTagInfo->weight[distCount][n])) {\
+        ui->raw_##n->setStyleSheet("color:red");\
+    } else {\
+        ui->raw_##n->setStyleSheet("color:black");\
+    }\
+    ui->raw_##n->setText(QString("%1{%2}")\
+            .arg(QString::number(tag.distData[distCount].distance[n]))\
+            .arg(QString::number(oneTagInfo->weight[distCount][n]).left(4)));
+
+#define SHOW_DIST_DIFF(n) \
+    ui->refine_##n->setText(QString::number(qAbs(\
+    calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[n])\
+    - tag.distData[distCount].distance[n])))
+// ui->refine_##n->setText(QString::number(\
+// calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[n])))
+
 namespace Ui {
 class MainWindow;
 }

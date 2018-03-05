@@ -20,12 +20,6 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
     dType tmpD = 0.f;
     //dType mse = 0.f;
     //dType mseLast = 0.f;
-	if (605 == distance[0] && distance[1] == 415 && distance[2] == 504) {
-		N = 2;
-	}
-	if (607 == distance[0] && distance[1] == 413 && distance[2] == 501) {
-		N = 1;
-	}
 
     // sort distance
     int idx[MAX_SENSOR] = {0};
@@ -67,12 +61,6 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
             }
         }
         weight[idx[i]] = W_taylor[i];
-        weight[idx[i]] = 1.f;
-        if (478 == distance[0] && distance[1] == 1046 && distance[2] == 830) {
-            if (4 == i) {
-                //weight[idx[i]] = 1.f;
-            }
-        }
     }
     /*
     qDebug() << distance[0] << distance[1] << distance[2] << distance[3] << distance[4] << distance[5] << ","

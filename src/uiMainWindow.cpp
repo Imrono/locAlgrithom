@@ -37,15 +37,12 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     setStatusIter(0, 0.f);
 
     // CFG DATA
-    //loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
-    loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/config/石煤测试5.ini"));
-    //loadIniConfigFile(true, "D:\\code\\kelmanLocationData\\configExample.ini");
+    loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
+    //loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/config/石煤测试5.ini"));
 
     // DIST DATA
-    //loadLogDistanceFile_2(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
-    //loadLogDistanceFile_2(true, "D:\\code\\kelmanLocationData\\WC50Y(B)_LOG\\201705191135.log");
-    loadLogDistanceFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/distance/201712201435.log"));
-    //loadLogDistanceFile(true, "D:\\code\\kelmanLocationData\\201712111515.log");
+    loadLogDistanceFile_2(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
+    //loadLogDistanceFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/distance/201712201435.log"));
 
     // SET NLOS FOR calcPos
     calcPos.setNlosJudge(&calcNlos);
@@ -141,31 +138,23 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             ui->canvas->setLines(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines);
 
             switch (tag.distData[distCount].distance.count()) {
-            case 6:ui->raw_5->setText(QString::number(tag.distData[distCount].distance[5]));
-            case 5:ui->raw_4->setText(QString::number(tag.distData[distCount].distance[4]));
-            case 4:ui->raw_3->setText(QString::number(tag.distData[distCount].distance[3]));
-            case 3:ui->raw_2->setText(QString::number(tag.distData[distCount].distance[2]));
-            case 2:ui->raw_1->setText(QString::number(tag.distData[distCount].distance[1]));
-            case 1:ui->raw_0->setText(QString::number(tag.distData[distCount].distance[0]));
+            case 6: SHOW_DIST_WEIGHT(5);
+            case 5: SHOW_DIST_WEIGHT(4);
+            case 4: SHOW_DIST_WEIGHT(3);
+            case 3: SHOW_DIST_WEIGHT(2);
+            case 2: SHOW_DIST_WEIGHT(1);
+            case 1: SHOW_DIST_WEIGHT(0);
             default:
                 break;
             }
 
             switch (tag.distData[distCount].distance.count()) {
-				/*
-            case 6:ui->refine_5->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[5])));
-            case 5:ui->refine_4->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[4])));
-            case 4:ui->refine_3->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[3])));
-            case 3:ui->refine_2->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[2])));
-            case 2:ui->refine_1->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[1])));
-            case 1:ui->refine_0->setText(QString::number(calcDistance(tag.distData[distCount].p_t, cfgData.get_q()->sensor[0])));
-				*/
-			case 6:ui->refine_5->setText(QString::number(qAbs(calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[5]) - tag.distData[distCount].distance[5])));
-			case 5:ui->refine_4->setText(QString::number(qAbs(calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[4]) - tag.distData[distCount].distance[4])));
-			case 4:ui->refine_3->setText(QString::number(qAbs(calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[3]) - tag.distData[distCount].distance[3])));
-			case 3:ui->refine_2->setText(QString::number(qAbs(calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[2]) - tag.distData[distCount].distance[2])));
-			case 2:ui->refine_1->setText(QString::number(qAbs(calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[1]) - tag.distData[distCount].distance[1])));
-			case 1:ui->refine_0->setText(QString::number(qAbs(calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[0]) - tag.distData[distCount].distance[0])));
+            case 6: SHOW_DIST_DIFF(5);
+            case 5: SHOW_DIST_DIFF(4);
+            case 4: SHOW_DIST_DIFF(3);
+            case 3: SHOW_DIST_DIFF(2);
+            case 2: SHOW_DIST_DIFF(1);
+            case 1: SHOW_DIST_DIFF(0);
             default:
                 break;
             }
