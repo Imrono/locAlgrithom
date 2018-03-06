@@ -31,7 +31,7 @@ public:
 
     // ALL IN ONE
     CALC_POS_TYPE calcPosType{CALC_POS_TYPE::POS_NONE};
-    locationCoor calcOnePosition(const int *dist, dType &MSE, dType T, locationCoor lastPos,
+    locationCoor calcOnePosition(const int *dist, dType &MSE, dType T, locationCoor lastPos, oneKalmanData &kalmanData,
                                  bool *usedSensor, QVector<QPointF> &iterTrace,
                                  QVector<dType> &weight);
 
@@ -42,7 +42,10 @@ public:
     locationCoor calcWeightedTaylor(const int *dist, dType &MSE, locationCoor lastPos,
                                     bool *usedSensor, QVector<QPointF> &iterTrace,
                                     QVector<dType> &weight);
-    locationCoor calcKalmanTaylor  (const int *dist, dType &MSE, dType T);
+    locationCoor calcKalmanLM      (const int *dist, dType &MSE, dType T, locationCoor lastPos,
+                                    oneKalmanData &kalmanData,
+                                    bool *usedSensor, QVector<QPointF> &iterTrace,
+                                    QVector<dType> &weight);
     locationCoor calcLMedS         (const int *dist, dType &MSE, locationCoor lastPos,
                                     bool *usedSensor, QVector<QPointF> &iterTrace);
     locationCoor calcPos_ARM       (const int *dist, dType &MSE, locationCoor lastPos);
@@ -64,10 +67,12 @@ public:
                                    dType **A_taylor, dType *B_taylor, dType *W_taylor,
                                    dType &out_x, dType &out_y, dType &out_MSE,
                                    bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight);
-    static void calcKalmanTaylor  (const int *distance, const locationCoor *sensor, dType T_in,
+    static void calcKalmanLM      (const int *distance, const locationCoor *sensor, dType T_in,
+                                   oneKalmanData &kalmanData,
                                    dType **A, dType **coA, dType *B, int N,
                                    dType **A_taylor, dType *B_taylor, dType *W_taylor,
-                                   dType &out_x, dType &out_y, dType &out_MSE);
+                                   dType &out_x, dType &out_y, dType &out_MSE,
+                                   bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight);
     static void calcLMedS         (const int *distance, const locationCoor *sensor, locationCoor lastPos,
                                    dType **A, dType **coA, dType *B, int N,
                                    dType **A_taylor, dType *B_taylor, dType *W_taylor,

@@ -189,7 +189,7 @@ void showTagRelated::drawLM(QPainter &painter, const QVector<locationCoor> &sens
             double z = 1.;
             for (int k = 0; k < zoomedCount; k++) {
                 z *= normalDistribution(p, zoomedSensor[k], zoomedDistance[k],
-                                        400.*ratio*zoom / zoomedWeight[k]);
+                                        300.*ratio*zoom / zoomedWeight[k]);
             }
             matrix[i][j] = z * 100000000.;
             tmpMax = matrix[i][j] > tmpMax ? matrix[i][j] : tmpMax;

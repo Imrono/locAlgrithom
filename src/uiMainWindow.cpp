@@ -36,13 +36,14 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     statusBar()->addWidget(iterationNum);
     setStatusIter(0, 0.f);
 
-    // CFG DATA
+    // load initial CFG and DIST data
+#if 1
     loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
-    //loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/config/石煤测试5.ini"));
-
-    // DIST DATA
     loadLogDistanceFile_2(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
-    //loadLogDistanceFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/distance/201712201435.log"));
+#else
+    loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/config/石煤测试5.ini"));
+    loadLogDistanceFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/distance/201712201435.log"));
+#endif
 
     // SET NLOS FOR calcPos
     calcPos.setNlosJudge(&calcNlos);
@@ -138,23 +139,24 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             ui->canvas->setLines(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines);
 
             switch (tag.distData[distCount].distance.count()) {
-            case 6: SHOW_DIST_WEIGHT(5);
-            case 5: SHOW_DIST_WEIGHT(4);
-            case 4: SHOW_DIST_WEIGHT(3);
-            case 3: SHOW_DIST_WEIGHT(2);
-            case 2: SHOW_DIST_WEIGHT(1);
-            case 1: SHOW_DIST_WEIGHT(0);
-            default:
-                break;
-            }
-
-            switch (tag.distData[distCount].distance.count()) {
-            case 6: SHOW_DIST_DIFF(5);
-            case 5: SHOW_DIST_DIFF(4);
-            case 4: SHOW_DIST_DIFF(3);
-            case 3: SHOW_DIST_DIFF(2);
-            case 2: SHOW_DIST_DIFF(1);
-            case 1: SHOW_DIST_DIFF(0);
+            case 6:
+                SHOW_DIST_WEIGHT(5);
+                SHOW_DIST_DIFF(5);
+            case 5:
+                SHOW_DIST_WEIGHT(4);
+                SHOW_DIST_DIFF(4);
+            case 4:
+                SHOW_DIST_WEIGHT(3);
+                SHOW_DIST_DIFF(3);
+            case 3:
+                SHOW_DIST_WEIGHT(2);
+                SHOW_DIST_DIFF(2);
+            case 2:
+                SHOW_DIST_WEIGHT(1);
+                SHOW_DIST_DIFF(1);
+            case 1:
+                SHOW_DIST_WEIGHT(0);
+                SHOW_DIST_DIFF(0);
             default:
                 break;
             }

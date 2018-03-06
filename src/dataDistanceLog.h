@@ -5,7 +5,7 @@
 #include <QVector>
 #include <QLine>
 
-struct oneLogData {
+struct oneLogData {     // distance data
     QDateTime time;
     QVector<int> distance;
     locationCoor p_t_1;

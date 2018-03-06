@@ -76,23 +76,23 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
     if (qAbs(lastPos.x) > MY_EPS && qAbs(lastPos.y) > MY_EPS) {
         X[0] = lastPos.x;
         X[1] = lastPos.y;
-	} else {
-		dType **tmpA = new dType *[N];
-		for (int i = 0; i < N; i++) {
-			tmpA[i] = new dType[3];
-			tmpA[i][0] = -2.f*sortedSensor[i].x * W_taylor[i];
-			tmpA[i][1] = -2.f*sortedSensor[i].y * W_taylor[i];
-			tmpA[i][2] = 1.f                    * W_taylor[i];
-			B[i] = (qPow(sortedDist[i], 2) - qPow(sortedSensor[i].x, 2)	- qPow(sortedSensor[i].y, 2)) * W_taylor[i];
-		}
-		leastSquare_ARM(tmpA, B, X, matrixN, 3, 0.f);
-		//qDebug() << X[0] << X[1] << matrixN;
+    } else {
+        dType **tmpA = new dType *[N];
+        for (int i = 0; i < N; i++) {
+            tmpA[i] = new dType[3];
+            tmpA[i][0] = -2.f*sortedSensor[i].x * W_taylor[i];
+            tmpA[i][1] = -2.f*sortedSensor[i].y * W_taylor[i];
+            tmpA[i][2] = 1.f                    * W_taylor[i];
+            B[i] = (qPow(sortedDist[i], 2) - qPow(sortedSensor[i].x, 2)	- qPow(sortedSensor[i].y, 2)) * W_taylor[i];
+        }
+        leastSquare_ARM(tmpA, B, X, matrixN, 3, 0.f);
+        //qDebug() << X[0] << X[1] << matrixN;
 
-		for (int i = 0; i < N; i++) {
-			delete[]tmpA[i];
-		}
-		delete[]tmpA;
-	}
+        for (int i = 0; i < N; i++) {
+            delete[]tmpA[i];
+        }
+        delete[]tmpA;
+    }
 
     X[2] = 0.f;
     dType mse = 0.f;
@@ -161,7 +161,7 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
         X[0] = X_new[0];
         X[1] = X_new[1];
 
-        if (mse < eps1
+        if (mse < eps3
          || qSqrt(dX[0] * dX[0] + dX[1] * dX[1]) < eps2
          || qAbs(mse - mseKeep) < eps1 * eps3) {
             break;

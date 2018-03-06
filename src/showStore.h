@@ -31,10 +31,22 @@ struct storeMethodInfo {
     }
 };
 
+struct oneKalmanData {  // kalman data
+    locationCoor x_t   = {0,0,0};
+    locationCoor v_t   = {0,0,0};
+    locationCoor x_t_1 = {0,0,0};
+    locationCoor v_t_1 = {0,0,0};
+    dType K            = 0.9f;
+    bool isInitialized = false;
+};
+
 struct storeTagInfo {
     int tagId{-1};
     bool isTagPosInitialed{false};
     QMap<QString, storeMethodInfo> methodInfo;
+
+    // updated in calculation
+    oneKalmanData calcPosKalmanData;
 
     QVector<dType>                 Reliability; //1.meas：长度之和；2.kalman：卡尔曼增益K
     QVector<dType>                 data_R;

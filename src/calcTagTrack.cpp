@@ -149,28 +149,18 @@ void calcTagTrack::calcKalmanPos(const locationCoor &z_x_meas,
                                  trackParams &trackParam,
                                  tagTrackRecord &recParam) {
     dType Q = 0.01f;
-    // predict
-    locationCoor x_hat_t;
-    locationCoor v_hat_t;
-    // measure
-    locationCoor y_x_tilde;
-
-    dType S;
-    dType Pxx_pri_t;
-    dType Pxv_pri_t;
-    dType Pvv_pri_t;
 
     // 1. x = Hx + Bu <= H = [1, T]
-    x_hat_t = trackParam.x_t + (trackParam.v_t * T);
-    v_hat_t = trackParam.v_t;
+    locationCoor x_hat_t = trackParam.x_t + (trackParam.v_t * T);
+    locationCoor v_hat_t = trackParam.v_t;
     // *2. P = FPF + Q
-    Pxx_pri_t = trackParam.Pxx + 2.f*T*trackParam.Pxv + T*T*trackParam.Pvv + Q;
-    Pxv_pri_t = trackParam.Pxv + T*trackParam.Pvv + Q/T*2.f;
-    Pvv_pri_t = trackParam.Pvv + Q/T/T*4.f;
+    dType Pxx_pri_t = trackParam.Pxx + 2.f*T*trackParam.Pxv + T*T*trackParam.Pvv + Q;
+    dType Pxv_pri_t = trackParam.Pxv + T*trackParam.Pvv + Q/T*2.f;
+    dType Pvv_pri_t = trackParam.Pvv + Q/T/T*4.f;
     // 3. y = z - Hx
-    y_x_tilde = z_x_meas - x_hat_t;
+    locationCoor y_x_tilde = z_x_meas - x_hat_t;
     // 4. S = R + HPH
-    S = R + Pxx_pri_t;
+    dType S = R + Pxx_pri_t;
     // 5. k = PH/S
     recParam.Kx = Pxx_pri_t / S;
     recParam.Kv = Pxv_pri_t / S;
@@ -187,35 +177,23 @@ void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
                                      dType T, dType R_x,
                                      trackParams &trackParam,
                                      tagTrackRecord &recParam) {
-    // predict
-    locationCoor x_hat_t;
-    locationCoor v_hat_t;
-    // measure
-    locationCoor z_v_meas;
-    locationCoor y_x_tilde;
-    locationCoor y_v_tilde;
-
-    dType S_x;
-    dType S_v;
-    dType Px_pri_t;
-    dType Pv_pri_t;
     dType R_v;
     dType Q = 0.01f;
 
     // 1. x = Hx + Bu
-    x_hat_t = trackParam.x_t_1 + (trackParam.v_t_1 * T);
-    v_hat_t = trackParam.v_t_1;
+    locationCoor x_hat_t = trackParam.x_t_1 + (trackParam.v_t_1 * T);
+    locationCoor v_hat_t = trackParam.v_t_1;
     // 2. P = FPF + Q
-    Px_pri_t = trackParam.Pxx + trackParam.Pvv * T * T + Q;
-    Pv_pri_t = trackParam.Pvv + Q/T/T*4.f;
+    dType Px_pri_t = trackParam.Pxx + trackParam.Pvv * T * T + Q;
+    dType Pv_pri_t = trackParam.Pvv + Q/T/T*4.f;
     // 3. y = z - Hx
-    y_x_tilde = z_x_meas - x_hat_t;
-    z_v_meas = (z_x_meas - trackParam.x_t_1) / T;
-    y_v_tilde = z_v_meas - v_hat_t;
+    locationCoor y_x_tilde = z_x_meas - x_hat_t;
+    locationCoor z_v_meas = (z_x_meas - trackParam.x_t_1) / T;
+    locationCoor y_v_tilde = z_v_meas - v_hat_t;
     // 4. S = R + HPH
-    S_x = R_x + Px_pri_t;
+    dType S_x = R_x + Px_pri_t;
     R_v = (R_x + trackParam.Pxx) / (T * T);
-    S_v = R_v + Pv_pri_t;
+    dType S_v = R_v + Pv_pri_t;
     // 5. k = PH/S
     recParam.Kx = Px_pri_t / S_x;
     recParam.Kv = Pv_pri_t / S_v;
