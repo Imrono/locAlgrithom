@@ -268,7 +268,7 @@ locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T, l
     } else if (CALC_POS_TYPE::LMedS == calcPosType) {
         return calcLMedS(dist, MSE, lastPos, usedSensor, iterTrace);
     } else if (CALC_POS_TYPE::KalmanTaylor == calcPosType) {
-        return calcKalmanLM(dist, MSE, T, lastPos, kalmanData, usedSensor, iterTrace, weight);
+        return calcKalmanTight(dist, MSE, T, lastPos, kalmanData, usedSensor, iterTrace, weight);
     } else if (CALC_POS_TYPE::ARM_calcPos == calcPosType) {
         return calcPos_ARM(dist, MSE, lastPos);
     } else {
@@ -433,32 +433,34 @@ locationCoor calcTagPos::calcTaylorSeries(const int *dist, dType &MSE) {
 locationCoor calcTagPos::calcWeightedTaylor(const int *dist, dType &MSE, locationCoor lastPos,
                                             bool *usedSensor, QVector<QPointF> &iterTrace,
                                             QVector<dType> &weight) {
-	for (int i = 0; i < fc_row; i++) {
-		W_taylor[i] = 0.0f;
-	}
-
-    calcWeightedTaylor(dist, cfg_d->sensor.data(), lastPos,
-                       A_fc, A_fc_inverse_AT, B_fc, fc_row,
-                       A_taylor, B_taylor, W_taylor, X[0], X[1], MSE,
+    dType init_W[MAX_SENSOR];
+    for (int i = 0; i < MAX_SENSOR; i++) {
+        init_W[i] = 1.f;
+    }
+    calcWeightedTaylor(dist, cfg_d->sensor.data(),
+                       lastPos, fc_row, init_W, nullptr,
+                       X[0], X[1], MSE,
                        usedSensor, iterTrace, weight);
 
     return locationCoor{X[0], X[1], 0.f};
 }
 
-locationCoor calcTagPos::calcKalmanLM(const int *dist, dType &MSE, dType T, locationCoor lastPos,
+locationCoor calcTagPos::calcKalmanTight(const int *dist, dType &MSE, dType T, locationCoor lastPos,
                                       oneKalmanData &kalmanData,
                                       bool *usedSensor, QVector<QPointF> &iterTrace,
                                       QVector<dType> &weight) {
-    calcKalmanLM(dist, cfg_d->sensor.data(), T, kalmanData,
-                 A_fc, A_fc_inverse_AT, B_fc, fc_row,
-                 A_taylor, B_taylor, W_taylor, X[0], X[1], MSE,
-                 usedSensor, iterTrace, weight);
+    Q_UNUSED(lastPos);
+    calcKalmanTight(dist, cfg_d->sensor.data(), T,
+                    kalmanData, fc_row,
+                    X[0], X[1], MSE,
+                    usedSensor, iterTrace, weight);
     return locationCoor{X[0], X[1], 0.f};
 }
 
 locationCoor calcTagPos::calcLMedS (const int *dist, dType &MSE, locationCoor lastPos,
                                     bool *usedSensor, QVector<QPointF> &iterTrace) {
-
+    calcLMedS(dist, cfg_d->sensor.data(), lastPos, fc_row, X[0], X[1], MSE,
+              usedSensor, iterTrace);
     return locationCoor{X[0], X[1], 0.f};
 }
 

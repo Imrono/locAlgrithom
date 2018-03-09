@@ -4,7 +4,7 @@
 #include <QVector>
 #include "dataType.h"
 #include "showStore.h"
-#include "calcLibDistance.h"
+#include "calcLibGeometry.h"
 
 inline void calcMatrix22Mulit(const dType a, const dType b, const dType c, const dType d,
                               const dType A, const dType B, const dType C, const dType D,

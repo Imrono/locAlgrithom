@@ -21,7 +21,7 @@ void calcLibMath_TEST::randomDraw_TEST() {
         {1,2,3,5},
         {1,2,4,5},
         {1,3,4,5},
-        {2,3,4,5}   //15
+        {2,3,4,5}   //14  ==> total: 15
     };
     bool judge[15] = {true,true,true,true,true,true,true,true,
                       true,true,true,true,true,true,true};

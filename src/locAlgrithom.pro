@@ -35,19 +35,24 @@ SOURCES += \
     calcTagNLOS.cpp \
     uiUsrInfoBtn.cpp \
     uiUsrFrame.cpp \
-    calcLibDistance.cpp \
     _myheads.cpp \
     calcTagTrack.cpp \
     uiMainwindowTedious.cpp \
     calcLibMatrixOp.cpp \
-    calcTagPosKalmanTaylor.cpp \
     calcLibMath.cpp \
-    calcTagPosWeightedTaylor.cpp \
     calcLibMatrixOpInverse.cpp \
     armVersion/calcLibMath_ARM.c \
     armVersion/calcTagTrack_ARM.c \
     armVersion/calcTagPos_ARM.c \
-    calcTagPosLMedS.cpp
+    calcTagPosLMedS.cpp \
+    calcTagPosBilateration.cpp \
+    calcTagPosKalmanTight.cpp \
+    calcTagPosKalmanMedium.cpp \
+    calcTagPosWeightedTaylor.cpp \
+    calcTagPosKalmanLoose.cpp \
+    calcTagPosKalmanUltraTight.cpp \
+    calcLibGeometry.cpp \
+    calcTagPosKalmanCoupled.cpp
 
 HEADERS += \
     showStore.h \
@@ -62,11 +67,11 @@ HEADERS += \
     dataType.h \
     uiUsrInfoBtn.h \
     uiUsrFrame.h \
-    calcLibDistance.h \
     calcLibMatrixOp.h \
     calcTagTrack.h \
     calcLibMath.h \
-    armVersion/calcTagLoc_ARM.h
+    armVersion/calcTagLoc_ARM.h \
+    calcLibGeometry.h
 
 FORMS += \
     mainwindow.ui

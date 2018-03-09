@@ -7,7 +7,7 @@
 #include "dataType.h"
 #include "showStore.h"
 #include "calcTagNLOS.h"
-#include "calcLibDistance.h"
+#include "calcLibGeometry.h"
 #include "calcLibMath.h"
 extern "C"{
 #include "armVersion/calcTagLoc_ARM.h"
@@ -42,7 +42,7 @@ public:
     locationCoor calcWeightedTaylor(const int *dist, dType &MSE, locationCoor lastPos,
                                     bool *usedSensor, QVector<QPointF> &iterTrace,
                                     QVector<dType> &weight);
-    locationCoor calcKalmanLM      (const int *dist, dType &MSE, dType T, locationCoor lastPos,
+    locationCoor calcKalmanTight   (const int *dist, dType &MSE, dType T, locationCoor lastPos,
                                     oneKalmanData &kalmanData,
                                     bool *usedSensor, QVector<QPointF> &iterTrace,
                                     QVector<dType> &weight);
@@ -62,27 +62,47 @@ public:
                                    dType **A, dType **coA, dType *B, int N,
                                    dType **A_taylor, dType *B_taylor,
                                    dType &out_x, dType &out_y, dType &out_MSE);
-    static void calcWeightedTaylor(const int *distance, const locationCoor *sensor, locationCoor lastPos,
-                                   dType **A, dType **coA, dType *B, int N,
-                                   dType **A_taylor, dType *B_taylor, dType *W_taylor,
+    static void calcWeightedTaylor(const int *distance, const locationCoor *sensor,
+                                   locationCoor lastPos, int N, dType *init_W, dType *pos_hat,
                                    dType &out_x, dType &out_y, dType &out_MSE,
                                    bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight);
-    static void calcKalmanLM      (const int *distance, const locationCoor *sensor, dType T_in,
-                                   oneKalmanData &kalmanData,
-                                   dType **A, dType **coA, dType *B, int N,
-                                   dType **A_taylor, dType *B_taylor, dType *W_taylor,
-                                   dType &out_x, dType &out_y, dType &out_MSE,
-                                   bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight);
+
+    /* KALMAN COULPED METHOD *****************************************************/
+    enum KalmanCoupledType {
+        LOOSE,
+        MEDIUM,
+        TIGHT,
+        UTRLA_TIGHT
+    };
+
+    static void calcKalmanCoulped(const int *distance, const locationCoor *sensor, dType T_in,
+                                  oneKalmanData &kalmanData, int N, KalmanCoupledType type,
+                                  dType &out_x, dType &out_y, dType &out_MSE,
+                                  bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight);
+
+    static void calcKalmanLoose     (const int *distance, const locationCoor *sensor, dType T_in,
+                                     oneKalmanData &kalmanData, int N,
+                                     dType &out_x, dType &out_y, dType &out_MSE,
+                                     bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight);
+    static void calcKalmanMedium    (const int *distance, const locationCoor *sensor, dType T_in,
+                                     oneKalmanData &kalmanData, int N,
+                                     dType &out_x, dType &out_y, dType &out_MSE,
+                                     bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight);
+    static void calcKalmanTight     (const int *distance, const locationCoor *sensor, dType T_in,
+                                     oneKalmanData &kalmanData, int N,
+                                     dType &out_x, dType &out_y, dType &out_MSE,
+                                     bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight);
+    static void calcKalmanUltraTight(const int *distance, const locationCoor *sensor, dType T_in,
+                                     oneKalmanData &kalmanData, int N,
+                                     dType &out_x, dType &out_y, dType &out_MSE,
+                                     bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight);
+/*****************************************************************************/
+
     static void calcLMedS         (const int *distance, const locationCoor *sensor, locationCoor lastPos,
-                                   dType **A, dType **coA, dType *B, int N,
-                                   dType **A_taylor, dType *B_taylor, dType *W_taylor,
-                                   dType &out_x, dType &out_y, dType &out_MSE,
+                                   int N, dType &out_x, dType &out_y, dType &out_MSE,
                                    bool *usedSensor, QVector<QPointF> &iterTrace);
-    static void calcLM (const int *distance, const locationCoor *sensor, locationCoor lastPos,
-                        dType **A, dType **coA, dType *B, int N,
-                        dType **A_taylor, dType *B_taylor, dType *W_taylor,
-                        dType &out_x, dType &out_y, dType &out_MSE,
-                        bool *usedSensor, QVector<QPointF> &iterTrace);
+    static void calcLM (const dType *distance, const locationCoor *sensor, locationCoor lastPos,
+                        int N, dType &out_x, dType &out_y, dType &out_MSE, QVector<QPointF> &iterTrace);
 
     void calcPosVector (storeTagInfo *label);
 

@@ -1,4 +1,4 @@
-#include "calcLibDistance.h"
+#include "calcLibGeometry.h"
 #include <QtMath>
 #include <QLineF>
 
