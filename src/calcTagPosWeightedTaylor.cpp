@@ -16,7 +16,7 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
     dType *A_taylor[MAX_SENSOR+1];
     dType B_taylor [MAX_SENSOR+1];
     dType W_taylor [MAX_SENSOR+1];
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < MAX_SENSOR + 1; i++) {
         A_taylor[i] = &(A_data[i*2]);
         if (nullptr != init_W) {
             W_taylor[i] = init_W[i];
@@ -132,7 +132,8 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
         dType X0[2];    //Taylor series expansion at x0 point
         X0[0] = X[0]; X0[1] = X[1];
         // fill the matrix
-        for (int i = 0; i < N; i++) {
+		int tmpN = nullptr == pos_hat ? matrixN : matrixN + 1;
+        for (int i = 0; i < matrixN; i++) {
             dType tmpD =  qSqrt(qPow(X0[0] - sortedSensor[i].x, 2) + qPow(X0[1] - sortedSensor[i].y, 2));
             A_taylor[i][0] = ((X0[0] - sortedSensor[i].x) / tmpD) * W_taylor[i];
             A_taylor[i][1] = ((X0[1] - sortedSensor[i].y) / tmpD) * W_taylor[i];
@@ -140,13 +141,16 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
             //qDebug() << A_taylor[i][0] << A_taylor[i][1] << B_taylor[i];
         }
         if (nullptr != pos_hat) {
-            dType tmpD =  qSqrt(qPow(X0[0] - pos_hat[0], 2) + qPow(X0[1] - pos_hat[1], 2));
-            A_taylor[N][0] = ((X0[0] - pos_hat[0]) / tmpD);
-            A_taylor[N][1] = ((X0[1] - pos_hat[1]) / tmpD);
-            B_taylor[N]    = - tmpD;
+			dType W_kalman;
+			if (matrixN > 1) W_kalman = (W_taylor[0] + W_taylor[1]) * 0.5f * 0.7f;
+			else             W_kalman = W_taylor[0] * 0.3f * 0.7f;
+            dType tmpD = qSqrt(qPow(X0[0] - pos_hat[0], 2) + qPow(X0[1] - pos_hat[1], 2) + MY_EPS);
+            A_taylor[matrixN][0] = ((X0[0] - pos_hat[0]) / tmpD) * W_kalman;
+            A_taylor[matrixN][1] = ((X0[1] - pos_hat[1]) / tmpD) * W_kalman;
+            B_taylor[matrixN]    = - tmpD                        * W_kalman;
         }
         //leastSquare(A_taylor, B_taylor, dX, matrixN, 2, lamda);
-        leastSquare_ARM(A_taylor, B_taylor, dX, matrixN, 2, lamda);
+        leastSquare_ARM(A_taylor, B_taylor, dX, tmpN, 2, lamda);
         //qDebug() << "X0[0]" << dX[0] << "X0[1]" << dX[1];
         dType X_new[2];
         X_new[0] = X0[0] + dX[0];

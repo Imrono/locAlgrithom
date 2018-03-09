@@ -5,6 +5,14 @@ echo delete .\src\x64\
 rd /s /q .\src\x64
 echo delete .\test\x64\
 rd /s /q .\test\x64
+
+echo delete .\Win32\
+rd /s /q .\Win32
+echo delete .\src\Win32\
+rd /s /q .\src\Win32
+echo delete .\test\Win32\
+rd /s /q .\test\Win32
+
 echo delete .\debug\
 rd /s /q .\debug
 echo delete .\src\debug\

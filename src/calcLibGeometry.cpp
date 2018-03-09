@@ -66,3 +66,33 @@ dType calcTotalAvgDistanceSquare(QVector<QLineF> &lines, int discount) {
     return calcTotalDistanceSquare(lines, discount)/(lines.count()-dType(discount));
 }
 
+void calcCross2Circle(const dType x1, const dType y1, const dType d1,
+                      const dType x2, const dType y2, const dType d2,
+                      dType &x0_1, dType &y0_1, dType &x0_2, dType &y0_2, bool &isCross) {
+    dType m = 0.5f*(((x1*x1-x2*x2)+(y1*y1-y2*y2)-(d1*d1-d2*d2)) / (y1-y2+MY_EPS));
+    dType n = -(x1-x2)/(y1-y2+MY_EPS);
+
+    dType sqrtItem = 2.f*(n*x1+m)*y1 - y1*y1 - n*n*x1*x1 - 2.f*m*n*x1 - m*m + (1.f+n*n)*d1*d1;
+
+    qDebug() << m << n << sqrtItem ;
+
+    dType a = -(m*n-n*y1-x1);
+    dType b = 1.f+n*n;
+    if (sqrtItem > 0.f) {
+        isCross = true;
+
+        x0_1 = (a + qSqrt(sqrtItem)) / b;
+        y0_1 = m + n*x0_1;
+
+        x0_2 = (a - qSqrt(sqrtItem)) / b;
+        y0_2 = m + n*x0_2;
+    } else {
+        isCross = false;
+
+        x0_1 = a / b;
+        y0_1 = m + n*x0_1;
+
+        x0_2 = qSqrt(-sqrtItem) / b;
+        y0_2 = n*x0_2;
+    }
+}

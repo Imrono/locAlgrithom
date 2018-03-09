@@ -139,12 +139,16 @@
     <ClCompile Include="..\src\_myheads.cpp" />
     <ClCompile Include="..\src\calcLibMath.cpp" />
     <ClCompile Include="..\src\armVersion\calcLibMath_ARM.c" />
+    <ClCompile Include="calcLibGeometry_TEST.cpp" />
     <ClCompile Include="calcLibMath_ARM_TEST.cpp" />
     <ClCompile Include="calcLibMath_TEST.cpp" />
     <ClCompile Include="..\src\calcLibMatrixOp.cpp" />
     <ClCompile Include="calcLibMatrixOp_TEST.cpp" />
     <ClCompile Include="..\src\armVersion\calcTagPos_ARM.c" />
     <ClCompile Include="..\src\calclibMatrixOpInverse.cpp" />
+    <ClCompile Include="Debug\moc_calcLibGeometry_TEST.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Debug\moc_calcLibMath_ARM_TEST.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -153,6 +157,9 @@
     </ClCompile>
     <ClCompile Include="Debug\moc_calcLibMatrixOp_TEST.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Release\moc_calcLibGeometry_TEST.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Release\moc_calcLibMath_ARM_TEST.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -168,6 +175,16 @@
   <ItemGroup>
     <ClInclude Include="..\src\_myheads.h" />
     <ClInclude Include="..\src\calcLibMath.h" />
+    <CustomBuild Include="calcLibGeometry_TEST.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o "$(ConfigurationName)\moc_%(Filename).cpp"  -D_CONSOLE -DUNICODE -DWIN32 -DWIN64 -DQT_DEPRECATED_WARNINGS -DSRCDIR="C:/Users/rono_/Desktop/locAlgrithom/test/" -DQT_TESTLIB_LIB -DQT_CORE_LIB -DQT_TESTCASE_BUILDDIR="C:/Users/rono_/Desktop/locAlgrithom/test" "-I." "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtTest" "-I$(QTDIR)\include\QtCore" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o "$(ConfigurationName)\moc_%(Filename).cpp"  -D_CONSOLE -DUNICODE -DWIN32 -DWIN64 -DQT_DEPRECATED_WARNINGS -DSRCDIR="C:/Users/rono_/Desktop/locAlgrithom/test/" -DQT_NO_DEBUG -DQT_TESTLIB_LIB -DQT_CORE_LIB -DQT_TESTCASE_BUILDDIR="C:/Users/rono_/Desktop/locAlgrithom/test" -DNDEBUG "-I." "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtTest" "-I$(QTDIR)\include\QtCore" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc"</Command>
+    </CustomBuild>
     <CustomBuild Include="calcLibMath_ARM_TEST.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o "$(ConfigurationName)\moc_%(Filename).cpp"  -D_CONSOLE -DUNICODE -DWIN32 -DWIN64 -DQT_DEPRECATED_WARNINGS -DSRCDIR=\"C:/Users/rono_/Desktop/locAlgrithom/test/\" -DQT_NO_DEBUG -DQT_TESTLIB_LIB -DQT_CORE_LIB -DQT_TESTCASE_BUILDDIR=\"C:/Users/rono_/Desktop/locAlgrithom/test\" -DNDEBUG "-I." "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtTest" "-I$(QTDIR)\include\QtCore" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing calcLibMath_ARM_TEST.h...</Message>

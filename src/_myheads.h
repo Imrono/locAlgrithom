@@ -28,8 +28,12 @@ enum CALC_POS_TYPE {
     TwoCenter = 2,
     Taylor = 3,
     WeightedTaylor,
-    KalmanTaylor,
+    POS_KalmanLoose,
+    POS_KalmanMedium,
+    POS_KalmanTight,
+    POS_KalmanUltraTight,
     LMedS,
+    Bilateration,
     ARM_calcPos,
     NUM_CALC_POS
 };

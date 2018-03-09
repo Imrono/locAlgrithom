@@ -412,8 +412,13 @@
     <addaction name="actionTaylorSeries"/>
     <addaction name="actionWeightedTaylor"/>
     <addaction name="separator"/>
-    <addaction name="actionKalmanTaylor"/>
+    <addaction name="actionKalmanLoose"/>
+    <addaction name="actionKalmanMedium"/>
+    <addaction name="actionKalmanTight"/>
+    <addaction name="actionKalmanUltraTight"/>
+    <addaction name="separator"/>
     <addaction name="actionLMedS"/>
+    <addaction name="actionBilateration"/>
    </widget>
    <widget class="QMenu" name="menuview">
     <property name="title">
@@ -597,12 +602,12 @@
     <string>WeightedTaylor</string>
    </property>
   </action>
-  <action name="actionKalmanTaylor">
+  <action name="actionKalmanLoose">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>KalmanTaylor</string>
+    <string>KalmanLoose</string>
    </property>
   </action>
   <action name="actioncalcTagPos_ARM">
@@ -624,6 +629,38 @@
   <action name="actionCapPix">
    <property name="text">
     <string>截图</string>
+   </property>
+  </action>
+  <action name="actionKalmanMedium">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>KalmanMedium</string>
+   </property>
+  </action>
+  <action name="actionKalmanTight">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>KalmanTight</string>
+   </property>
+  </action>
+  <action name="actionKalmanUltraTight">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>KalmanUltraTight</string>
+   </property>
+  </action>
+  <action name="actionBilateration">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Bilateration</string>
    </property>
   </action>
  </widget>

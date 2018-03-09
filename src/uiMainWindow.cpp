@@ -115,7 +115,7 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             }
             ui->canvas->setLines(tag.tagId, TRACKx_STR, tmpLines);
             */
-            qDebug() << "[@handleModelDataUpdate]" << distCount
+            qDebug() << "[@handleModelDataUpdate]" << "<" << tag.tagId << ">" << distCount
                      << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
 
             if (TRACK_METHOD::TRACK_NONE != calcTrack.calcTrackMethod) {
@@ -342,10 +342,18 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
         ui->actionTaylorSeries->setChecked(true);
     } else if (CALC_POS_TYPE::WeightedTaylor == type) {
         ui->actionWeightedTaylor->setChecked(true);
-    } else if (CALC_POS_TYPE::KalmanTaylor == type) {
-        ui->actionKalmanTaylor->setChecked(true);
+    } else if (CALC_POS_TYPE::POS_KalmanLoose == type) {
+        ui->actionKalmanLoose->setChecked(true);
+    } else if (CALC_POS_TYPE::POS_KalmanMedium == type) {
+        ui->actionKalmanMedium->setChecked(true);
+    } else if (CALC_POS_TYPE::POS_KalmanTight == type) {
+        ui->actionKalmanTight->setChecked(true);
+    } else if (CALC_POS_TYPE::POS_KalmanUltraTight == type) {
+        ui->actionKalmanUltraTight->setChecked(true);
     } else if (CALC_POS_TYPE::LMedS == type) {
         ui->actionLMedS->setChecked(true);
+    } else if (CALC_POS_TYPE::Bilateration == type) {
+        ui->actionBilateration->setChecked(true);
     } else if (CALC_POS_TYPE::ARM_calcPos == type) {
         ui->actioncalcTagPos_ARM->setChecked(true);
     } else {}
@@ -410,13 +418,31 @@ void uiMainWindow::posWeightedTaylor(bool checked) {
     Q_UNUSED(checked);
     posCalcPROCESS(CALC_POS_TYPE::WeightedTaylor);
 }
-void uiMainWindow::posKalmanTaylor(bool checked) {
+/* kalman coupled methods ****************************************************/
+void uiMainWindow::posKalmanLoose(bool checked) {
     Q_UNUSED(checked);
-    posCalcPROCESS(CALC_POS_TYPE::KalmanTaylor);
+    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanLoose);
 }
+void uiMainWindow::posKalmanMedium(bool checked) {
+    Q_UNUSED(checked);
+    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanMedium);
+}
+void uiMainWindow::posKalmanTight(bool checked) {
+    Q_UNUSED(checked);
+    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanTight);
+}
+void uiMainWindow::posKalmanUltraTight(bool checked) {
+    Q_UNUSED(checked);
+    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanUltraTight);
+}
+/*****************************************************************************/
 void uiMainWindow::posLMedS(bool checked) {
     Q_UNUSED(checked);
     posCalcPROCESS(CALC_POS_TYPE::LMedS);
+}
+void uiMainWindow::posBilateration(bool checked) {
+    Q_UNUSED(checked);
+    posCalcPROCESS(CALC_POS_TYPE::Bilateration);
 }
 // ARM VERSION /////////////////////////////////////////////////////////////////
 void uiMainWindow::posCalc_ARM(bool checked) {

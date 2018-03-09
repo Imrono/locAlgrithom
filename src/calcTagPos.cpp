@@ -265,12 +265,20 @@ locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T, l
         return calcTaylorSeries(dist, MSE);
     } else if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
         return calcWeightedTaylor(dist, MSE, lastPos, usedSensor, iterTrace, weight);
-    } else if (CALC_POS_TYPE::LMedS == calcPosType) {
-        return calcLMedS(dist, MSE, lastPos, usedSensor, iterTrace);
-    } else if (CALC_POS_TYPE::KalmanTaylor == calcPosType) {
-        return calcKalmanTight(dist, MSE, T, lastPos, kalmanData, usedSensor, iterTrace, weight);
+    } else if (CALC_POS_TYPE::POS_KalmanLoose == calcPosType) {
+        return calcKalmanCoulped(dist, MSE, T, lastPos, kalmanData, calcPosType, usedSensor, iterTrace, weight);
+    } else if (CALC_POS_TYPE::POS_KalmanMedium == calcPosType) {
+        return calcKalmanCoulped(dist, MSE, T, lastPos, kalmanData, calcPosType, usedSensor, iterTrace, weight);
+    } else if (CALC_POS_TYPE::POS_KalmanTight == calcPosType) {
+        return calcKalmanCoulped(dist, MSE, T, lastPos, kalmanData, calcPosType, usedSensor, iterTrace, weight);
+    } else if (CALC_POS_TYPE::POS_KalmanUltraTight == calcPosType) {
+        return calcKalmanCoulped(dist, MSE, T, lastPos, kalmanData, calcPosType, usedSensor, iterTrace, weight);
     } else if (CALC_POS_TYPE::ARM_calcPos == calcPosType) {
         return calcPos_ARM(dist, MSE, lastPos);
+    } else if (CALC_POS_TYPE::LMedS == calcPosType) {
+        return calcLMedS(dist, MSE, lastPos, usedSensor, iterTrace);
+    } else if (CALC_POS_TYPE::Bilateration == calcPosType) {
+        return calcBilateration(dist, MSE);
     } else {
         return {0.f, 0.f, 0.f};
     }
@@ -445,15 +453,15 @@ locationCoor calcTagPos::calcWeightedTaylor(const int *dist, dType &MSE, locatio
     return locationCoor{X[0], X[1], 0.f};
 }
 
-locationCoor calcTagPos::calcKalmanTight(const int *dist, dType &MSE, dType T, locationCoor lastPos,
-                                      oneKalmanData &kalmanData,
-                                      bool *usedSensor, QVector<QPointF> &iterTrace,
-                                      QVector<dType> &weight) {
+locationCoor calcTagPos::calcKalmanCoulped(const int *dist, dType &MSE, dType T, locationCoor lastPos,
+                                           oneKalmanData &kalmanData, CALC_POS_TYPE type,
+                                           bool *usedSensor, QVector<QPointF> &iterTrace,
+                                           QVector<dType> &weight) {
     Q_UNUSED(lastPos);
-    calcKalmanTight(dist, cfg_d->sensor.data(), T,
-                    kalmanData, fc_row,
-                    X[0], X[1], MSE,
-                    usedSensor, iterTrace, weight);
+    calcKalmanCoulped(dist, cfg_d->sensor.data(), T,
+                      kalmanData, fc_row, type,
+                      X[0], X[1], MSE,
+                      usedSensor, iterTrace, weight);
     return locationCoor{X[0], X[1], 0.f};
 }
 
@@ -461,6 +469,10 @@ locationCoor calcTagPos::calcLMedS (const int *dist, dType &MSE, locationCoor la
                                     bool *usedSensor, QVector<QPointF> &iterTrace) {
     calcLMedS(dist, cfg_d->sensor.data(), lastPos, fc_row, X[0], X[1], MSE,
               usedSensor, iterTrace);
+    return locationCoor{X[0], X[1], 0.f};
+}
+locationCoor calcTagPos::calcBilateration  (const int *dist, dType &MSE) {
+    calcBilateration(dist, cfg_d->sensor.data(), fc_row, X[0], X[1], MSE);
     return locationCoor{X[0], X[1], 0.f};
 }
 

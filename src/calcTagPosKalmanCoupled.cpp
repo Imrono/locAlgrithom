@@ -2,9 +2,10 @@
 #include <QtMath>
 
 void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sensor, dType T_in,
-                                   oneKalmanData &kalmanData, int N, KalmanCoupledType type,
+                                   oneKalmanData &kalmanData, int N, CALC_POS_TYPE type,
                                    dType &out_x, dType &out_y, dType &out_MSE,
                                    bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight) {
+    //qDebug() << type;
     iterTrace.clear();
     weight.fill(0.f, N);
 
@@ -18,22 +19,22 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
     locationCoor v_hat_t = kalmanData.v_t_1;
 
     for (int i = 0; i < N; i++) {
-        if (TIGHT == type || UTRLA_TIGHT == type) {
+        if (POS_KalmanTight == type || POS_KalmanUltraTight == type) {
             if (kalmanData.isInitialized) {
                 dType currDist_hat = calcDistance(x_hat_t, sensor[i]);
                 init_W[i] = 1.f / (0.05*qAbs(currDist_hat - distance[i]) + 1.f);
             } else {
                 init_W[i] = 1.f;
             }
-        } else if (LOOSE == type || MEDIUM == type) {
+        } else if (POS_KalmanLoose == type || POS_KalmanMedium == type) {
             init_W[i] = 1.f;
         } else {}
     }
 
     dType *x_hat = nullptr;
     dType pos_hat[2] = {x_hat_t.x, x_hat_t.y};
-    if (MEDIUM == type || UTRLA_TIGHT == type) {
-        x_hat = pos_hat;
+    if (POS_KalmanMedium == type || POS_KalmanUltraTight == type) {
+		x_hat = kalmanData.isInitialized ? pos_hat : nullptr;
     } else {
         x_hat = nullptr;
     }

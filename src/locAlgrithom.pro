@@ -46,11 +46,7 @@ SOURCES += \
     armVersion/calcTagPos_ARM.c \
     calcTagPosLMedS.cpp \
     calcTagPosBilateration.cpp \
-    calcTagPosKalmanTight.cpp \
-    calcTagPosKalmanMedium.cpp \
     calcTagPosWeightedTaylor.cpp \
-    calcTagPosKalmanLoose.cpp \
-    calcTagPosKalmanUltraTight.cpp \
     calcLibGeometry.cpp \
     calcTagPosKalmanCoupled.cpp
 

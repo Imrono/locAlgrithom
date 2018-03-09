@@ -2,6 +2,7 @@
 #include "calcLibMath_TEST.h"
 #include "calcLibMatrixOp_TEST.h"
 #include "calcLibMath_ARM_TEST.h"
+#include "calcLibGeometry_TEST.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,4 +17,7 @@ int main(int argc, char *argv[])
 
     calcLibMath_ARM_TEST armMathTest;
     QTest::qExec(&armMathTest);
+
+    calcLibGeometry_TEST geometryTest;
+    QTest::qExec(&geometryTest);
 }

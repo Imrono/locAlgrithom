@@ -36,7 +36,9 @@ SOURCES += \
     ../src/armVersion/calcLibMath_ARM.c \
     ../src/armVersion/calcTagPos_ARM.c \
     testMain.cpp \
-    calcLibMath_TEST.cpp
+    calcLibMath_TEST.cpp \
+    ../src/calcLibGeometry.cpp \
+    calcLibGeometry_TEST.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
@@ -47,7 +49,10 @@ HEADERS += \
     ../src/calcLibMath.h \
     calcLibMath_ARM_TEST.h \
     ../src/armVersion/calcTagPos_ARM.h \
-    calcLibMath_TEST.h
+    calcLibMath_TEST.h \
+    ../src/calcLibGeometry.h \
+    ../src/calcLibGeometry.h \
+    calcLibGeometry_TEST.h
 
 QMAKE_CXXFLAGS += /wd"4819"
 QMAKE_CFLAGS += /wd"4819"

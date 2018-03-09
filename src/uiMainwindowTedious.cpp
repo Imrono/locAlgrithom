@@ -19,13 +19,19 @@ void uiMainWindow::connectUi() {
     connect(ui->actionSumDist,   SIGNAL(triggered(bool)), this, SLOT(nlosSumDist(bool)));
 
     // POSITION
-    connect(ui->actionFullCentroid,   SIGNAL(triggered(bool)), this, SLOT(posFullCentroid(bool)));
-    connect(ui->actionSubLS,          SIGNAL(triggered(bool)), this, SLOT(posSubLS(bool)));
-    connect(ui->actionTwoCenter,      SIGNAL(triggered(bool)), this, SLOT(posTwoCenter(bool)));
-    connect(ui->actionTaylorSeries,   SIGNAL(triggered(bool)), this, SLOT(posTaylorSeries(bool)));
-    connect(ui->actionWeightedTaylor, SIGNAL(triggered(bool)), this, SLOT(posWeightedTaylor(bool)));
-    connect(ui->actionKalmanTaylor,   SIGNAL(triggered(bool)), this, SLOT(posKalmanTaylor(bool)));
-    connect(ui->actionLMedS,          SIGNAL(triggered(bool)), this, SLOT(posLMedS(bool)));
+    connect(ui->actionFullCentroid,    SIGNAL(triggered(bool)), this, SLOT(posFullCentroid(bool)));
+    connect(ui->actionSubLS,           SIGNAL(triggered(bool)), this, SLOT(posSubLS(bool)));
+    connect(ui->actionTwoCenter,       SIGNAL(triggered(bool)), this, SLOT(posTwoCenter(bool)));
+    connect(ui->actionTaylorSeries,    SIGNAL(triggered(bool)), this, SLOT(posTaylorSeries(bool)));
+
+    connect(ui->actionWeightedTaylor,  SIGNAL(triggered(bool)), this, SLOT(posWeightedTaylor(bool)));
+    connect(ui->actionKalmanLoose,     SIGNAL(triggered(bool)), this, SLOT(posKalmanLoose(bool)));
+    connect(ui->actionKalmanMedium,    SIGNAL(triggered(bool)), this, SLOT(posKalmanMedium(bool)));
+    connect(ui->actionKalmanTight,     SIGNAL(triggered(bool)), this, SLOT(posKalmanTight(bool)));
+    connect(ui->actionKalmanUltraTight,SIGNAL(triggered(bool)), this, SLOT(posKalmanUltraTight(bool)));
+
+    connect(ui->actionLMedS,           SIGNAL(triggered(bool)), this, SLOT(posLMedS(bool)));
+    connect(ui->actionBilateration,    SIGNAL(triggered(bool)), this, SLOT(posBilateration(bool)));
 
     // TRACK
     connect(ui->actionKalmanTrack,     SIGNAL(triggered(bool)), this, SLOT(trackKalman(bool)));
@@ -156,7 +162,16 @@ void uiMainWindow::checkData() {
         ui->actionSubLS->setDisabled(true);
         ui->actionTwoCenter->setDisabled(true);
         ui->actionTaylorSeries->setDisabled(true);
-        ui->actionKalmanTaylor->setDisabled(true);
+
+        ui->actionWeightedTaylor->setDisabled(true);
+        ui->actionKalmanLoose->setDisabled(true);
+        ui->actionKalmanMedium->setDisabled(true);
+        ui->actionKalmanTight->setDisabled(true);
+        ui->actionKalmanUltraTight->setDisabled(true);
+
+        ui->actionLMedS->setDisabled(true);
+        ui->actionBilateration->setDisabled(true);
+
         ui->actioncalcTagPos_ARM->setDisabled(true);
 
         ui->actionKalmanTrack->setDisabled(true);
@@ -172,7 +187,16 @@ void uiMainWindow::checkData() {
         ui->actionSubLS->setEnabled(true);
         ui->actionTwoCenter->setEnabled(true);
         ui->actionTaylorSeries->setEnabled(true);
-        ui->actionKalmanTaylor->setEnabled(true);
+
+        ui->actionWeightedTaylor->setEnabled(true);
+        ui->actionKalmanLoose->setEnabled(true);
+        ui->actionKalmanMedium->setEnabled(true);
+        ui->actionKalmanTight->setEnabled(true);
+        ui->actionKalmanUltraTight->setEnabled(true);
+
+        ui->actionLMedS->setEnabled(true);
+        ui->actionBilateration->setEnabled(true);
+
         ui->actioncalcTagPos_ARM->setEnabled(true);
 
         ui->actionKalmanTrack->setEnabled(true);
@@ -197,8 +221,16 @@ void uiMainWindow::resetUi(bool isPos, bool isTrack) {
         ui->actionSubLS->setChecked(false);
         ui->actionTwoCenter->setChecked(false);
         ui->actionTaylorSeries->setChecked(false);
+
         ui->actionWeightedTaylor->setChecked(false);
-        ui->actionKalmanTaylor->setChecked(false);
+        ui->actionKalmanLoose->setChecked(false);
+        ui->actionKalmanMedium->setChecked(false);
+        ui->actionKalmanTight->setChecked(false);
+        ui->actionKalmanUltraTight->setChecked(false);
+
+        ui->actionLMedS->setChecked(false);
+        ui->actionBilateration->setChecked(false);
+
         ui->actioncalcTagPos_ARM->setChecked(false);
     } else {}
 

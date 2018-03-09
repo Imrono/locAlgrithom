@@ -142,6 +142,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="calcLibGeometry.cpp" />
+    <ClCompile Include="calcTagPosBilateration.cpp" />
+    <ClCompile Include="calcTagPosKalmanCoupled.cpp" />
     <ClCompile Include="Debug\moc_uiCanvas.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -167,14 +170,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="_myheads.cpp" />
-    <ClCompile Include="calcLibDistance.cpp" />
     <ClCompile Include="calcLibMath.cpp" />
     <ClCompile Include="armVersion\calcLibMath_ARM.c" />
     <ClCompile Include="calcLibMatrixOp.cpp" />
     <ClCompile Include="calcLibMatrixOpInverse.cpp" />
     <ClCompile Include="calcTagNLOS.cpp" />
     <ClCompile Include="calcTagPos.cpp" />
-    <ClCompile Include="calcTagPosKalmanTaylor.cpp" />
     <ClCompile Include="calcTagPosLMedS.cpp" />
     <ClCompile Include="calcTagPosWeightedTaylor.cpp" />
     <ClCompile Include="armVersion\calcTagPos_ARM.c" />
@@ -193,6 +194,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\GeneratedFiles\ui_mainwindow.h" />
+    <ClInclude Include="calcLibGeometry.h" />
     <ClInclude Include="_myheads.h" />
     <ClInclude Include="calcLibDistance.h" />
     <ClInclude Include="calcLibMath.h" />

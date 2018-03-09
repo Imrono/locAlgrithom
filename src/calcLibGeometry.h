@@ -18,4 +18,8 @@ dType calcTotalAvgDistance(QVector<QLineF> &lines, int discount = 10);
 dType calcTotalDistanceSquare(QVector<QLineF> &lines, int discount = 10);
 dType calcTotalAvgDistanceSquare(QVector<QLineF> &lines, int discount = 10);
 
+void calcCross2Circle(const dType x1, const dType y1, const dType d1,
+                      const dType x2, const dType y2, const dType d2,
+                      dType &x0_1, dType &y0_1, dType &x0_2, dType &y0_2, bool &isCross);
+
 #endif // CALCDISTANCE_H
