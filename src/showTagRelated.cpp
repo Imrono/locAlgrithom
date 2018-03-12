@@ -206,6 +206,9 @@ void showTagRelated::drawLM(QPainter &painter, const QVector<locationCoor> &sens
         }
         //qDebug() << i << "drawLM" << weight[i] << usedSensor[i];
     }
+    if (isGaussPointAdded) {
+        zoomedWeight.append(weight[sensor.count()]);
+    } else {}
 
     double **matrix = new double*[w];
     for (int i = 0; i < w; i++) {
@@ -213,29 +216,36 @@ void showTagRelated::drawLM(QPainter &painter, const QVector<locationCoor> &sens
     }
     int div = 2;
     double tmpMax = 0.;
-	int zoomedCount = zoomedSensor.count();
+    int zoomedCount = zoomedSensor.count();
+    double sigma = 200.;
     for (int i = 0; i < w/div; i++) {
         for (int j = 0; j < h/div; j++) {
             QPointF p = QPointF(div*i, div*j);
             double z = 1.;
             for (int k = 0; k < zoomedCount; k++) {
                 z *= normalDistribution(p, zoomedSensor[k], zoomedDistance[k],
-                                        300.*ratio*zoom / zoomedWeight[k]);
+                                        sigma*ratio*zoom / zoomedWeight[k]) * 100.;
             }
-            matrix[i][j] = z * 100000000.;
+            // add single point with gauss distribute
+            if (isGaussPointAdded) {
+                QPointF zoomedX_hat = toZoomedPoint(x_hat, ratio, zoom, offset);
+                z *= normalDistribution(p, zoomedX_hat, 0. * ratio * zoom,
+                                        sigma*ratio*zoom / zoomedWeight[zoomedCount]) * 100.;
+            }
+            matrix[i][j] = z;
             tmpMax = matrix[i][j] > tmpMax ? matrix[i][j] : tmpMax;
         }
     }
-	// black background
-	painter.setBrush(QBrush(Qt::black));
-	painter.drawRect(0, 0, w, h);
+    // black background
+    painter.setBrush(QBrush(Qt::black));
+    painter.drawRect(0, 0, w, h);
     for (int i = 0; i < w/div; i++) {
         for (int j = 0; j < h/div; j++) {
             int gray = static_cast<int>(255. * matrix[i][j] / tmpMax);
-			if (gray > 5) {
-				painter.setPen(QPen(QColor(gray, gray, gray), div));
-				painter.drawPoint(div*i, div*j);
-			}
+            if (gray > 5) {
+                painter.setPen(QPen(QColor(gray, gray, gray), div));
+                painter.drawPoint(div*i, div*j);
+            }
         }
     }
     // clear matrix

@@ -107,6 +107,11 @@ public:
         weight = w;
     }
 
+    void setGaussPoint(bool isShowGauss, QPointF x_hat) {
+        isGaussPointAdded = isShowGauss;
+        this->x_hat = x_hat;
+    }
+
     void clearData() {
         oneTagMethod.clear();
         distance.clear();
@@ -151,6 +156,9 @@ private:
     QVector<int>  distance;
     QVector<bool> usedSensor;
     QVector<dType> weight;
+
+    bool isGaussPointAdded{false};
+    QPointF x_hat;
 
     QVector<QPointF> iterPoints;
 

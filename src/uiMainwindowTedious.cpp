@@ -25,10 +25,10 @@ void uiMainWindow::connectUi() {
     connect(ui->actionTaylorSeries,    SIGNAL(triggered(bool)), this, SLOT(posTaylorSeries(bool)));
 
     connect(ui->actionWeightedTaylor,  SIGNAL(triggered(bool)), this, SLOT(posWeightedTaylor(bool)));
-    connect(ui->actionKalmanLoose,     SIGNAL(triggered(bool)), this, SLOT(posKalmanLoose(bool)));
-    connect(ui->actionKalmanMedium,    SIGNAL(triggered(bool)), this, SLOT(posKalmanMedium(bool)));
-    connect(ui->actionKalmanTight,     SIGNAL(triggered(bool)), this, SLOT(posKalmanTight(bool)));
-    connect(ui->actionKalmanUltraTight,SIGNAL(triggered(bool)), this, SLOT(posKalmanUltraTight(bool)));
+    connect(ui->actionKalmanCoupled,   SIGNAL(triggered(bool)), this, SLOT(posKalmanCoupled(bool)));
+    connect(ui->actionKalmanGauss,     SIGNAL(triggered(bool)), this, SLOT(posKalmanGauss(bool)));
+    connect(ui->actionKalmanWeight,    SIGNAL(triggered(bool)), this, SLOT(posKalmanWeight(bool)));
+    connect(ui->actionKalmanSmooth,    SIGNAL(triggered(bool)), this, SLOT(posKalmanSmooth(bool)));
 
     connect(ui->actionLMedS,           SIGNAL(triggered(bool)), this, SLOT(posLMedS(bool)));
     connect(ui->actionBilateration,    SIGNAL(triggered(bool)), this, SLOT(posBilateration(bool)));
@@ -173,10 +173,10 @@ void uiMainWindow::checkData() {
         ui->actionTaylorSeries->setDisabled(true);
 
         ui->actionWeightedTaylor->setDisabled(true);
-        ui->actionKalmanLoose->setDisabled(true);
-        ui->actionKalmanMedium->setDisabled(true);
-        ui->actionKalmanTight->setDisabled(true);
-        ui->actionKalmanUltraTight->setDisabled(true);
+        ui->actionKalmanCoupled->setDisabled(true);
+        ui->actionKalmanGauss->setDisabled(true);
+        ui->actionKalmanWeight->setDisabled(true);
+        ui->actionKalmanSmooth->setDisabled(true);
 
         ui->actionLMedS->setDisabled(true);
         ui->actionBilateration->setDisabled(true);
@@ -198,10 +198,10 @@ void uiMainWindow::checkData() {
         ui->actionTaylorSeries->setEnabled(true);
 
         ui->actionWeightedTaylor->setEnabled(true);
-        ui->actionKalmanLoose->setEnabled(true);
-        ui->actionKalmanMedium->setEnabled(true);
-        ui->actionKalmanTight->setEnabled(true);
-        ui->actionKalmanUltraTight->setEnabled(true);
+        ui->actionKalmanCoupled->setEnabled(true);
+        ui->actionKalmanGauss->setEnabled(true);
+        ui->actionKalmanWeight->setEnabled(true);
+        ui->actionKalmanSmooth->setEnabled(true);
 
         ui->actionLMedS->setEnabled(true);
         ui->actionBilateration->setEnabled(true);
@@ -232,10 +232,10 @@ void uiMainWindow::resetUi(bool isPos, bool isTrack) {
         ui->actionTaylorSeries->setChecked(false);
 
         ui->actionWeightedTaylor->setChecked(false);
-        ui->actionKalmanLoose->setChecked(false);
-        ui->actionKalmanMedium->setChecked(false);
-        ui->actionKalmanTight->setChecked(false);
-        ui->actionKalmanUltraTight->setChecked(false);
+        ui->actionKalmanCoupled->setChecked(false);
+        ui->actionKalmanGauss->setChecked(false);
+        ui->actionKalmanWeight->setChecked(false);
+        ui->actionKalmanSmooth->setChecked(false);
 
         ui->actionLMedS->setChecked(false);
         ui->actionBilateration->setChecked(false);

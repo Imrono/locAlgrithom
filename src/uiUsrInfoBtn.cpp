@@ -96,11 +96,13 @@ void uiUsrInfoBtn::keyPressEvent(QKeyEvent *e) {
 }
 
 void uiUsrInfoBtn::contextMenuEvent(QContextMenuEvent *e) {
-    setStyleSheet("QMenu{color: black;}"
-                  "QMenu::item:selected{background-color: lightgray;}");
-    contextMenu->clear();
-    contextMenu->addAction(showML_Action);
+    if (isShowable) {
+        setStyleSheet("QMenu{color: black;}"
+                      "QMenu::item:selected{background-color: lightgray;}");
+        contextMenu->clear();
+        contextMenu->addAction(showML_Action);
 
-    contextMenu->exec(QCursor::pos());
+        contextMenu->exec(QCursor::pos());
+    } else {}
     e->accept();
 }

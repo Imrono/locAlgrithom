@@ -65,6 +65,11 @@ public:
             tags[tagId].setWeight(weight);
         }
     }
+    void setGaussPoint(int tagId, bool isShowGauss, QPointF x_hat = QPointF(0.f, 0.f)) {
+        if (tags.contains(tagId)) {
+            tags[tagId].setGaussPoint(isShowGauss, x_hat);
+        }
+    }
     void clearData(int tagId) {
         if (tags.contains(tagId)) {
             tags[tagId].clearData();
@@ -158,6 +163,7 @@ private:
     bool isShowPath{false};
     bool isShowAllPos{false};
     bool isShowLM{false};
+
     int nCount{0};
 
     void paintEvent(QPaintEvent *event);

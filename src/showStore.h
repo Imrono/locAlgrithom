@@ -57,6 +57,9 @@ struct storeTagInfo {
     QVector<QVector<QPointF>>      iterPoints;
     QVector<QVector<dType>>        weight;
 
+    QVector<QPointF>               x_hat;
+    bool                           isGaussPointAdded;
+
     QVector<QVector<locationCoor>> RawPoints;
     QVector<QVector<locationCoor>> RefinedPoints;
 
@@ -80,6 +83,8 @@ struct storeTagInfo {
         RefinedPoints.clear();
         weight.clear();
         calcPosType = CALC_POS_TYPE::POS_NONE;
+        isGaussPointAdded = false;
+        x_hat.clear();
     }
     void addOrResetMethodInfo(const QString &methodType, const QString &method);
     void reset(const QString &methodType, const QString &method);

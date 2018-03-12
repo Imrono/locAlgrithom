@@ -31,9 +31,10 @@ public:
 
     // ALL IN ONE
     CALC_POS_TYPE calcPosType{CALC_POS_TYPE::POS_NONE};
-    locationCoor calcOnePosition(const int *dist, dType &MSE, dType T, locationCoor lastPos, oneKalmanData &kalmanData,
+    locationCoor calcOnePosition(const int *dist, dType &MSE, dType T,
+                                 locationCoor lastPos, oneKalmanData &kalmanData,
                                  bool *usedSensor, QVector<QPointF> &iterTrace,
-                                 QVector<dType> &weight);
+                                 QVector<dType> &weight, QPointF &x_hat);
 
     locationCoor calcFullCentroid  (const int *dist, dType &MSE);
     locationCoor calcSubLS         (const int *dist, dType &MSE);
@@ -43,9 +44,9 @@ public:
                                     bool *usedSensor, QVector<QPointF> &iterTrace,
                                     QVector<dType> &weight);
     locationCoor calcKalmanCoulped (const int *dist, dType &MSE, dType T, locationCoor lastPos,
-                                    oneKalmanData &kalmanData, CALC_POS_TYPE type,
+                                    oneKalmanData &kalmanData, unsigned int type,
                                     bool *usedSensor, QVector<QPointF> &iterTrace,
-                                    QVector<dType> &weight);
+                                    QVector<dType> &weight, QPointF &x_hat);
     locationCoor calcLMedS         (const int *dist, dType &MSE, locationCoor lastPos,
                                     bool *usedSensor, QVector<QPointF> &iterTrace);
     locationCoor calcBilateration  (const int *dist, dType &MSE);
@@ -69,10 +70,19 @@ public:
                                    bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight);
 
 /* KALMAN COULPED METHOD *****************************************************/
+    enum KALMAN_COUPLED_TYPE{
+        NONE_COUPLED   = 0x00,
+        COUPLED        = 0x01,
+        GAUSS_COUPLED  = 0x02,
+        WEIGHT_COUPLED = 0x04,
+        SMOOTH_COUPLED = 0x08
+    };
+    unsigned int kalmanCoupledType{NONE_COUPLED};   // set @ uiMainWindow
     static void calcKalmanCoulped(const int *distance, const locationCoor *sensor, dType T_in,
-                                  oneKalmanData &kalmanData, int N, CALC_POS_TYPE type,
+                                  oneKalmanData &kalmanData, int N, unsigned int type,
                                   dType &out_x, dType &out_y, dType &out_MSE,
-                                  bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight);
+                                  bool *usedSensor, QVector<QPointF> &iterTrace,
+                                  QVector<dType> &weight, QPointF &out_x_hat);
 /*****************************************************************************/
 
     static void calcLMedS         (const int *distance, const locationCoor *sensor, locationCoor lastPos,

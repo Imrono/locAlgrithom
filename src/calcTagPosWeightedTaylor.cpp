@@ -32,7 +32,10 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 
     // clear output parameter
     iterTrace.clear();
-    weight.fill(0.f, N);
+    if (nullptr != pos_hat)
+        weight.fill(0.f, N + 1);
+    else
+        weight.fill(0.f, N);
 
     // sort distance
     int idx[MAX_SENSOR] = {0};
@@ -74,6 +77,14 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
         }
         weight[idx[i]] = W_taylor[i];
     }
+
+    int matrixN = N - nUnuseableNlos;
+    dType W_kalman = 0.f;
+    if (nullptr != pos_hat) {
+        if (matrixN > 1) W_kalman = (W_taylor[0] + W_taylor[1]) * 0.5f * 0.7f;
+        else             W_kalman = W_taylor[0] * 0.3f * 0.7f;
+        weight[N] = W_kalman;
+    } else {}
     /*
     qDebug() << distance[0] << distance[1] << distance[2] << distance[3] << distance[4] << distance[5] << ","
              << sortedDist[0] << sortedDist[1] << sortedDist[2] << sortedDist[3] << sortedDist[4] << sortedDist[5] << ","
@@ -81,7 +92,6 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
              << sortedDist[refIdx] << nUnuseableNlos
              << usedSensor[0] << usedSensor[1] << usedSensor[2] << usedSensor[3] << usedSensor[4] << usedSensor[5];
     */
-    int matrixN = N - nUnuseableNlos;
 
     /**********************************************************************/
     // initial point
@@ -117,7 +127,6 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
              << W_taylor[0] << W_taylor[1] << W_taylor[2] << W_taylor[3] << W_taylor[4] << W_taylor[5]
              << nUnuseableNlos;
 */
-
     /**********************************************************************/
     // Levenberg-Marquardt Method
     dType lamda = .3f;
@@ -141,9 +150,6 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
             //qDebug() << A_taylor[i][0] << A_taylor[i][1] << B_taylor[i];
         }
         if (nullptr != pos_hat) {
-			dType W_kalman;
-			if (matrixN > 1) W_kalman = (W_taylor[0] + W_taylor[1]) * 0.5f * 0.7f;
-			else             W_kalman = W_taylor[0] * 0.3f * 0.7f;
             dType tmpD = qSqrt(qPow(X0[0] - pos_hat[0], 2) + qPow(X0[1] - pos_hat[1], 2) + MY_EPS);
             A_taylor[matrixN][0] = ((X0[0] - pos_hat[0]) / tmpD) * W_kalman;
             A_taylor[matrixN][1] = ((X0[1] - pos_hat[1]) / tmpD) * W_kalman;

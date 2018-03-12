@@ -130,6 +130,11 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
                                     distData.get_q()->tagsData[tag.tagId].distData[distCount].distance.data(),
                                     oneTagInfo->usedSeneor[distCount].data());
             ui->canvas->setWeight(tag.tagId, oneTagInfo->weight[distCount]);
+            if (oneTagInfo->isGaussPointAdded) {
+                ui->canvas->setGaussPoint(tag.tagId, true, oneTagInfo->x_hat[distCount]);
+            } else {
+                ui->canvas->setGaussPoint(tag.tagId, false);
+            }
 
             ui->canvas->setIterPoints(tag.tagId, oneTagInfo->iterPoints[distCount]);
             setStatusIter(oneTagInfo->iterPoints[distCount].count(),
@@ -331,7 +336,7 @@ void uiMainWindow::nlosSumDist(bool checked) {
 /***********************************************************/
 // POSITION
 void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
-    resetUi(true, false);
+    resetUi(true, false);   // reset pos checked, not track
     if (CALC_POS_TYPE::FullCentroid == type) {
         ui->actionFullCentroid->setChecked(true);
     } else if (CALC_POS_TYPE::SubLS == type) {
@@ -342,14 +347,86 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
         ui->actionTaylorSeries->setChecked(true);
     } else if (CALC_POS_TYPE::WeightedTaylor == type) {
         ui->actionWeightedTaylor->setChecked(true);
-    } else if (CALC_POS_TYPE::POS_KalmanLoose == type) {
-        ui->actionKalmanLoose->setChecked(true);
-    } else if (CALC_POS_TYPE::POS_KalmanMedium == type) {
-        ui->actionKalmanMedium->setChecked(true);
-    } else if (CALC_POS_TYPE::POS_KalmanTight == type) {
-        ui->actionKalmanTight->setChecked(true);
-    } else if (CALC_POS_TYPE::POS_KalmanUltraTight == type) {
-        ui->actionKalmanUltraTight->setChecked(true);
+    } else if (CALC_POS_TYPE::POS_KalmanCoupled == type) {
+        if (calcPos.kalmanCoupledType & calcTagPos::COUPLED) {
+            calcPos.kalmanCoupledType = calcTagPos::NONE_COUPLED;
+            ui->actionKalmanCoupled->setChecked(false);
+        } else {
+            calcPos.kalmanCoupledType = calcTagPos::COUPLED;
+            ui->actionKalmanCoupled->setChecked(true);
+        }
+    } else if (CALC_POS_TYPE::POS_KalmanGauss == type) {
+        if (calcPos.kalmanCoupledType & calcTagPos::COUPLED) {
+            ui->actionKalmanCoupled->setChecked(true);
+            if (calcPos.kalmanCoupledType & calcTagPos::GAUSS_COUPLED) {
+                calcPos.kalmanCoupledType &= ~calcTagPos::GAUSS_COUPLED;
+                ui->actionKalmanGauss->setChecked(false);
+            } else {
+                calcPos.kalmanCoupledType |= calcTagPos::GAUSS_COUPLED;
+                ui->actionKalmanGauss->setChecked(true);
+            }
+            if (calcPos.kalmanCoupledType & calcTagPos::WEIGHT_COUPLED) {
+                ui->actionKalmanWeight->setChecked(true);
+            } else {
+                ui->actionKalmanWeight->setChecked(false);
+            }
+            if (calcPos.kalmanCoupledType & calcTagPos::SMOOTH_COUPLED) {
+                ui->actionKalmanSmooth->setChecked(true);
+            } else {
+                ui->actionKalmanSmooth->setChecked(false);
+            }
+        } else {
+            calcPos.kalmanCoupledType = calcTagPos::NONE_COUPLED;
+            ui->actionKalmanGauss->setChecked(false);
+        }
+    } else if (CALC_POS_TYPE::POS_KalmanWeight == type) {
+        if (calcPos.kalmanCoupledType & calcTagPos::COUPLED) {
+            ui->actionKalmanCoupled->setChecked(true);
+            if (calcPos.kalmanCoupledType & calcTagPos::GAUSS_COUPLED) {
+                ui->actionKalmanGauss->setChecked(true);
+            } else {
+                ui->actionKalmanGauss->setChecked(false);
+            }
+            if (calcPos.kalmanCoupledType & calcTagPos::WEIGHT_COUPLED) {
+                calcPos.kalmanCoupledType &= ~calcTagPos::WEIGHT_COUPLED;
+                ui->actionKalmanWeight->setChecked(false);
+            } else {
+                calcPos.kalmanCoupledType |= calcTagPos::WEIGHT_COUPLED;
+                ui->actionKalmanWeight->setChecked(true);
+            }
+            if (calcPos.kalmanCoupledType & calcTagPos::SMOOTH_COUPLED) {
+                ui->actionKalmanSmooth->setChecked(true);
+            } else {
+                ui->actionKalmanSmooth->setChecked(false);
+            }
+        } else {
+            calcPos.kalmanCoupledType = calcTagPos::NONE_COUPLED;
+            ui->actionKalmanGauss->setChecked(false);
+        }
+    } else if (CALC_POS_TYPE::POS_KalmanSmooth == type) {
+        if (calcPos.kalmanCoupledType & calcTagPos::COUPLED) {
+            ui->actionKalmanCoupled->setChecked(true);
+            if (calcPos.kalmanCoupledType & calcTagPos::GAUSS_COUPLED) {
+                ui->actionKalmanGauss->setChecked(true);
+            } else {
+                ui->actionKalmanGauss->setChecked(false);
+            }
+            if (calcPos.kalmanCoupledType & calcTagPos::WEIGHT_COUPLED) {
+                ui->actionKalmanWeight->setChecked(true);
+            } else {
+                ui->actionKalmanWeight->setChecked(false);
+            }
+            if (calcPos.kalmanCoupledType & calcTagPos::SMOOTH_COUPLED) {
+                calcPos.kalmanCoupledType &= ~calcTagPos::SMOOTH_COUPLED;
+                ui->actionKalmanSmooth->setChecked(false);
+            } else {
+                calcPos.kalmanCoupledType |= calcTagPos::SMOOTH_COUPLED;
+                ui->actionKalmanSmooth->setChecked(true);
+            }
+        } else {
+            calcPos.kalmanCoupledType = calcTagPos::NONE_COUPLED;
+            ui->actionKalmanGauss->setChecked(false);
+        }
     } else if (CALC_POS_TYPE::LMedS == type) {
         ui->actionLMedS->setChecked(true);
     } else if (CALC_POS_TYPE::Bilateration == type) {
@@ -419,21 +496,21 @@ void uiMainWindow::posWeightedTaylor(bool checked) {
     posCalcPROCESS(CALC_POS_TYPE::WeightedTaylor);
 }
 /* kalman coupled methods ****************************************************/
-void uiMainWindow::posKalmanLoose(bool checked) {
+void uiMainWindow::posKalmanCoupled(bool checked) {
     Q_UNUSED(checked);
-    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanLoose);
+    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanCoupled);
 }
-void uiMainWindow::posKalmanMedium(bool checked) {
+void uiMainWindow::posKalmanGauss(bool checked) {
     Q_UNUSED(checked);
-    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanMedium);
+    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanGauss);
 }
-void uiMainWindow::posKalmanTight(bool checked) {
+void uiMainWindow::posKalmanWeight(bool checked) {
     Q_UNUSED(checked);
-    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanTight);
+    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanWeight);
 }
-void uiMainWindow::posKalmanUltraTight(bool checked) {
+void uiMainWindow::posKalmanSmooth(bool checked) {
     Q_UNUSED(checked);
-    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanUltraTight);
+    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanSmooth);
 }
 /*****************************************************************************/
 void uiMainWindow::posLMedS(bool checked) {

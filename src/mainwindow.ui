@@ -426,10 +426,10 @@
     <addaction name="actionTaylorSeries"/>
     <addaction name="actionWeightedTaylor"/>
     <addaction name="separator"/>
-    <addaction name="actionKalmanLoose"/>
-    <addaction name="actionKalmanMedium"/>
-    <addaction name="actionKalmanTight"/>
-    <addaction name="actionKalmanUltraTight"/>
+    <addaction name="actionKalmanCoupled"/>
+    <addaction name="actionKalmanGauss"/>
+    <addaction name="actionKalmanWeight"/>
+    <addaction name="actionKalmanSmooth"/>
     <addaction name="separator"/>
     <addaction name="actionLMedS"/>
     <addaction name="actionBilateration"/>
@@ -616,12 +616,12 @@
     <string>WeightedTaylor</string>
    </property>
   </action>
-  <action name="actionKalmanLoose">
+  <action name="actionKalmanCoupled">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>KalmanLoose</string>
+    <string>KalmanCoupled</string>
    </property>
   </action>
   <action name="actioncalcTagPos_ARM">
@@ -645,28 +645,28 @@
     <string>截图</string>
    </property>
   </action>
-  <action name="actionKalmanMedium">
+  <action name="actionKalmanGauss">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>KalmanMedium</string>
+    <string>KalmanGauss</string>
    </property>
   </action>
-  <action name="actionKalmanTight">
+  <action name="actionKalmanWeight">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>KalmanTight</string>
+    <string>KalmanWeight</string>
    </property>
   </action>
-  <action name="actionKalmanUltraTight">
+  <action name="actionKalmanSmooth">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>KalmanUltraTight</string>
+    <string>KalmanSmooth</string>
    </property>
   </action>
   <action name="actionBilateration">

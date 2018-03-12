@@ -106,10 +106,10 @@ private slots:
     void posTwoCenter(bool checked);
     void posTaylorSeries(bool checked);
     void posWeightedTaylor(bool checked);
-    void posKalmanLoose(bool checked);
-    void posKalmanMedium(bool checked);
-    void posKalmanTight(bool checked);
-    void posKalmanUltraTight(bool checked);
+    void posKalmanCoupled(bool checked);
+    void posKalmanGauss(bool checked);
+    void posKalmanWeight(bool checked);
+    void posKalmanSmooth(bool checked);
     void posLMedS(bool checked);
     void posBilateration(bool checked);
 
