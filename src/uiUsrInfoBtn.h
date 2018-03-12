@@ -16,6 +16,7 @@ public:
     int  getTagId()    { return tagId;}
     bool getShowable() { return isShowable;}
     void setShowable(bool in) { isShowable = in; syncShowable();}
+    void setShowPos(bool isShow, QPointF real = QPointF(0.f, 0.f), QPointF canvas = QPointF(0.f, 0.f));
 
     void setColorA(const QColor &color) {colorA = color; isColorA_ready = true;}
     void clrColorA() {isColorA_ready = false;}
@@ -40,6 +41,10 @@ private:
     QMenu *contextMenu{nullptr};
     QAction *showML_Action{nullptr};
     bool isShowingML{false};
+
+    bool isShowPos{false};
+    QPointF posReal;
+    QPointF posCanvas;
 };
 
 #endif // UIUSRINFOBTN_H

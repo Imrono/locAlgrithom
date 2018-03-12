@@ -64,6 +64,7 @@ void dataDistanceLog::loadNewFile_1(const QString &fileName) {
                 if (!q->tagsData.contains(tagId)) {
                     q->tagsData.insert(tagId, oneTag(tagId));
                 }
+                // TODO: refine the distance to 2D from 3D using Pythagoras
                 q->tagsData[tagId].distData.append(tmpLogData);
                 //qDebug() << "dataDistanceLog::loadNewFile_1 $>" << count << tagId << q->tagsData.count() << tmpLogData.toString();
                 count ++;
@@ -124,6 +125,7 @@ void dataDistanceLog::loadNewFile_2(const QString &fileName) {
                 oneTag tmpTag(tagId);
                 q->tagsData.insert(tagId, tmpTag);
             }
+            // TODO: refine the distance to 2D from 3D using Pythagoras
             q->tagsData[tagId].distData.append(tmpLogData);
             //qDebug() << q->tagsData[tagId].tagId << tmpLogData.toString();
         }

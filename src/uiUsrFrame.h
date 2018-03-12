@@ -23,6 +23,9 @@ public:
     void setBtnColorA(int tagId, const QColor &color);
     void clrBtnColorA(int tagId);
 
+    void setBtnToolTip(int tagId, bool isShowPos,
+                       QPointF real = QPointF(), QPointF canvas = QPointF());
+
 signals:
     void oneUsrBtnClicked_siganl(int tagId, bool isShowable);
     void oneUsrShowML_siganl(int tagId, bool isShowable);

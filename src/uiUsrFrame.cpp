@@ -149,3 +149,11 @@ void uiUsrFrame::oneUsrShowML_slot(int tagId) {
 
     emit oneUsrShowML_siganl(tagId, -1 != tagShowLM);
 }
+
+void uiUsrFrame::setBtnToolTip(int tagId, bool isShowPos, QPointF real, QPointF canvas) {
+    for (int i = 0; i < usrBtns.count(); i++) {
+        if (usrBtns[i]->getTagId() == tagId) {
+            usrBtns[i]->setShowPos(isShowPos, real, canvas);
+        }
+    }
+}

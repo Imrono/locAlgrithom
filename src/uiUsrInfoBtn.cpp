@@ -1,6 +1,7 @@
 #include "uiUsrInfoBtn.h"
 #include <QPainter>
 #include <QKeyEvent>
+#include <QToolTip>
 
 uiUsrInfoBtn::uiUsrInfoBtn(int tagId, QWidget *parent) :
     tagId{tagId}, QToolButton(parent) {
@@ -65,7 +66,9 @@ void uiUsrInfoBtn::syncShowable() {
     if (isShowable) {
         setStyleSheet("QToolButton{background-color:GhostWhite;}");
     } else {
+        isShowPos = false;
         setStyleSheet("QToolButton{background-color:DimGray;}");
+        setToolTip("");
     }
 }
 
@@ -105,4 +108,18 @@ void uiUsrInfoBtn::contextMenuEvent(QContextMenuEvent *e) {
         contextMenu->exec(QCursor::pos());
     } else {}
     e->accept();
+}
+
+void uiUsrInfoBtn::setShowPos(bool isShow, QPointF real, QPointF canvas) {
+    isShowPos = isShow;
+    posReal = real;
+    posCanvas = canvas;
+    if (isShowPos) {
+        setToolTip(QString("real:(%1,%2)\nshow:(%3,%4)").arg(posReal.x()).arg(posReal.y())
+                   .arg(posCanvas.x()).arg(posCanvas.y()));
+        setToolTipDuration((int)(((unsigned int)(-1)) >> 1));
+    } else {
+        setToolTip("");
+        setToolTipDuration(0);
+    }
 }

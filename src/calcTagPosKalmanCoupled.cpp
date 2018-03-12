@@ -26,6 +26,7 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
         if (WEIGHT_COUPLED & type) {
             if (kalmanData.isInitialized) {
                 dType currDist_hat = calcDistance(x_hat_t, sensor[i]);
+                // TODO: refine the weight
                 init_W[i] = 1.f / (0.005*qAbs(currDist_hat - distance[i]) + 1.f);
             } else {}
         } else {}
@@ -59,14 +60,14 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
         kalmanData.v_t = {0.f, 0.f, 0.f};
         kalmanData.isInitialized = true;
     } else {
-        //if (NONE_COUPLED == type) {
+        if (NONE_COUPLED == type) {
             kalmanData.x_t = z_x_t_meas;
             kalmanData.v_t = {0.f, 0.f, 0.f};
-        //} else {
-        //    kalmanData.x_t = x_hat_t * (1.f - kalmanData.K) + z_x_t_meas * kalmanData.K;
-        //    kalmanData.v_t = v_hat_t * (1.f - kalmanData.K) +
-        //            (kalmanData.x_t - kalmanData.x_t_1) / T_diff * kalmanData.K;
-        //}
+        } else {
+            kalmanData.x_t = x_hat_t * (1.f - kalmanData.K) + z_x_t_meas * kalmanData.K;
+            kalmanData.v_t = v_hat_t * (1.f - kalmanData.K) +
+                    (kalmanData.x_t - kalmanData.x_t_1) / T_diff * kalmanData.K;
+        }
     }
 
     kalmanData.x_t_1 = kalmanData.x_t;
@@ -74,8 +75,12 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
     kalmanData.Time = T_in;
 
     // output
-    out_x = kalmanData.x_t.x;
-    out_y = kalmanData.x_t.y;
+    // TODO: using measured value as output for analyze.
+    //       using kalman result as finial solution.
+    //out_x = kalmanData.x_t.x;
+    //out_y = kalmanData.x_t.y;
+    out_x = z_x_t_meas.x;
+    out_y = z_x_t_meas.y;
     out_MSE = mse;
     out_x_hat = x_hat_t.toQPointF();
 }

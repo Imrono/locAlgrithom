@@ -205,6 +205,8 @@ void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
     trackParam.Pxx = Px_pri_t - Px_pri_t * recParam.Kx;
     trackParam.Pvv = Pv_pri_t - Pv_pri_t * recParam.Kv;
 
+    // TODO: smooth the v, such as using complementary filter
+    //       or using average moving for acceleration
     dType v_mod = qSqrt(trackParam.v_t.x * trackParam.v_t.x
                       + trackParam.v_t.y * trackParam.v_t.y);
     v_mod -= 90.f;

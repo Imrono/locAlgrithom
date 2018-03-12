@@ -103,6 +103,9 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             if (CALC_POS_TYPE::POS_NONE != calcPos.calcPosType) {
                 ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
                 ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
+
+                ui->UsrFrm->setBtnToolTip(tag.tagId, true,
+                                          oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
             } else {}
             //QPointF tmpOK = tag.distData[distCount].p_t.toQPointF();
             //tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - tag.distData[distCount].p_t.toQPointF();
