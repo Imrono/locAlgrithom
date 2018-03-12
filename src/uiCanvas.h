@@ -95,6 +95,11 @@ public:
         isShowTrace = !isShowTrace;
         return isShowTrace;
     }
+    bool reverseShowCross() {
+        isShowCross = !isShowCross;
+        return isShowCross;
+    }
+
     void setShowLM(bool lm) {
         isShowLM = lm;
     }
@@ -139,6 +144,7 @@ private:
     bool isShowRadiusBold{false};
     int  boldRadiusIdx{-1};
     bool isShowTrace{false};
+    bool isShowCross{false};
 
     dType ratioShow{1.f};
     QPoint center;

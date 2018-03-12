@@ -229,6 +229,9 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
             tag.drawCircleBold(painter, cfg_d->sensor[boldRadiusIdx], boldRadiusIdx,
                                ratioShow, zoom(), center);
         }
+        if (isShowCross) {
+            tag.drawCross(painter, cfg_d->sensor, ratioShow, zoom(), center);
+        }
 
         tag.drawLine(painter, ratioShow, zoom(), center);
         tag.drawPoint(painter, ratioShow, zoom(), center);

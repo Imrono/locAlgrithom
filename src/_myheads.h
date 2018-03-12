@@ -32,6 +32,7 @@ enum CALC_POS_TYPE {
     POS_KalmanMedium,
     POS_KalmanTight,
     POS_KalmanUltraTight,
+    POS_KalmanDistanceFilter,
     LMedS,
     Bilateration,
     ARM_calcPos,

@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>900</x>
-      <y>70</y>
+      <y>90</y>
       <width>61</width>
       <height>23</height>
      </rect>
@@ -37,7 +37,7 @@
     <property name="geometry">
      <rect>
       <x>830</x>
-      <y>100</y>
+      <y>120</y>
       <width>61</width>
       <height>23</height>
      </rect>
@@ -66,7 +66,7 @@
     <property name="geometry">
      <rect>
       <x>900</x>
-      <y>100</y>
+      <y>120</y>
       <width>61</width>
       <height>23</height>
      </rect>
@@ -79,7 +79,7 @@
     <property name="geometry">
      <rect>
       <x>900</x>
-      <y>130</y>
+      <y>150</y>
       <width>61</width>
       <height>23</height>
      </rect>
@@ -107,7 +107,7 @@
     <property name="geometry">
      <rect>
       <x>900</x>
-      <y>40</y>
+      <y>60</y>
       <width>61</width>
       <height>23</height>
      </rect>
@@ -120,7 +120,7 @@
     <property name="geometry">
      <rect>
       <x>830</x>
-      <y>130</y>
+      <y>150</y>
       <width>61</width>
       <height>23</height>
      </rect>
@@ -315,7 +315,7 @@
     <property name="geometry">
      <rect>
       <x>830</x>
-      <y>40</y>
+      <y>60</y>
       <width>61</width>
       <height>23</height>
      </rect>
@@ -328,7 +328,7 @@
     <property name="geometry">
      <rect>
       <x>830</x>
-      <y>70</y>
+      <y>90</y>
       <width>61</width>
       <height>23</height>
      </rect>
@@ -357,7 +357,7 @@
     <property name="geometry">
      <rect>
       <x>830</x>
-      <y>160</y>
+      <y>180</y>
       <width>61</width>
       <height>20</height>
      </rect>
@@ -367,7 +367,7 @@
     <property name="geometry">
      <rect>
       <x>900</x>
-      <y>160</y>
+      <y>180</y>
       <width>61</width>
       <height>23</height>
      </rect>
@@ -377,6 +377,19 @@
     </property>
     <property name="autoDefault">
      <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="showCross">
+    <property name="geometry">
+     <rect>
+      <x>830</x>
+      <y>30</y>
+      <width>61</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>显示交点</string>
     </property>
    </widget>
    <zorder>showPath</zorder>
@@ -392,6 +405,7 @@
    <zorder>canvas</zorder>
    <zorder>distCountEdit</zorder>
    <zorder>gotoCount</zorder>
+   <zorder>showCross</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

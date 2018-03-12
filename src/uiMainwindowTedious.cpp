@@ -81,6 +81,15 @@ void uiMainWindow::connectUi() {
         distCount ++;
         handleModelDataUpdate(false);
     });
+
+    connect(ui->showCross, &QPushButton::clicked, this, [this](void) {
+        if (!ui->canvas->reverseShowCross()) {
+            ui->showCross->setText("显示交点");
+        } else {
+            ui->showCross->setText("隐藏交点");
+        }
+        handleModelDataUpdate(false);
+    });
     connect(ui->allPos, &QPushButton::clicked, this, [this](void) {
         if (!ui->canvas->reverseShowAllPos()) {
             ui->allPos->setText("显示raw");

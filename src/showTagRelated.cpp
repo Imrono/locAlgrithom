@@ -1,5 +1,6 @@
 ﻿#include "showTagRelated.h"
 #include "calcLibMath.h"
+#include "calcLibGeometry.h"
 #include <QtMath>
 
 QList<oneTagView> tagsView::viewDatabase;
@@ -161,6 +162,36 @@ void showTagRelated::drawCircleBold(QPainter &painter, const locationCoor &senso
                         distance[distIdx] * ratio * zoom, distance[distIdx] * ratio * zoom);
 }
 
+void showTagRelated::drawCross(QPainter &painter, const QVector<locationCoor> &sensor,
+                               dType ratio, dType zoom, QPointF offset) const {
+    dType x0_1, x0_2, y0_1, y0_2;
+    bool isCross;
+    for (int i = 0; i < distance.count(); i++) {
+        for (int j = i+1; j < distance.count(); j++) {
+            dType x1 = sensor[i].x;
+            dType y1 = sensor[i].y;
+            dType d1 = distance[i];
+            dType x2 = sensor[j].x;
+            dType y2 = sensor[j].y;
+            dType d2 = distance[j];
+            bool ans = calcCross2Circle(x1, y1, d1, x2, y2, d2,
+                                        x0_1, y0_1, x0_2, y0_2, isCross);
+
+            if (ans) {
+                if (isCross) {
+                    drawCross(painter, toZoomedPoint(QPointF(x0_1, y0_1), ratio, zoom, offset),
+                              tagView.color[0], 3.f);
+                    drawCross(painter, toZoomedPoint(QPointF(x0_2, y0_2), ratio, zoom, offset),
+                              tagView.color[0], 3.f);
+                } else {
+                    drawCross(painter, toZoomedPoint(QPointF(x0_1, y0_1), ratio, zoom, offset),
+                              QColor(Qt::black), 3.f);
+                }
+            }
+        }
+    }
+}
+
 void showTagRelated::drawLM(QPainter &painter, const QVector<locationCoor> &sensor, int w, int h,
                             dType ratio, dType zoom, QPointF offset) const {
     QVector<QPointF> zoomedSensor;
@@ -212,4 +243,17 @@ void showTagRelated::drawLM(QPainter &painter, const QVector<locationCoor> &sens
         delete []matrix[i];
     }
     delete []matrix;
+}
+
+void showTagRelated::drawCross(QPainter &painter, const QPointF center, const QColor &color, dType r) {
+    QPointF a1 = center + QPointF(-r, -r);
+    QPointF b1 = center + QPointF(r, r);
+    QPointF a2 = center + QPointF(r, -r);
+    QPointF b2 = center + QPointF(-r, r);
+
+    QPen tmpPen = painter.pen();
+    painter.setPen(QPen(color));
+    painter.drawLine(a1, b1);
+    painter.drawLine(a2, b2);
+    painter.setPen(tmpPen);
 }
