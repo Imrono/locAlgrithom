@@ -77,23 +77,25 @@ void uiCanvas::setDistanceData(const distanceData *dist_q) {
 void uiCanvas::syncWithUiFrame(uiUsrFrame *frm) {
     QList<int> showableTags = frm->getShowableTags();
     for (auto it = tags.begin(); it != tags.end();) {
+        // if tagId is enabled and is showing, discard it
         if (showableTags.contains(it.key())) {
             ++it;
+        // if tagId is not enabled but is showing, stop showing
         } else {
             qDebug() << "[@uiCanvas::syncWithUiFrame] erase showTagRelated tagId:" << it.key();
-            frm->clrBtnColorA(it.key());
             showTagRelated::eraseTagId(it.key());
             it = tags.erase(it);
         }
     }
 
     foreach (int tagId, showableTags) {
+        // if tagId is enabled but not showing, show it
         if (!tags.contains(tagId)) {
             qDebug() << "[@uiCanvas::syncWithUiFrame] insert showTagRelated tagId:" << tagId;
             tags.insert(tagId, showTagRelated{tagId});
             showTagRelated::recordTagId(tagId);
             tags[tagId].setTagView();
-            frm->setBtnColorA(tagId, tags[tagId].getTagView().color[0]);
+            frm->setBtnColorSample(tagId, tags[tagId].getTagView().color[0]);
         }
     }
 

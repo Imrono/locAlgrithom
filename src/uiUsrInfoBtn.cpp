@@ -79,7 +79,7 @@ void uiUsrInfoBtn::paintEvent(QPaintEvent *event) {
     painter.setRenderHint(QPainter::Antialiasing, true);
 
     painter.setPen(QPen(Qt::NoPen));
-    painter.setBrush(QBrush(colorA));
+    painter.setBrush(QBrush(colorSample));
     if (isShowable) {
         painter.drawEllipse(QPointF{5.f, 5.f}, 3, 3);
     }

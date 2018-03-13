@@ -18,25 +18,24 @@ public:
     void setShowable(bool in) { isShowable = in; syncShowable();}
     void setShowPos(bool isShow, QPointF real = QPointF(0.f, 0.f), QPointF canvas = QPointF(0.f, 0.f));
 
-    void setColorA(const QColor &color) {colorA = color; isColorA_ready = true;}
-    void clrColorA() {isColorA_ready = false;}
+    void setColorSample(const QColor &color) {colorSample = color;}
 signals:
     void oneUsrBtnClicked(int tagId);
-    void oneUsrShowML(int tagId);
+    void oneUsrShowML(int tagId);   // ML -> maximum likehood
 
 private:
     void initial();
     void syncShowable();
 
     int tagId;
-    bool isShowable{true};
+    bool isShowable{true};  // if enabled, autochanged during btn click
+                            // also setShowable can change it
 
     void paintEvent(QPaintEvent *event);
     void keyPressEvent (QKeyEvent *e);
     void contextMenuEvent(QContextMenuEvent *e);
 
-    QColor colorA;
-    bool isColorA_ready{false};
+    QColor colorSample;
 
     QMenu *contextMenu{nullptr};
     QAction *showML_Action{nullptr};

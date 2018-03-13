@@ -79,18 +79,10 @@ QList<int> uiUsrFrame::getShowableTags() {
     return ans;
 }
 
-void uiUsrFrame::setBtnColorA(int tagId, const QColor &color) {
+void uiUsrFrame::setBtnColorSample(int tagId, const QColor &color) {
     for (int i = 0; i < usrBtns.count(); i++) {
         if (usrBtns[i]->getTagId() == tagId) {
-            usrBtns[i]->setColorA(color);
-        }
-    }
-}
-
-void uiUsrFrame::clrBtnColorA(int tagId) {
-    for (int i = 0; i < usrBtns.count(); i++) {
-        if (usrBtns[i]->getTagId() == tagId) {
-            usrBtns[i]->clrColorA();
+            usrBtns[i]->setColorSample(color);
         }
     }
 }
@@ -98,14 +90,32 @@ void uiUsrFrame::clrBtnColorA(int tagId) {
 void uiUsrFrame::oneUsrBtnClicked_slot(int tagId) {
     for (int i = 0; i < usrBtns.count(); i++) {
         if (usrBtns[i]->getTagId() == tagId) {
-            if (usrBtns[i]->getShowable()) {
+            // if not enabled, try to enable it
+            if (usrBtns[i]->getShowable()) {    // isShowable is changed during btn click
+                // pool is full, discard the command
                 if (!MAX_SHOWABLE(nShowableBtns + 1)) {
                     qDebug() << "[@uiUsrFrame::oneUsrBtnClicked_slot] reject show, tagId:" << tagId;
                     usrBtns[i]->setShowable(false);
+                // pool is not full, enable the button
                 } else {
+                    // max likehood show model, disable old tag and enable this tag
+                    if (-1 != tagShowLM && tagId != tagShowLM) {
+                        for (int j = 0; j < usrBtns.count(); j++) {
+                            if(usrBtns[j]->getTagId() == tagShowLM) {
+                                usrBtns[j]->setShowable(false);
+                                emit oneUsrBtnClicked_siganl(tagShowLM, false);
+                                nShowableBtns --;
+                                break;
+                            }
+                        }
+                        tagShowLM = tagId;
+                    // normal show model, do nothing
+                    } else {}
+
                     nShowableBtns ++;
                     emit oneUsrBtnClicked_siganl(tagId, true);
                 }
+            // if enabled, disable it
             } else {
                 emit oneUsrBtnClicked_siganl(tagId, false);
                 nShowableBtns --;
@@ -121,32 +131,23 @@ void uiUsrFrame::oneUsrShowML_slot(int tagId) {
         tagShowLM = tagId;
     }
 
-    for (int i = 0; i < usrBtns.count(); i++) {
-        if (usrBtns[i]->getTagId() != tagId) {
-            if (usrBtns[i]->getShowable()) {    //disable all usr's show
-                usrBtns[i]->setShowable(false);
-                emit oneUsrBtnClicked_siganl(tagId, false);
-                nShowableBtns --;
-            } else {}
-        }
-    }
-
+    // disable all tags without this tagId
     for (int i = 0; i < usrBtns.count(); i++) {
         if (usrBtns[i]->getTagId() == tagId) {
             if (!usrBtns[i]->getShowable()) {
                 usrBtns[i]->setShowable(true);
                 nShowableBtns ++;
+                emit oneUsrBtnClicked_siganl(tagId, true);
             }
-            emit oneUsrBtnClicked_siganl(tagId, true);
-		} else {
-			if (usrBtns[i]->getShowable()) {
-				usrBtns[i]->setShowable(false);
+        } else {
+            if (usrBtns[i]->getShowable()) {
+                usrBtns[i]->setShowable(false);
+                emit oneUsrBtnClicked_siganl(tagId, false);
                 nShowableBtns --;
-			}
-			emit oneUsrBtnClicked_siganl(tagId, false);
-		}
+            }
+        }
     }
-
+    // notice the ui to check to Max Likehood model
     emit oneUsrShowML_siganl(tagId, -1 != tagShowLM);
 }
 

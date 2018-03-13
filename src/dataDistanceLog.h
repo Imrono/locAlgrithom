@@ -23,9 +23,8 @@ struct oneTag {
 };
 
 struct distanceData {
-    //QVector<labelDistance> dist;
-    QMap<int, oneTag> tagsData;
-    bool isInitialized{false};
+    QMap<int, oneTag> tagsData; // tag's distance
+    bool isInitialized{false};  // data ready
 };
 
 class dataDistanceLog

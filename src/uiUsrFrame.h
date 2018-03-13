@@ -20,8 +20,7 @@ public:
     bool isShowable(int tagId);
     QList<int> getShowableTags();
 
-    void setBtnColorA(int tagId, const QColor &color);
-    void clrBtnColorA(int tagId);
+    void setBtnColorSample(int tagId, const QColor &color);
 
     void setBtnToolTip(int tagId, bool isShowPos,
                        QPointF real = QPointF(), QPointF canvas = QPointF());
