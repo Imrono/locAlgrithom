@@ -105,8 +105,10 @@ public:
         return isShowCross;
     }
 
-    void setShowLM(bool lm) {
-        isShowLM = lm;
+    void setShowLM(bool lm) { isShowLM = lm;}
+    bool getShowLM() { return isShowLM;}
+    void setSigmaLM(int sigma) {
+        showTagRelated::setSigmaLM(sigma);
     }
 
     void loadPicture(QString path);

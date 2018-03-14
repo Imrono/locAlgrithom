@@ -3,6 +3,8 @@
 #include "calcLibGeometry.h"
 #include <QtMath>
 
+dType showTagRelated::sigmaLM = 0.f;
+
 QList<oneTagView> tagsView::viewDatabase;
 int tagsView::count = 0;
 QMap<int, oneTagView> showTagRelated::tagViewData;
@@ -217,20 +219,19 @@ void showTagRelated::drawLM(QPainter &painter, const QVector<locationCoor> &sens
     int div = 2;
     double tmpMax = 0.;
     int zoomedCount = zoomedSensor.count();
-    double sigma = 200.;
     for (int i = 0; i < w/div; i++) {
         for (int j = 0; j < h/div; j++) {
             QPointF p = QPointF(div*i, div*j);
             double z = 1.;
             for (int k = 0; k < zoomedCount; k++) {
                 z *= normalDistribution(p, zoomedSensor[k], zoomedDistance[k],
-                                        sigma*ratio*zoom / zoomedWeight[k]) * 100.;
+                                        sigmaLM*ratio*zoom / zoomedWeight[k]) * 100.;
             }
             // add single point with gauss distribute
             if (isGaussPointAdded) {
                 QPointF zoomedX_hat = toZoomedPoint(x_hat, ratio, zoom, offset);
                 z *= normalDistribution(p, zoomedX_hat, 0. * ratio * zoom,
-                                        sigma*ratio*zoom / zoomedWeight[zoomedCount]) * 100.;
+                                        sigmaLM*ratio*zoom / zoomedWeight[zoomedCount]) * 100.;
             }
             matrix[i][j] = z;
             tmpMax = matrix[i][j] > tmpMax ? matrix[i][j] : tmpMax;

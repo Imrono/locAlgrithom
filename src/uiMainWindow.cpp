@@ -9,7 +9,7 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setWindowIcon(QIcon("../resource/icon/locAlg.png"));
+    setWindowIcon(QIcon(":/resource/icon/locAlg.png"));
     ui->previous->setToolTip(MY_STR("←"));
     ui->next->setToolTip(MY_STR("→"));
 
@@ -78,6 +78,12 @@ void uiMainWindow::oneUsrShowML(int tagId, bool isShowML) {
     ui->canvas->setShowLM(isShowML);
     handleModelDataUpdate(false);
 }
+void uiMainWindow::sigmaChanged(int sigma) {
+    ui->canvas->setSigmaLM(sigma);
+    qDebug() << "[@uiMainWindow::sigmaChanged] sigma:" << sigma;
+    if (ui->canvas->getShowLM())
+        handleModelDataUpdate(false);
+}
 
 // feed the data to canvas->showTagRelated at different time point
 void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
@@ -130,7 +136,12 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             if (TRACK_METHOD::TRACK_NONE != calcTrack.calcTrackMethod) {
                 ui->canvas->setPosition(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].Ans[distCount].toQPointF());
                 ui->canvas->setLine(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines[distCount-1]);
-            } else {}
+            } else {
+                // move track point to max int (dispeared)
+                int int_max = (int)(~(unsigned int)0 >> 1);
+                ui->canvas->setPosition(tag.tagId, TRACKx_STR, QPointF(int_max, int_max));
+                ui->canvas->setLine(tag.tagId, TRACKx_STR, QLineF(QPointF(int_max, int_max), QPointF(int_max, int_max)));
+            }
 
             ui->canvas->setPointsRaw(tag.tagId, MEASUR_STR, oneTagInfo->RawPoints[distCount]);
             ui->canvas->setPointsRefined(tag.tagId, MEASUR_STR, oneTagInfo->RefinedPoints[distCount]);
@@ -333,7 +344,7 @@ void uiMainWindow::nlosSumDist(bool checked) {
 /***********************************************************/
 // POSITION
 void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
-    // determine the calculate method
+    // determine the position calculate method
     calcPos.calcPosType = type;
 
     QTime time;
@@ -344,12 +355,15 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
         info->clear();
         info->addOrResetMethodInfo(MEASUR_STR, CALC_POS2STR[type]);
         info->calcPosType = type;
-/****** CALC POS MAIN **************************************/
+/****** CALC POS MAIN BEGIN **************************************************/
         calcPos.calcPosVector(info);
-/***********************************************************/
-        ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+/**********************************************************CALC POS MAIN END */
         info->isTagPosInitialed = true;
+
+        // measure pos changed, track-info need re_calc, only clear the it here
         info->reset(TRACKx_STR);
+        ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+
         totalPos += info->methodInfo[MEASUR_STR].Ans.count();
 
         dType measDist = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
@@ -440,16 +454,7 @@ void uiMainWindow::posCalc_ARM() {
 /***********************************************************/
 // TRACK
 void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
-    resetUi(false, true);
-    if (TRACK_METHOD::TRACK_KALMAN == type) {
-        ui->actionKalmanTrack->setChecked(true);
-    } else if (TRACK_METHOD::TRACK_KALMAN_LITE == type) {
-        ui->actionKalmanLiteTrack->setChecked(true);
-    } else if (TRACK_METHOD::TRACK_KALMAN_INFO == type) {
-        ui->actionKalmanInfoTrack->setChecked(true);
-    } else {}
-
-    // determine the calculate method
+    // determine the track calculate method
     calcTrack.calcTrackMethod = type;
     // reset kalman parameter of existing tag
     calcTrack.clearParam();
@@ -457,10 +462,14 @@ void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
     time.start();
     foreach (storeTagInfo *info, store.tags) {
         info->addOrResetMethodInfo(TRACKx_STR, TRACK_METHOD2STR[type]);
-/****** CALC TRACK MAIN ****************************************/
+/* CALC TRACK MAIN BEGIN *****************************************************/
         calcTrack.calcTrackVector(info->methodInfo[MEASUR_STR], info->methodInfo[TRACKx_STR]);
-/***********************************************************/
-        ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_TRACK_DATA);
+/********************************************************CALC TRACK MAIN END */
+        if (TRACK_METHOD::TRACK_NONE != type) {
+            ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_TRACK_DATA);
+        } else {
+            ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+        }
 
         dType measDist   = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
         dType kalmanDist = calcTotalAvgDistanceSquare(info->methodInfo[TRACKx_STR].AnsLines);
@@ -478,15 +487,18 @@ void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
     handleModelDataUpdate(false);
 }
 
-void uiMainWindow::trackKalman(bool checked) {
-    Q_UNUSED(checked);
-    trackCalcPROCESS(TRACK_METHOD::TRACK_KALMAN);
+void uiMainWindow::trackKalman() {
+        UPDATE_TRACK_UI(ui->actionKalmanTrack);
+    trackCalcPROCESS(actionNowTrack == ui->actionKalmanTrack ?
+                         TRACK_METHOD::TRACK_KALMAN : TRACK_METHOD::TRACK_NONE);
 }
-void uiMainWindow::trackKalmanLite(bool checked) {
-    Q_UNUSED(checked);
-    trackCalcPROCESS(TRACK_METHOD::TRACK_KALMAN_LITE);
+void uiMainWindow::trackKalmanLite() {
+    UPDATE_TRACK_UI(ui->actionKalmanLiteTrack);
+    trackCalcPROCESS(actionNowTrack == ui->actionKalmanLiteTrack?
+                         TRACK_METHOD::TRACK_KALMAN_LITE : TRACK_METHOD::TRACK_NONE);
 }
-void uiMainWindow::trackKalmanInfo(bool checked) {
-    Q_UNUSED(checked);
-    trackCalcPROCESS(TRACK_METHOD::TRACK_KALMAN_INFO);
+void uiMainWindow::trackKalmanInfo() {
+    UPDATE_TRACK_UI(ui->actionKalmanInfoTrack);
+    trackCalcPROCESS(actionNowTrack == ui->actionKalmanInfoTrack ?
+                         TRACK_METHOD::TRACK_KALMAN_INFO : TRACK_METHOD::TRACK_NONE);
 }

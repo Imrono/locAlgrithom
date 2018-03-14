@@ -1,6 +1,6 @@
 #include <windows.h>
 
-IDI_ICON1	ICON	DISCARDABLE	"C:\\Users\\rono_\\Desktop\\locAlgrithom\\resource\\icon\\locAlg.ico"
+IDI_ICON1	ICON	DISCARDABLE	"C:\\Users\\rono_\\Desktop\\locAlgrithom\\src\\resource\\icon\\locAlg.ico"
 
 VS_VERSION_INFO VERSIONINFO
 	FILEVERSION 0,0,0,0

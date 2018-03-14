@@ -4,5 +4,6 @@
         <file>resource/usr/usr_B.png</file>
         <file>resource/usr/usr_C.png</file>
         <file>resource/usr/usr_D.png</file>
+        <file>resource/icon/locAlg.ico</file>
     </qresource>
 </RCC>

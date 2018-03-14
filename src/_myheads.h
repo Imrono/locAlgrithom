@@ -44,8 +44,11 @@ enum CALC_POS_TYPE {
 #define METHOD_TWO_CENTER_STR      "{method:TwoCenter}"
 #define METHOD_TAYLOR_SERIES_STR   "{method:TaylorSeries}"
 #define METHOD_WEIGHTED_TAYLOR_STR "{method:WeightedTaylor}"
-#define METHOD_KALMAN_TAYLOR_STR   "{method:KalmanTaylor}"
+#define METHOD_KALMAN_COUPLED_STR  "{method:KalmanCoupled}"
 #define METHOD_LMEDS_STR           "{method:LMedS}"
+#define METHOD_BILATERATION_STR    "{method:Bilateration}"
+#define METHOD_ARM_STR             "{method:ARM}"
+
 extern QString CALC_POS2STR[CALC_POS_TYPE::NUM_CALC_POS];
 
 enum POINTS_NLOS {
@@ -62,13 +65,14 @@ enum POS_PRECISION_NLOS {
 };
 
 enum TRACK_METHOD {
-    TRACK_NONE = -1,
+    TRACK_NONE = 0,
     TRACK_KALMAN,
     TRACK_KALMAN_LITE,
     TRACK_KALMAN_INFO,
     NUM_TRACK_METHOD
 };
 
+#define METHOD_KALMAN_NONE_STR "{method:KalmanTrackNone}"
 #define METHOD_KALMAN_STR      "{method:KalmanTrack}"
 #define METHOD_KALMAN_LITE_STR "{method:LiteKalmanTrack}"
 #define METHOD_KALMAN_INFO_STR "{method:InfoKalmanTrack}"

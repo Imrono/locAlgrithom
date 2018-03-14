@@ -81,15 +81,13 @@ private:
     QLabel *iterationNum{nullptr};
     void setStatusIter(int n, dType mse);
 
-    void keyPressEvent(QKeyEvent *e);
     void wheelEvent(QWheelEvent *e);
 
-    bool isKalmanCoupled{false};
     QAction *actionNowPos{nullptr};
+    QAction *actionNowTrack{nullptr};
 
     void kalmanCoupledChange(bool isEnable);
     void kalmanCoupledSyncUi();
-    void UPDATE_POS_UI(QAction *action);
 
 private slots:
     // FILE
@@ -118,12 +116,14 @@ private slots:
     void posKalmanSmooth();
     void posLMedS();
     void posBilateration();
+    void UPDATE_POS_UI(QAction *action);
 
     // TRACK
     void trackCalcPROCESS(TRACK_METHOD type);
-    void trackKalman(bool checked);
-    void trackKalmanLite(bool checked);
-    void trackKalmanInfo(bool checked);
+    void trackKalman();
+    void trackKalmanLite();
+    void trackKalmanInfo();
+    void UPDATE_TRACK_UI(QAction *action);
 
     // ZOOM
     void zoomIn(bool checked = false);
@@ -137,6 +137,7 @@ private slots:
     void handleModelDataUpdate(bool isUpdateCount = true);
     void oneUsrBtnClicked(int tagId, bool isShowable);
     void oneUsrShowML(int tagId, bool isShowML);
+    void sigmaChanged(int sigma);
 
     void showMousePos(int x, int y);
 };

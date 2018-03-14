@@ -52,7 +52,8 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
 
 /* CALCULATE POSITION BEGIN **************************************************/
 // using weighted Taylor kernel
-    calcWeightedTaylor(argDistance.data(), sensor, kalmanData.x_t_1,
+    calcWeightedTaylor(argDistance.data(), sensor,
+                       kalmanData.x_t_1,    //x_hat as lastPos is also reasonable
                        N, init_W, x_hat,
                        z_x_t_meas.x, z_x_t_meas.y, mse,
                        usedSensor, iterTrace, weight);

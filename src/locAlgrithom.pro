@@ -79,4 +79,4 @@ RESOURCES += \
     resource.qrc
 
 DISTFILES +=
-RC_ICONS = ../resource/icon/locAlg.ico
+RC_ICONS = resource/icon/locAlg.ico

@@ -146,6 +146,10 @@ public:
 
     //showTagRelated& operator=(const showTagRelated &sp);
     static void resetColorCount() {tagsViewDataBase.count = 0;}
+    // static set Max Likehood sigma
+    static void setSigmaLM(int sigma) {
+        sigmaLM = sigma;
+    }
 
 private:
     QMap<QString, showTagOneMethod> oneTagMethod;
@@ -169,6 +173,9 @@ private:
 private:
     static QMap<int, oneTagView> tagViewData;
     static tagsView              tagsViewDataBase;
+
+    // static Max Likehood sigma
+    static dType sigmaLM;
 public:
     static void recordTagId(int tagId);
     static void eraseTagId(int tagId);

@@ -3,6 +3,7 @@
 #include <QEvent>
 #include <QClipboard>
 
+// kalman coupled position calc related
 void uiMainWindow::UPDATE_POS_UI(QAction *action) {
     if (!actionNowPos) {    // 1st time
         actionNowPos = action;
@@ -51,6 +52,20 @@ void uiMainWindow::kalmanCoupledSyncUi() {
              << "SMOOTH_COUPLED" << (calcPos.kalmanCoupledType & calcTagPos::SMOOTH_COUPLED) << ";";
 }
 
+// track calc related
+void uiMainWindow::UPDATE_TRACK_UI(QAction *action) {
+    if (actionNowTrack && actionNowTrack == action) {
+        actionNowTrack->setChecked(false);
+        actionNowTrack = nullptr;
+    } else {
+        if (actionNowTrack) {
+            actionNowTrack->setChecked(false);
+        }
+        actionNowTrack = action;
+        actionNowTrack->setChecked(true);
+    }
+}
+
 void uiMainWindow::connectUi() {
     connect(ui->canvas, SIGNAL(mouseChange(int,int)), this, SLOT(showMousePos(int, int)));
 /*************************************************************/
@@ -84,9 +99,9 @@ void uiMainWindow::connectUi() {
     connect(ui->actionBilateration,    SIGNAL(triggered(bool)), this, SLOT(posBilateration()));
 
     // TRACK
-    connect(ui->actionKalmanTrack,     SIGNAL(triggered(bool)), this, SLOT(trackKalman(bool)));
-    connect(ui->actionKalmanLiteTrack, SIGNAL(triggered(bool)), this, SLOT(trackKalmanLite(bool)));
-    connect(ui->actionKalmanInfoTrack, SIGNAL(triggered(bool)), this, SLOT(trackKalmanInfo(bool)));
+    connect(ui->actionKalmanTrack,     SIGNAL(triggered(bool)), this, SLOT(trackKalman()));
+    connect(ui->actionKalmanLiteTrack, SIGNAL(triggered(bool)), this, SLOT(trackKalmanLite()));
+    connect(ui->actionKalmanInfoTrack, SIGNAL(triggered(bool)), this, SLOT(trackKalmanInfo()));
 
     // ZOOM
     connect(ui->actionZoomIn,  SIGNAL(triggered(bool)), this, SLOT(zoomIn(bool)));
@@ -97,7 +112,7 @@ void uiMainWindow::connectUi() {
 
     // ARM
     connect(ui->actioncalcTagPos_ARM, SIGNAL(triggered(bool)), this, SLOT(posCalc_ARM()));
-/*************************************************************/
+/*****************************************************************************/
     connect(&timer, SIGNAL(timeout()), this, SLOT(handleModelDataUpdate()));
 
     connect(ui->beginTrack, &QPushButton::clicked, this, [this](void) {
@@ -179,18 +194,14 @@ void uiMainWindow::connectUi() {
             this, SLOT(oneUsrBtnClicked(int, bool)));
     connect(ui->UsrFrm, SIGNAL(oneUsrShowML_siganl(int, bool)),
             this, SLOT(oneUsrShowML(int, bool)));
+
+    // set Max Likehood's σ used in showTagRelated
+    int sigmaInitValue = 250;
+    ui->sigmaSlider->setValue(sigmaInitValue);
+    sigmaChanged(sigmaInitValue);
+    connect(ui->sigmaSlider, SIGNAL(valueChanged(int)), this, SLOT(sigmaChanged(int)));
 }
 
-void uiMainWindow::keyPressEvent(QKeyEvent *e) {
-//    if (e->modifiers() == Qt::ShiftModifier) {
-//        if (e->key() == Qt::Key_Less) {
-//            emit ui->previous->clicked();
-//        } else if (e->key() == Qt::Key_Greater) {
-//            emit ui->next->clicked();
-//        } else {}
-//    } else {}
-    QMainWindow::keyPressEvent(e);
-}
 void uiMainWindow::wheelEvent(QWheelEvent *e)
 {
     if (QApplication::keyboardModifiers () == Qt::ControlModifier) {
@@ -286,7 +297,7 @@ void uiMainWindow::resetUi(bool isPos, bool isTrack) {
         ui->actionWeightedTaylor->setChecked(false);
 
         ui->actionKalmanCoupled->setChecked(false);
-        if (isKalmanCoupled)
+
         ui->actionKalmanTrail->setChecked(false);
         ui->actionKalmanGauss->setChecked(false);
         ui->actionKalmanWeight->setChecked(false);

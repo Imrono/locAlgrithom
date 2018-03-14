@@ -136,6 +136,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\calcLibGeometry.cpp" />
     <ClCompile Include="..\src\_myheads.cpp" />
     <ClCompile Include="..\src\calcLibMath.cpp" />
     <ClCompile Include="..\src\armVersion\calcLibMath_ARM.c" />
@@ -173,6 +174,7 @@
     <ClCompile Include="testMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\calcLibGeometry.h" />
     <ClInclude Include="..\src\_myheads.h" />
     <ClInclude Include="..\src\calcLibMath.h" />
     <CustomBuild Include="calcLibGeometry_TEST.h">

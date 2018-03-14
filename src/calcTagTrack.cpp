@@ -52,7 +52,7 @@ dType calcTagTrack::calcR(dType reliability, const QString &methodName) {
         reliability /= 100.f;
     } else if (METHOD_WEIGHTED_TAYLOR_STR == methodName) {
         reliability /= 100.f;
-    } else if (METHOD_KALMAN_TAYLOR_STR == methodName) {
+    } else if (METHOD_KALMAN_COUPLED_STR == methodName) {
         reliability /= 50.f;
     } else {}
 
@@ -97,7 +97,6 @@ void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo
         tagsTrackParam.insert(tagId, trackParam);
     }
 
-
     tagKalmanInfo.clear();
 
     for(int i = 0; i < tagMeasInfo.Ans.count(); i++) {
@@ -141,6 +140,8 @@ void calcTagTrack::calcOneTrack(const locationCoor &z_x_meas,
         calcKalmanPosLite(z_x_meas, T, Rx, trackParam, recParam);
     } else if (TRACK_METHOD::TRACK_KALMAN_INFO == calcTrackMethod) {
         calcKalmanPosInfo(z_x_meas, T, trackParam, recParam);
+    } else if (TRACK_METHOD::TRACK_NONE == calcTrackMethod) {
+        // cleared but do nothing
     } else {}
 }
 
