@@ -56,7 +56,7 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     // initial calculate method
     //nlosRes(true);
     //nlosMultiPoint(true);
-    posWeightedTaylor(true);
+    posWeightedTaylor();
     //trackKalman(true);
 
     handleModelDataUpdate(false);
@@ -79,6 +79,7 @@ void uiMainWindow::oneUsrShowML(int tagId, bool isShowML) {
     handleModelDataUpdate(false);
 }
 
+// feed the data to canvas->showTagRelated at different time point
 void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
     distCount = distCount < 1 ? 1 : distCount;
     // distCount updated automaticly when timeout event occurs
@@ -100,25 +101,30 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
         // 3. for multi-tag, tags data count may different
          && oneTagInfo->methodInfo[MEASUR_STR].AnsLines.count() > distCount) {
 
+            // location pos calc part
             if (CALC_POS_TYPE::POS_NONE != calcPos.calcPosType) {
                 ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
                 ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
 
                 ui->UsrFrm->setBtnToolTip(tag.tagId, true,
                                           oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
-            } else {}
-            //QPointF tmpOK = tag.distData[distCount].p_t.toQPointF();
-            //tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - tag.distData[distCount].p_t.toQPointF();
-            //ui->canvas->setPosition(tag.tagId, TRACKx_STR, tmpOK);
-            //ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
-            /*
+            } else {
+                ui->UsrFrm->setBtnToolTip(tag.tagId, false);
+            }
+        // used for the distance data containing pos data
+        /*
+            QPointF tmpOK = tag.distData[distCount].p_t.toQPointF();
+            tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - tag.distData[distCount].p_t.toQPointF();
+            ui->canvas->setPosition(tag.tagId, TRACKx_STR, tmpOK);
+            ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
+
             QVector<QLineF> tmpLines;
             for (int i = 0; i < tag.distData.count(); i++) {
                 tmpLines.append(tag.distData[i].l_t);
             }
             ui->canvas->setLines(tag.tagId, TRACKx_STR, tmpLines);
-            */
-            qDebug() << "[@handleModelDataUpdate]" << "<" << tag.tagId << ">" << distCount
+        */
+            qDebug() << "[@handleModelDataUpdate]" << distCount << QString("<%1>").arg(tag.tagId)
                      << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
 
             if (TRACK_METHOD::TRACK_NONE != calcTrack.calcTrackMethod) {
@@ -147,24 +153,12 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             ui->canvas->setLines(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines);
 
             switch (tag.distData[distCount].distance.count()) {
-            case 6:
-                SHOW_DIST_WEIGHT(5);
-                SHOW_DIST_DIFF(5);
-            case 5:
-                SHOW_DIST_WEIGHT(4);
-                SHOW_DIST_DIFF(4);
-            case 4:
-                SHOW_DIST_WEIGHT(3);
-                SHOW_DIST_DIFF(3);
-            case 3:
-                SHOW_DIST_WEIGHT(2);
-                SHOW_DIST_DIFF(2);
-            case 2:
-                SHOW_DIST_WEIGHT(1);
-                SHOW_DIST_DIFF(1);
-            case 1:
-                SHOW_DIST_WEIGHT(0);
-                SHOW_DIST_DIFF(0);
+            case 6: SHOW_DIST_DATA(5);
+            case 5: SHOW_DIST_DATA(4);
+            case 4: SHOW_DIST_DATA(3);
+            case 3: SHOW_DIST_DATA(2);
+            case 2: SHOW_DIST_DATA(1);
+            case 1: SHOW_DIST_DATA(0);
             default:
                 break;
             }
@@ -339,105 +333,6 @@ void uiMainWindow::nlosSumDist(bool checked) {
 /***********************************************************/
 // POSITION
 void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
-    resetUi(true, false);   // reset pos checked, not track
-    if (CALC_POS_TYPE::FullCentroid == type) {
-        ui->actionFullCentroid->setChecked(true);
-    } else if (CALC_POS_TYPE::SubLS == type) {
-        ui->actionSubLS->setChecked(true);
-    } else if (CALC_POS_TYPE::TwoCenter == type) {
-        ui->actionTwoCenter->setChecked(true);
-    } else if (CALC_POS_TYPE::Taylor == type) {
-        ui->actionTaylorSeries->setChecked(true);
-    } else if (CALC_POS_TYPE::WeightedTaylor == type) {
-        ui->actionWeightedTaylor->setChecked(true);
-    } else if (CALC_POS_TYPE::POS_KalmanCoupled == type) {
-        if (calcPos.kalmanCoupledType & calcTagPos::COUPLED) {
-            calcPos.kalmanCoupledType = calcTagPos::NONE_COUPLED;
-            ui->actionKalmanCoupled->setChecked(false);
-        } else {
-            calcPos.kalmanCoupledType = calcTagPos::COUPLED;
-            ui->actionKalmanCoupled->setChecked(true);
-        }
-    } else if (CALC_POS_TYPE::POS_KalmanGauss == type) {
-        if (calcPos.kalmanCoupledType & calcTagPos::COUPLED) {
-            ui->actionKalmanCoupled->setChecked(true);
-            if (calcPos.kalmanCoupledType & calcTagPos::GAUSS_COUPLED) {
-                calcPos.kalmanCoupledType &= ~calcTagPos::GAUSS_COUPLED;
-                ui->actionKalmanGauss->setChecked(false);
-            } else {
-                calcPos.kalmanCoupledType |= calcTagPos::GAUSS_COUPLED;
-                ui->actionKalmanGauss->setChecked(true);
-            }
-            if (calcPos.kalmanCoupledType & calcTagPos::WEIGHT_COUPLED) {
-                ui->actionKalmanWeight->setChecked(true);
-            } else {
-                ui->actionKalmanWeight->setChecked(false);
-            }
-            if (calcPos.kalmanCoupledType & calcTagPos::SMOOTH_COUPLED) {
-                ui->actionKalmanSmooth->setChecked(true);
-            } else {
-                ui->actionKalmanSmooth->setChecked(false);
-            }
-        } else {
-            calcPos.kalmanCoupledType = calcTagPos::NONE_COUPLED;
-            ui->actionKalmanGauss->setChecked(false);
-        }
-    } else if (CALC_POS_TYPE::POS_KalmanWeight == type) {
-        if (calcPos.kalmanCoupledType & calcTagPos::COUPLED) {
-            ui->actionKalmanCoupled->setChecked(true);
-            if (calcPos.kalmanCoupledType & calcTagPos::GAUSS_COUPLED) {
-                ui->actionKalmanGauss->setChecked(true);
-            } else {
-                ui->actionKalmanGauss->setChecked(false);
-            }
-            if (calcPos.kalmanCoupledType & calcTagPos::WEIGHT_COUPLED) {
-                calcPos.kalmanCoupledType &= ~calcTagPos::WEIGHT_COUPLED;
-                ui->actionKalmanWeight->setChecked(false);
-            } else {
-                calcPos.kalmanCoupledType |= calcTagPos::WEIGHT_COUPLED;
-                ui->actionKalmanWeight->setChecked(true);
-            }
-            if (calcPos.kalmanCoupledType & calcTagPos::SMOOTH_COUPLED) {
-                ui->actionKalmanSmooth->setChecked(true);
-            } else {
-                ui->actionKalmanSmooth->setChecked(false);
-            }
-        } else {
-            calcPos.kalmanCoupledType = calcTagPos::NONE_COUPLED;
-            ui->actionKalmanGauss->setChecked(false);
-        }
-    } else if (CALC_POS_TYPE::POS_KalmanSmooth == type) {
-        if (calcPos.kalmanCoupledType & calcTagPos::COUPLED) {
-            ui->actionKalmanCoupled->setChecked(true);
-            if (calcPos.kalmanCoupledType & calcTagPos::GAUSS_COUPLED) {
-                ui->actionKalmanGauss->setChecked(true);
-            } else {
-                ui->actionKalmanGauss->setChecked(false);
-            }
-            if (calcPos.kalmanCoupledType & calcTagPos::WEIGHT_COUPLED) {
-                ui->actionKalmanWeight->setChecked(true);
-            } else {
-                ui->actionKalmanWeight->setChecked(false);
-            }
-            if (calcPos.kalmanCoupledType & calcTagPos::SMOOTH_COUPLED) {
-                calcPos.kalmanCoupledType &= ~calcTagPos::SMOOTH_COUPLED;
-                ui->actionKalmanSmooth->setChecked(false);
-            } else {
-                calcPos.kalmanCoupledType |= calcTagPos::SMOOTH_COUPLED;
-                ui->actionKalmanSmooth->setChecked(true);
-            }
-        } else {
-            calcPos.kalmanCoupledType = calcTagPos::NONE_COUPLED;
-            ui->actionKalmanGauss->setChecked(false);
-        }
-    } else if (CALC_POS_TYPE::LMedS == type) {
-        ui->actionLMedS->setChecked(true);
-    } else if (CALC_POS_TYPE::Bilateration == type) {
-        ui->actionBilateration->setChecked(true);
-    } else if (CALC_POS_TYPE::ARM_calcPos == type) {
-        ui->actioncalcTagPos_ARM->setChecked(true);
-    } else {}
-
     // determine the calculate method
     calcPos.calcPosType = type;
 
@@ -478,55 +373,67 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
     handleModelDataUpdate(false);
 }
 
-void uiMainWindow::posFullCentroid(bool checked) {
-    Q_UNUSED(checked);
+void uiMainWindow::posFullCentroid() {
+    UPDATE_POS_UI(ui->actionFullCentroid);
     posCalcPROCESS(CALC_POS_TYPE::FullCentroid);
 }
-void uiMainWindow::posSubLS(bool checked) {
-    Q_UNUSED(checked);
+void uiMainWindow::posSubLS() {
+    UPDATE_POS_UI(ui->actionSubLS);
     posCalcPROCESS(CALC_POS_TYPE::SubLS);
 }
-void uiMainWindow::posTwoCenter(bool checked) {
-    Q_UNUSED(checked);
+void uiMainWindow::posTwoCenter() {
+    UPDATE_POS_UI(ui->actionTwoCenter);
     posCalcPROCESS(CALC_POS_TYPE::TwoCenter);
 }
-void uiMainWindow::posTaylorSeries(bool checked) {
-    Q_UNUSED(checked);
+void uiMainWindow::posTaylorSeries() {
+    UPDATE_POS_UI(ui->actionTaylorSeries);
     posCalcPROCESS(CALC_POS_TYPE::Taylor);
 }
-void uiMainWindow::posWeightedTaylor(bool checked) {
-    Q_UNUSED(checked);
+void uiMainWindow::posWeightedTaylor() {
+    UPDATE_POS_UI(ui->actionWeightedTaylor);
     posCalcPROCESS(CALC_POS_TYPE::WeightedTaylor);
 }
 /* kalman coupled methods ****************************************************/
-void uiMainWindow::posKalmanCoupled(bool checked) {
-    Q_UNUSED(checked);
+void uiMainWindow::posKalmanCoupled() {
+    if (actionNowPos && actionNowPos == ui->actionKalmanCoupled) {
+        calcPos.kalmanCoupledType = calcTagPos::NONE_COUPLED;
+    }
+    UPDATE_POS_UI(ui->actionKalmanCoupled);
+    kalmanCoupledSyncUi();
     posCalcPROCESS(CALC_POS_TYPE::POS_KalmanCoupled);
 }
-void uiMainWindow::posKalmanGauss(bool checked) {
-    Q_UNUSED(checked);
+void uiMainWindow::posKalmanTrail() {
+    calcPos.kalmanCoupledType ^= calcTagPos::TRAIL_COUPLED;
+    kalmanCoupledSyncUi();
+    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanTrail);
+}
+void uiMainWindow::posKalmanGauss() {
+    calcPos.kalmanCoupledType ^= calcTagPos::GAUSS_COUPLED;
+    kalmanCoupledSyncUi();
     posCalcPROCESS(CALC_POS_TYPE::POS_KalmanGauss);
 }
-void uiMainWindow::posKalmanWeight(bool checked) {
-    Q_UNUSED(checked);
+void uiMainWindow::posKalmanWeight() {
+    calcPos.kalmanCoupledType ^= calcTagPos::WEIGHT_COUPLED;
+    kalmanCoupledSyncUi();
     posCalcPROCESS(CALC_POS_TYPE::POS_KalmanWeight);
 }
-void uiMainWindow::posKalmanSmooth(bool checked) {
-    Q_UNUSED(checked);
+void uiMainWindow::posKalmanSmooth() {
+    calcPos.kalmanCoupledType ^= calcTagPos::SMOOTH_COUPLED;
+    kalmanCoupledSyncUi();
     posCalcPROCESS(CALC_POS_TYPE::POS_KalmanSmooth);
 }
 /*****************************************************************************/
-void uiMainWindow::posLMedS(bool checked) {
-    Q_UNUSED(checked);
+void uiMainWindow::posLMedS() {
+    UPDATE_POS_UI(ui->actionLMedS);
     posCalcPROCESS(CALC_POS_TYPE::LMedS);
 }
-void uiMainWindow::posBilateration(bool checked) {
-    Q_UNUSED(checked);
+void uiMainWindow::posBilateration() {
+    UPDATE_POS_UI(ui->actionBilateration);
     posCalcPROCESS(CALC_POS_TYPE::Bilateration);
 }
 // ARM VERSION /////////////////////////////////////////////////////////////////
-void uiMainWindow::posCalc_ARM(bool checked) {
-    Q_UNUSED(checked);
+void uiMainWindow::posCalc_ARM() {
+    UPDATE_POS_UI(ui->actioncalcTagPos_ARM);
     posCalcPROCESS(CALC_POS_TYPE::ARM_calcPos);
 }
 

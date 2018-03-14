@@ -18,7 +18,7 @@
 #include "calcTagNLOS.h"
 #include "calcTagTrack.h"
 
-#define SHOW_DIST_WEIGHT(n) \
+#define SHOW_DIST_DATA(n) \
     if ("1" == QString::number(oneTagInfo->weight[distCount][n])) {\
         ui->raw_##n->setStyleSheet("color:red");\
     } else {\
@@ -26,9 +26,7 @@
     }\
     ui->raw_##n->setText(QString("%1{%2}")\
             .arg(QString::number(tag.distData[distCount].distance[n]))\
-            .arg(QString::number(oneTagInfo->weight[distCount][n]).left(4)));
-
-#define SHOW_DIST_DIFF(n) \
+            .arg(QString::number(oneTagInfo->weight[distCount][n]).left(4)));\
     ui->refine_##n->setText(QString::number(qAbs(\
     calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[n])\
     - tag.distData[distCount].distance[n])))
@@ -86,6 +84,13 @@ private:
     void keyPressEvent(QKeyEvent *e);
     void wheelEvent(QWheelEvent *e);
 
+    bool isKalmanCoupled{false};
+    QAction *actionNowPos{nullptr};
+
+    void kalmanCoupledChange(bool isEnable);
+    void kalmanCoupledSyncUi();
+    void UPDATE_POS_UI(QAction *action);
+
 private slots:
     // FILE
     void loadIniConfigFile(bool checked, QString pathIn = "");
@@ -101,17 +106,18 @@ private slots:
 
     // POS
     void posCalcPROCESS(CALC_POS_TYPE type);
-    void posFullCentroid(bool checked);
-    void posSubLS(bool checked);
-    void posTwoCenter(bool checked);
-    void posTaylorSeries(bool checked);
-    void posWeightedTaylor(bool checked);
-    void posKalmanCoupled(bool checked);
-    void posKalmanGauss(bool checked);
-    void posKalmanWeight(bool checked);
-    void posKalmanSmooth(bool checked);
-    void posLMedS(bool checked);
-    void posBilateration(bool checked);
+    void posFullCentroid();
+    void posSubLS();
+    void posTwoCenter();
+    void posTaylorSeries();
+    void posWeightedTaylor();
+    void posKalmanCoupled();
+    void posKalmanTrail();
+    void posKalmanGauss();
+    void posKalmanWeight();
+    void posKalmanSmooth();
+    void posLMedS();
+    void posBilateration();
 
     // TRACK
     void trackCalcPROCESS(TRACK_METHOD type);
@@ -125,7 +131,7 @@ private slots:
     void captureCanvas(bool checked = false);
 
     // ARM
-    void posCalc_ARM(bool checked);
+    void posCalc_ARM();
 
 private slots:
     void handleModelDataUpdate(bool isUpdateCount = true);

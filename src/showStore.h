@@ -36,7 +36,7 @@ struct oneKalmanData {  // kalman data
     locationCoor v_t   = {0,0,0};
     locationCoor x_t_1 = {0,0,0};
     locationCoor v_t_1 = {0,0,0};
-    dType K            = 0.9f;
+    dType K            = 0.2f;
     dType Time;
     bool isInitialized = false;
 };

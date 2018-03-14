@@ -23,13 +23,13 @@ void uiCanvas::cfg_actualData2showData() {
         return;
     }
 
-    qDebug() << "ratioShow:" << ratioShow;
+    qDebug() << "[@uiCanvas::setConfigData] ratioShow:" << ratioShow;
 
     // [Sensor]
     sensorShow.clear();
     for (int i = 0; i < cfg_d->sensor.count(); i++) {
         sensorShow.append(actual2Show(cfg_d->sensor[i]));
-        qDebug() << "d->sensor[" << i << "]," << this->cfg_d->sensor[i].toString()
+        qDebug() << "[@uiCanvas::setConfigData] d->sensor[" << i << "]," << this->cfg_d->sensor[i].toString()
                  << "sensorShow[" << i << "], (" << sensorShow[i].x() << "," << sensorShow[i].y() << ")";
     }
     // [Stop]
@@ -104,7 +104,7 @@ void uiCanvas::syncWithUiFrame(uiUsrFrame *frm) {
 
 void uiCanvas::resizeEvent(QResizeEvent *event) {
     Q_UNUSED(event);
-    qDebug() << this->width() << this->height();
+    qDebug() << "[@uiCanvas::resizeEvent]" << this->width() << this->height();
 
     if (widthCanvas != width() || heightCanvas != height()) {
         ratioShow = static_cast<dType>(width()) / widthActual;

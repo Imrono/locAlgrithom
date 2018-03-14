@@ -3,6 +3,54 @@
 #include <QEvent>
 #include <QClipboard>
 
+void uiMainWindow::UPDATE_POS_UI(QAction *action) {
+    if (!actionNowPos) {    // 1st time
+        actionNowPos = action;
+        actionNowPos->setChecked(true);
+        if (action != ui->actionKalmanCoupled) {
+            kalmanCoupledChange(false);
+        } else {
+            kalmanCoupledChange(true);
+        }
+        return;
+    }
+
+    if (actionNowPos != ui->actionKalmanCoupled && action == ui->actionKalmanCoupled) {
+        kalmanCoupledChange(true);
+    } else if (actionNowPos == ui->actionKalmanCoupled && action != ui->actionKalmanCoupled) {
+        kalmanCoupledChange(false);
+    } else {}
+
+    actionNowPos->setChecked(false);
+    actionNowPos = action;
+    actionNowPos->setChecked(true);
+}
+
+void uiMainWindow::kalmanCoupledChange(bool isEnable) {
+    if (isEnable) {
+        ui->actionKalmanTrail->setEnabled(true);
+        ui->actionKalmanGauss->setEnabled(true);
+        ui->actionKalmanWeight->setEnabled(true);
+        ui->actionKalmanSmooth->setEnabled(true);
+    } else {
+        ui->actionKalmanTrail->setDisabled(true);
+        ui->actionKalmanGauss->setDisabled(true);
+        ui->actionKalmanWeight->setDisabled(true);
+        ui->actionKalmanSmooth->setDisabled(true);
+    }
+}
+void uiMainWindow::kalmanCoupledSyncUi() {
+    ui->actionKalmanTrail->setChecked (calcPos.kalmanCoupledType & calcTagPos::TRAIL_COUPLED);
+    ui->actionKalmanGauss->setChecked (calcPos.kalmanCoupledType & calcTagPos::GAUSS_COUPLED);
+    ui->actionKalmanWeight->setChecked(calcPos.kalmanCoupledType & calcTagPos::WEIGHT_COUPLED);
+    ui->actionKalmanSmooth->setChecked(calcPos.kalmanCoupledType & calcTagPos::SMOOTH_COUPLED);
+    qDebug() << "[@uiMainWindow::kalmanCoupledSyncUi]" << calcPos.kalmanCoupledType << ";"
+             << "TRAIL_COUPLED"  << (calcPos.kalmanCoupledType & calcTagPos::TRAIL_COUPLED) << ";"
+             << "GAUSS_COUPLED"  << (calcPos.kalmanCoupledType & calcTagPos::GAUSS_COUPLED) << ";"
+             << "WEIGHT_COUPLED" << (calcPos.kalmanCoupledType & calcTagPos::WEIGHT_COUPLED) << ";"
+             << "SMOOTH_COUPLED" << (calcPos.kalmanCoupledType & calcTagPos::SMOOTH_COUPLED) << ";";
+}
+
 void uiMainWindow::connectUi() {
     connect(ui->canvas, SIGNAL(mouseChange(int,int)), this, SLOT(showMousePos(int, int)));
 /*************************************************************/
@@ -19,19 +67,21 @@ void uiMainWindow::connectUi() {
     connect(ui->actionSumDist,   SIGNAL(triggered(bool)), this, SLOT(nlosSumDist(bool)));
 
     // POSITION
-    connect(ui->actionFullCentroid,    SIGNAL(triggered(bool)), this, SLOT(posFullCentroid(bool)));
-    connect(ui->actionSubLS,           SIGNAL(triggered(bool)), this, SLOT(posSubLS(bool)));
-    connect(ui->actionTwoCenter,       SIGNAL(triggered(bool)), this, SLOT(posTwoCenter(bool)));
-    connect(ui->actionTaylorSeries,    SIGNAL(triggered(bool)), this, SLOT(posTaylorSeries(bool)));
+    connect(ui->actionFullCentroid,    SIGNAL(triggered(bool)), this, SLOT(posFullCentroid()));
+    connect(ui->actionSubLS,           SIGNAL(triggered(bool)), this, SLOT(posSubLS()));
+    connect(ui->actionTwoCenter,       SIGNAL(triggered(bool)), this, SLOT(posTwoCenter()));
+    connect(ui->actionTaylorSeries,    SIGNAL(triggered(bool)), this, SLOT(posTaylorSeries()));
 
-    connect(ui->actionWeightedTaylor,  SIGNAL(triggered(bool)), this, SLOT(posWeightedTaylor(bool)));
-    connect(ui->actionKalmanCoupled,   SIGNAL(triggered(bool)), this, SLOT(posKalmanCoupled(bool)));
-    connect(ui->actionKalmanGauss,     SIGNAL(triggered(bool)), this, SLOT(posKalmanGauss(bool)));
-    connect(ui->actionKalmanWeight,    SIGNAL(triggered(bool)), this, SLOT(posKalmanWeight(bool)));
-    connect(ui->actionKalmanSmooth,    SIGNAL(triggered(bool)), this, SLOT(posKalmanSmooth(bool)));
+    connect(ui->actionWeightedTaylor,  SIGNAL(triggered(bool)), this, SLOT(posWeightedTaylor()));
 
-    connect(ui->actionLMedS,           SIGNAL(triggered(bool)), this, SLOT(posLMedS(bool)));
-    connect(ui->actionBilateration,    SIGNAL(triggered(bool)), this, SLOT(posBilateration(bool)));
+    connect(ui->actionKalmanCoupled,   SIGNAL(triggered(bool)), this, SLOT(posKalmanCoupled()));
+    connect(ui->actionKalmanTrail,     SIGNAL(triggered(bool)), this, SLOT(posKalmanTrail()));
+    connect(ui->actionKalmanGauss,     SIGNAL(triggered(bool)), this, SLOT(posKalmanGauss()));
+    connect(ui->actionKalmanWeight,    SIGNAL(triggered(bool)), this, SLOT(posKalmanWeight()));
+    connect(ui->actionKalmanSmooth,    SIGNAL(triggered(bool)), this, SLOT(posKalmanSmooth()));
+
+    connect(ui->actionLMedS,           SIGNAL(triggered(bool)), this, SLOT(posLMedS()));
+    connect(ui->actionBilateration,    SIGNAL(triggered(bool)), this, SLOT(posBilateration()));
 
     // TRACK
     connect(ui->actionKalmanTrack,     SIGNAL(triggered(bool)), this, SLOT(trackKalman(bool)));
@@ -46,7 +96,7 @@ void uiMainWindow::connectUi() {
     connect(ui->actionCapPix, SIGNAL(triggered(bool)), this, SLOT(captureCanvas(bool)));
 
     // ARM
-    connect(ui->actioncalcTagPos_ARM, SIGNAL(triggered(bool)), this, SLOT(posCalc_ARM(bool)));
+    connect(ui->actioncalcTagPos_ARM, SIGNAL(triggered(bool)), this, SLOT(posCalc_ARM()));
 /*************************************************************/
     connect(&timer, SIGNAL(timeout()), this, SLOT(handleModelDataUpdate()));
 
@@ -174,6 +224,7 @@ void uiMainWindow::checkData() {
 
         ui->actionWeightedTaylor->setDisabled(true);
         ui->actionKalmanCoupled->setDisabled(true);
+        ui->actionKalmanTrail->setDisabled(true);
         ui->actionKalmanGauss->setDisabled(true);
         ui->actionKalmanWeight->setDisabled(true);
         ui->actionKalmanSmooth->setDisabled(true);
@@ -199,6 +250,7 @@ void uiMainWindow::checkData() {
 
         ui->actionWeightedTaylor->setEnabled(true);
         ui->actionKalmanCoupled->setEnabled(true);
+        ui->actionKalmanTrail->setEnabled(true);
         ui->actionKalmanGauss->setEnabled(true);
         ui->actionKalmanWeight->setEnabled(true);
         ui->actionKalmanSmooth->setEnabled(true);
@@ -232,7 +284,10 @@ void uiMainWindow::resetUi(bool isPos, bool isTrack) {
         ui->actionTaylorSeries->setChecked(false);
 
         ui->actionWeightedTaylor->setChecked(false);
+
         ui->actionKalmanCoupled->setChecked(false);
+        if (isKalmanCoupled)
+        ui->actionKalmanTrail->setChecked(false);
         ui->actionKalmanGauss->setChecked(false);
         ui->actionKalmanWeight->setChecked(false);
         ui->actionKalmanSmooth->setChecked(false);

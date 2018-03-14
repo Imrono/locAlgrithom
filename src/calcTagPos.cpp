@@ -94,14 +94,14 @@ void calcTagPos::setConfigData(const configData *cfg_q) {
         A_ls_inverse_AT[i] = new dType[ls_row];
     }
     qDebug() << "[@calcTagPos::setConfigData] A_ls => row:" << ls_row <<  "col:" << ls_col;
-    for (int i = 0; i < ls_row; i++) {
-        qDebug() << A_ls[i][0] << A_ls[i][1];
-    }
+    //for (int i = 0; i < ls_row; i++) {
+    //    qDebug() << A_ls[i][0] << A_ls[i][1];
+    //}
     coefficient_B(A_ls, A_ls_inverse_AT, ls_row, ls_col);
     qDebug() << "[@calcTagPos::setConfigData] A_ls_inverse_AT: => row:" << ls_col <<  "col:" << ls_row;
-    for (int i = 0; i < ls_row; i++) {
-        qDebug() << A_ls_inverse_AT[0][i] << A_ls_inverse_AT[1][i];
-    }
+    //for (int i = 0; i < ls_row; i++) {
+    //    qDebug() << A_ls_inverse_AT[0][i] << A_ls_inverse_AT[1][i];
+    //}
 
     // FC PART
     A_fc = new dType *[fc_row];
@@ -204,7 +204,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
     oneKalmanData &kalmanData = tagInfo->calcPosKalmanData;
     tagInfo->isGaussPointAdded = kalmanCoupledType & GAUSS_COUPLED;
     kalmanData.isInitialized = false;
-    qDebug() << "[@calcPosVector@kalmanCoupledType]" << kalmanCoupledType;
+
     for (int i = 0; i < oneTagData.distData.count(); i++) {
         locationCoor tmpLastPos = tmpX;
         //qDebug() << i << tmpLastPos.toQPointF();
@@ -275,25 +275,20 @@ locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T,
         return calcTaylorSeries(dist, MSE);
     } else if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
         return calcWeightedTaylor(dist, MSE, lastPos, usedSensor, iterTrace, weight);
-    } else if (CALC_POS_TYPE::POS_KalmanCoupled == calcPosType) {
-        return calcKalmanCoulped(dist, MSE, T, lastPos, kalmanData, kalmanCoupledType,
-                                 usedSensor, iterTrace, weight, x_hat);
-    } else if (CALC_POS_TYPE::POS_KalmanGauss == calcPosType) {
-        return calcKalmanCoulped(dist, MSE, T, lastPos, kalmanData, kalmanCoupledType,
-                                 usedSensor, iterTrace, weight, x_hat);
-    } else if (CALC_POS_TYPE::POS_KalmanWeight == calcPosType) {
-        return calcKalmanCoulped(dist, MSE, T, lastPos, kalmanData, kalmanCoupledType,
-                                 usedSensor, iterTrace, weight, x_hat);
-    } else if (CALC_POS_TYPE::POS_KalmanSmooth == calcPosType) {
-        return calcKalmanCoulped(dist, MSE, T, lastPos, kalmanData, kalmanCoupledType,
-                                 usedSensor, iterTrace, weight, x_hat);
-    } else if (CALC_POS_TYPE::ARM_calcPos == calcPosType) {
+    }  else if (CALC_POS_TYPE::ARM_calcPos == calcPosType) {
         return calcPos_ARM(dist, MSE, lastPos);
     } else if (CALC_POS_TYPE::LMedS == calcPosType) {
         return calcLMedS(dist, MSE, lastPos, usedSensor, iterTrace);
     } else if (CALC_POS_TYPE::Bilateration == calcPosType) {
         return calcBilateration(dist, MSE);
-    } else {
+    } else if (CALC_POS_TYPE::POS_KalmanCoupled== calcPosType
+            || CALC_POS_TYPE::POS_KalmanTrail  == calcPosType
+            || CALC_POS_TYPE::POS_KalmanGauss  == calcPosType
+            || CALC_POS_TYPE::POS_KalmanWeight == calcPosType
+            || CALC_POS_TYPE::POS_KalmanSmooth == calcPosType) {
+           return calcKalmanCoulped(dist, MSE, T, lastPos, kalmanData, kalmanCoupledType,
+                                    usedSensor, iterTrace, weight, x_hat);
+       }else {
         return {0.f, 0.f, 0.f};
     }
 }

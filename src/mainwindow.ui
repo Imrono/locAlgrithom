@@ -420,6 +420,7 @@
     <property name="title">
      <string>位置算法</string>
     </property>
+    <action name=""/>
     <addaction name="actionFullCentroid"/>
     <addaction name="actionSubLS"/>
     <addaction name="actionTwoCenter"/>
@@ -430,6 +431,7 @@
     <addaction name="actionKalmanGauss"/>
     <addaction name="actionKalmanWeight"/>
     <addaction name="actionKalmanSmooth"/>
+    <addaction name="actionKalmanTrail"/>
     <addaction name="separator"/>
     <addaction name="actionLMedS"/>
     <addaction name="actionBilateration"/>
@@ -649,6 +651,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>KalmanGauss</string>
    </property>
@@ -657,6 +662,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>KalmanWeight</string>
    </property>
@@ -664,6 +672,9 @@
   <action name="actionKalmanSmooth">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>KalmanSmooth</string>
@@ -675,6 +686,17 @@
    </property>
    <property name="text">
     <string>Bilateration</string>
+   </property>
+  </action>
+  <action name="actionKalmanTrail">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>KalmanTrail</string>
    </property>
   </action>
  </widget>

@@ -72,7 +72,7 @@ public:
 /* KALMAN COULPED METHOD *****************************************************/
     enum KALMAN_COUPLED_TYPE{
         NONE_COUPLED   = 0x00,
-        COUPLED        = 0x01,
+        TRAIL_COUPLED  = 0x01,
         GAUSS_COUPLED  = 0x02,
         WEIGHT_COUPLED = 0x04,
         SMOOTH_COUPLED = 0x08
