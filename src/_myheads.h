@@ -22,11 +22,11 @@
 #define TRACKx_STR "track"
 
 enum CALC_POS_TYPE {
-    POS_NONE = -1,
-    FullCentroid = 0,
-    SubLS = 1,
-    TwoCenter = 2,
-    Taylor = 3,
+    POS_NONE = 0,
+    FullCentroid,
+    SubLS,
+    TwoCenter,
+    Taylor,
     WeightedTaylor,
     POS_KalmanCoupled,
     POS_KalmanTrail,
@@ -39,6 +39,7 @@ enum CALC_POS_TYPE {
     NUM_CALC_POS
 };
 
+#define METHOD_POS_NONE_STR        "{method:PosNone}"
 #define METHOD_FULL_CENTROID_STR   "{method:FullCentroid}"
 #define METHOD_SUB_LS_STR          "{method:SubLS}"
 #define METHOD_TWO_CENTER_STR      "{method:TwoCenter}"
@@ -72,7 +73,7 @@ enum TRACK_METHOD {
     NUM_TRACK_METHOD
 };
 
-#define METHOD_KALMAN_NONE_STR "{method:KalmanTrackNone}"
+#define METHOD_TRACK_NONE_STR  "{method:TrackNone}"
 #define METHOD_KALMAN_STR      "{method:KalmanTrack}"
 #define METHOD_KALMAN_LITE_STR "{method:LiteKalmanTrack}"
 #define METHOD_KALMAN_INFO_STR "{method:InfoKalmanTrack}"

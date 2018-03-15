@@ -83,8 +83,9 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
     // TODO: refine the W_kalman
     dType W_kalman = 0.f;
     if (nullptr != pos_hat) {
-        if (matrixN > 1) W_kalman = (W_taylor[0] + W_taylor[1]) * 0.5f * 0.7f;
-        else             W_kalman = W_taylor[0] * 0.3f * 0.7f;
+        dType weightCo = pos_hat[2];
+        if (matrixN > 1) W_kalman = (W_taylor[0] + W_taylor[1]) * 0.5f * weightCo;
+        else             W_kalman = W_taylor[0] * 0.3f * weightCo;
         weight[N] = W_kalman;
     } else {}
     /*

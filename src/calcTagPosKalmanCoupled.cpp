@@ -27,13 +27,14 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
             if (kalmanData.isInitialized) {
                 dType currDist_hat = calcDistance(x_hat_t, sensor[i]);
                 // TODO: refine the weight
-                init_W[i] = 1.f / (0.005*qAbs(currDist_hat - distance[i]) + 1.f);
+                init_W[i] = 1.f / (0.005f*qAbs(currDist_hat - distance[i]) + 1.f);
             } else {}
         } else {}
     }
 /* GAUSS COUPLED *************************************************************/
     dType *x_hat = nullptr;
-    dType pos_hat[2] = {x_hat_t.x, x_hat_t.y};
+    dType pos_hat[3] = {x_hat_t.x, x_hat_t.y,   // x_hat
+                        0.4f};                  // x_hat's weighted coefficient
     if (GAUSS_COUPLED & type) {
         x_hat = kalmanData.isInitialized ? pos_hat : nullptr;
     } else {

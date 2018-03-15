@@ -36,9 +36,17 @@ struct oneKalmanData {  // kalman data
     locationCoor v_t   = {0,0,0};
     locationCoor x_t_1 = {0,0,0};
     locationCoor v_t_1 = {0,0,0};
-    dType K            = 0.2f;
-    dType Time;
+    dType K            = 0.3f;  //Complementary Filter, K is the measure gain
+    dType Time         = 0.f;
     bool isInitialized = false;
+    void clear() {
+        x_t   = {0,0,0};
+        v_t   = {0,0,0};
+        x_t_1 = {0,0,0};
+        v_t_1 = {0,0,0};
+        Time  = 0.f;
+        isInitialized = false;
+    }
 };
 
 struct storeTagInfo {
@@ -85,6 +93,7 @@ struct storeTagInfo {
         calcPosType = CALC_POS_TYPE::POS_NONE;
         isGaussPointAdded = false;
         x_hat.clear();
+        calcPosKalmanData.clear();
     }
     void addOrResetMethodInfo(const QString &methodType, const QString &method);
     void reset(const QString &methodType, const QString &method);

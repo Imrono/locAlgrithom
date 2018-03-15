@@ -202,14 +202,7 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
         showSensors(painter);
     }
 
-    // real time Point at TOP
-    if (isShowPath) {
-        foreach(const showTagRelated &tag, tags) {
-            tag.drawLines(painter, ratioShow, zoom(), center);
-        }
-    }
-
-    foreach (showTagRelated tag, tags) {
+    foreach (const showTagRelated tag, tags) {
         if (isShowAllPos) {
             tag.drawPointsRaw(painter, ratioShow, zoom(), center);
             tag.drawPointsRefined(painter, ratioShow, zoom(), center);
@@ -233,6 +226,9 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
         }
         if (isShowCross) {
             tag.drawCross(painter, cfg_d->sensor, ratioShow, zoom(), center);
+        }
+        if (isShowPath) {
+            tag.drawLines(painter, ratioShow, zoom(), center);
         }
 
         tag.drawLine(painter, ratioShow, zoom(), center);

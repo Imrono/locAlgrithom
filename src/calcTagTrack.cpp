@@ -81,6 +81,10 @@ dType calcTagTrack::calcR(QPoint v_t, QPoint v_t_1) {
 }
 
 void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo) {
+    if (TRACK_METHOD::TRACK_NONE == calcTrackMethod) {
+        return;
+    }
+
     int tagId = tagMeasInfo.parentTag->tagId;
     if (!tagsTrackParam.contains(tagId)) {
         trackParams trackParam;
@@ -96,8 +100,6 @@ void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo
         trackParam.Kv = 1.f;
         tagsTrackParam.insert(tagId, trackParam);
     }
-
-    tagKalmanInfo.clear();
 
     for(int i = 0; i < tagMeasInfo.Ans.count(); i++) {
         trackParams &tagTrackParam = tagsTrackParam[tagId];

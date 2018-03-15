@@ -37,7 +37,7 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     setStatusIter(0, 0.f);
 
     // load initial CFG and DIST data
-#if 1
+#if 0
     loadIniConfigFile(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
     loadLogDistanceFile_2(true, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
 #else
@@ -358,11 +358,15 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
 /****** CALC POS MAIN BEGIN **************************************************/
         calcPos.calcPosVector(info);
 /**********************************************************CALC POS MAIN END */
-        info->isTagPosInitialed = true;
-
         // measure pos changed, track-info need re_calc, only clear the it here
         info->reset(TRACKx_STR);
-        ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+        if (CALC_POS_TYPE::POS_NONE != type) {
+            info->isTagPosInitialed = true;
+            ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+        } else {
+            info->isTagPosInitialed = false;
+            ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_DISTANCE_DATA);
+        }
 
         totalPos += info->methodInfo[MEASUR_STR].Ans.count();
 
@@ -389,32 +393,29 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
 
 void uiMainWindow::posFullCentroid() {
     UPDATE_POS_UI(ui->actionFullCentroid);
-    posCalcPROCESS(CALC_POS_TYPE::FullCentroid);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::FullCentroid : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posSubLS() {
     UPDATE_POS_UI(ui->actionSubLS);
-    posCalcPROCESS(CALC_POS_TYPE::SubLS);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::SubLS : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posTwoCenter() {
     UPDATE_POS_UI(ui->actionTwoCenter);
-    posCalcPROCESS(CALC_POS_TYPE::TwoCenter);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::TwoCenter : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posTaylorSeries() {
     UPDATE_POS_UI(ui->actionTaylorSeries);
-    posCalcPROCESS(CALC_POS_TYPE::Taylor);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::Taylor : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posWeightedTaylor() {
     UPDATE_POS_UI(ui->actionWeightedTaylor);
-    posCalcPROCESS(CALC_POS_TYPE::WeightedTaylor);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::WeightedTaylor : CALC_POS_TYPE::POS_NONE);
 }
-/* kalman coupled methods ****************************************************/
+/* kalman coupled methods start **********************************************/
 void uiMainWindow::posKalmanCoupled() {
-    if (actionNowPos && actionNowPos == ui->actionKalmanCoupled) {
-        calcPos.kalmanCoupledType = calcTagPos::NONE_COUPLED;
-    }
     UPDATE_POS_UI(ui->actionKalmanCoupled);
     kalmanCoupledSyncUi();
-    posCalcPROCESS(CALC_POS_TYPE::POS_KalmanCoupled);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::POS_KalmanCoupled : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posKalmanTrail() {
     calcPos.kalmanCoupledType ^= calcTagPos::TRAIL_COUPLED;
@@ -436,19 +437,19 @@ void uiMainWindow::posKalmanSmooth() {
     kalmanCoupledSyncUi();
     posCalcPROCESS(CALC_POS_TYPE::POS_KalmanSmooth);
 }
-/*****************************************************************************/
+/************************************************ kalman coupled methods end */
 void uiMainWindow::posLMedS() {
     UPDATE_POS_UI(ui->actionLMedS);
-    posCalcPROCESS(CALC_POS_TYPE::LMedS);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::LMedS : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posBilateration() {
     UPDATE_POS_UI(ui->actionBilateration);
-    posCalcPROCESS(CALC_POS_TYPE::Bilateration);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::Bilateration : CALC_POS_TYPE::POS_NONE);
 }
 // ARM VERSION /////////////////////////////////////////////////////////////////
 void uiMainWindow::posCalc_ARM() {
     UPDATE_POS_UI(ui->actioncalcTagPos_ARM);
-    posCalcPROCESS(CALC_POS_TYPE::ARM_calcPos);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::ARM_calcPos : CALC_POS_TYPE::POS_NONE);
 }
 
 /***********************************************************/
@@ -478,7 +479,7 @@ void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
                  << "avgDistanceSquare => measDist:" << measDist << ";"
                  << "trackDist:" << kalmanDist;
     }
-    calcTimeElapsedTrack = time.elapsed()/1000.f;
+    calcTimeElapsedTrack = time.elapsed() / 1000.f;
     setStatusTimeInfo();
     qDebug() << "#trackCalcPROCESS#" << TRACK_METHOD2STR[type]
              << "total Pos:" << totalPos << ";"
@@ -488,17 +489,14 @@ void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
 }
 
 void uiMainWindow::trackKalman() {
-        UPDATE_TRACK_UI(ui->actionKalmanTrack);
-    trackCalcPROCESS(actionNowTrack == ui->actionKalmanTrack ?
-                         TRACK_METHOD::TRACK_KALMAN : TRACK_METHOD::TRACK_NONE);
+    UPDATE_TRACK_UI(ui->actionKalmanTrack);
+    trackCalcPROCESS(actionNowTrack ? TRACK_METHOD::TRACK_KALMAN : TRACK_METHOD::TRACK_NONE);
 }
 void uiMainWindow::trackKalmanLite() {
     UPDATE_TRACK_UI(ui->actionKalmanLiteTrack);
-    trackCalcPROCESS(actionNowTrack == ui->actionKalmanLiteTrack?
-                         TRACK_METHOD::TRACK_KALMAN_LITE : TRACK_METHOD::TRACK_NONE);
+    trackCalcPROCESS(actionNowTrack ? TRACK_METHOD::TRACK_KALMAN_LITE : TRACK_METHOD::TRACK_NONE);
 }
 void uiMainWindow::trackKalmanInfo() {
     UPDATE_TRACK_UI(ui->actionKalmanInfoTrack);
-    trackCalcPROCESS(actionNowTrack == ui->actionKalmanInfoTrack ?
-                         TRACK_METHOD::TRACK_KALMAN_INFO : TRACK_METHOD::TRACK_NONE);
+    trackCalcPROCESS(actionNowTrack ? TRACK_METHOD::TRACK_KALMAN_INFO : TRACK_METHOD::TRACK_NONE);
 }

@@ -63,7 +63,7 @@ void calcTagPos::resetA() {
 }
 void calcTagPos::setConfigData(const configData *cfg_q) {
     if (nullptr == cfg_q) {
-        qDebug() << "nullptr == cfg_q @ calcTagPos::setConfigData";
+        qDebug() << "[@calcTagPos::setConfigData] nullptr == cfg_q @ calcTagPos::setConfigData";
         return;
     }
     this->cfg_d = cfg_q;
@@ -185,6 +185,9 @@ QVector<locationCoor> calcTagPos::calcPosFromDistance(const int dist[], uint32_t
 void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
     if (nullptr == tagInfo)
         return;
+    if (CALC_POS_TYPE::POS_NONE == calcPosType) {
+        return;
+    }
 
     bool isNlosIgnore = false;
     if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
@@ -288,7 +291,9 @@ locationCoor calcTagPos::calcOnePosition(const int *dist, dType &MSE, dType T,
             || CALC_POS_TYPE::POS_KalmanSmooth == calcPosType) {
            return calcKalmanCoulped(dist, MSE, T, lastPos, kalmanData, kalmanCoupledType,
                                     usedSensor, iterTrace, weight, x_hat);
-       }else {
+    } else if (CALC_POS_TYPE::POS_NONE == calcPosType) {
+        return {0.f, 0.f, 0.f};
+    } else {
         return {0.f, 0.f, 0.f};
     }
 }

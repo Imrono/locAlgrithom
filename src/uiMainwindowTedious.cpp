@@ -13,18 +13,23 @@ void uiMainWindow::UPDATE_POS_UI(QAction *action) {
         } else {
             kalmanCoupledChange(true);
         }
-        return;
+    } else {
+        if (actionNowPos != ui->actionKalmanCoupled && action == ui->actionKalmanCoupled) {
+            kalmanCoupledChange(true);
+        } else if (actionNowPos == ui->actionKalmanCoupled && action != ui->actionKalmanCoupled) {
+            kalmanCoupledChange(false);
+        } else {}
+
+        if (actionNowPos == action) {
+            actionNowPos->setChecked(false);
+            kalmanCoupledChange(false);
+            actionNowPos = nullptr;
+        } else {
+            actionNowPos->setChecked(false);
+            actionNowPos = action;
+            actionNowPos->setChecked(true);
+        }
     }
-
-    if (actionNowPos != ui->actionKalmanCoupled && action == ui->actionKalmanCoupled) {
-        kalmanCoupledChange(true);
-    } else if (actionNowPos == ui->actionKalmanCoupled && action != ui->actionKalmanCoupled) {
-        kalmanCoupledChange(false);
-    } else {}
-
-    actionNowPos->setChecked(false);
-    actionNowPos = action;
-    actionNowPos->setChecked(true);
 }
 
 void uiMainWindow::kalmanCoupledChange(bool isEnable) {
@@ -364,5 +369,5 @@ void uiMainWindow::showMousePos(int x, int y) {
 }
 
 void uiMainWindow::setStatusIter(int n, dType mse) {
-    iterationNum->setText(QString::number((n)) + QString("<") + QString::number((mse)) + QString(">"));
+    iterationNum->setText(QString::number(n) + QString("<") + QString::number((mse)) + QString(">"));
 }

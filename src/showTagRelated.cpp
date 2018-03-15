@@ -122,13 +122,14 @@ void showTagRelated::drawLines(QPainter &painter, dType ratio,
                                dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setPen(QPen(oneMethod.linesColor, 2));
-		int lineCount = oneMethod.lines.count();
-		for (int j = 0; j < lineCount; j++) {
-			painter.drawLine(QLineF{toZoomedPoint(oneMethod.lines[j].p1(), ratio, zoom, offset),
-									toZoomedPoint(oneMethod.lines[j].p2(), ratio, zoom, offset)});
-			qDebug() << j << toZoomedPoint(oneMethod.lines[j].p1(), ratio, zoom, offset)
-				          << toZoomedPoint(oneMethod.lines[j].p2(), ratio, zoom, offset);
-		}
+        int lineCount = oneMethod.lines.count();
+        for (int j = 0; j < lineCount; j++) {
+            painter.drawLine(QLineF{toZoomedPoint(oneMethod.lines[j].p1(), ratio, zoom, offset),
+                                    toZoomedPoint(oneMethod.lines[j].p2(), ratio, zoom, offset)});
+            // qDebug() << "[@showTagRelated::drawLines]"
+            //          << j << toZoomedPoint(oneMethod.lines[j].p1(), ratio, zoom, offset)
+            //               << toZoomedPoint(oneMethod.lines[j].p2(), ratio, zoom, offset);
+        }
     }
 }
 
