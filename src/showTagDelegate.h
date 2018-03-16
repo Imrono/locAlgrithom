@@ -39,11 +39,11 @@ struct showTagOneMethod {
     QVector<QPointF> pointsRefined;
 };
 
-class showTagRelated
+class showTagDelegate
 {
 public:
-    explicit showTagRelated();
-    explicit showTagRelated(int tagId);
+    explicit showTagDelegate();
+    explicit showTagDelegate(int tagId);
 
 /******************************************************************/
     void addMethod(const QString &name);
@@ -117,10 +117,16 @@ public:
         distance.clear();
         weight.clear();
     }
+    void clearMethodData(const QString &methodName) {
+        if (oneTagMethod.contains(methodName))
+            oneTagMethod.remove(methodName);
+    }
 
 /******************************************************************/
     void drawPoint(QPainter &painter, dType ratio = 1.f,
                    dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
+    void drawPointInfo(QPainter &painter, QPointF p, dType ratio = 1.f,
+                       dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
     void drawIterPoints(QPainter &painter, dType ratio = 1.f,
                         dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
     void drawPointsRaw(QPainter &painter, dType ratio = 1.f,

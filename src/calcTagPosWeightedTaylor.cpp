@@ -138,7 +138,7 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
     int k = 0;
     dType eps1 = 0.002f;
     dType eps2 = 4.f;
-    dType eps3 = 10000.f;
+    dType eps3 = 100.f;
 
     while (k++ < k_max) {
         dType X0[2];    //Taylor series expansion at x0 point

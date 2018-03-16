@@ -3,7 +3,7 @@
 #include "_myheads.h"
 #include <QVector>
 #include <QMap>
-#include "showTagRelated.h"
+#include "showTagDelegate.h"
 #include "dataType.h"
 
 struct storeTagInfo;
@@ -17,16 +17,27 @@ struct storeMethodInfo {
     storeTagInfo *parentTag{nullptr};
     QString methodName;
     bool isMethodActive{false};
-    QVector<QDateTime>             time;
-    QVector<locationCoor>          Ans;
-    QVector<QLineF>                AnsLines;
+    QVector<QDateTime>    time;
+    QVector<locationCoor> Ans;
+    QVector<QLineF>       AnsLines;
+
+    enum DATA_STORED {
+        STORED_MSE = 0,
+        STORED_Crossed1 = 1,
+        STORED_Crossed2 = 2,
+        STORED_Kx  = 0,
+        STORED_Rx  = 1,
+        STORED_Px  = 2,
+        NUM_METHOD_STORED = 3
+    };
     // data[0]
     // meas: Reliability; kalman: R
-    QVector<dType>                 data[5];
+    QVector<dType>        data[NUM_METHOD_STORED];
+
     void clear() {
         Ans.clear();
         AnsLines.clear();
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < NUM_METHOD_STORED; i++)
             data[i].clear();
     }
 };
@@ -36,7 +47,7 @@ struct oneKalmanData {  // kalman data
     locationCoor v_t   = {0,0,0};
     locationCoor x_t_1 = {0,0,0};
     locationCoor v_t_1 = {0,0,0};
-    dType K            = 0.3f;  //Complementary Filter, K is the measure gain
+    dType K            = 0.6f;  //Complementary Filter, K is the measure gain
     dType Time         = 0.f;
     bool isInitialized = false;
     void clear() {
@@ -100,10 +111,10 @@ struct storeTagInfo {
     void reset(const QString &methodType);
 };
 
-class showStore
+class showTagModel
 {
 public:
-    showStore();
+    showTagModel();
 
     void addNewTagInfo(int tagId);
     storeTagInfo * getTagInfo(int tagId);

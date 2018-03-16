@@ -4,7 +4,7 @@
 
 void calcTagPos::calcBilateration  (const int *distance, const locationCoor *sensor, int N,
                                     dType &out_x, dType &out_y, dType &out_MSE) {
-    //qDebug() << "calcBilateration";
+    //qDebug() << "[@calcTagPos::calcBilateration] calcBilateration";
     Q_UNUSED(distance);
     Q_UNUSED(sensor);
     Q_UNUSED(N);

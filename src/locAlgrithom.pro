@@ -25,11 +25,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-    showStore.cpp \
     uiCanvas.cpp \
     uiMainWindow.cpp \
     dataSensorIni.cpp \
-    showTagRelated.cpp \
     dataDistanceLog.cpp \
     calcTagPos.cpp \
     calcTagNLOS.cpp \
@@ -48,15 +46,15 @@ SOURCES += \
     calcTagPosBilateration.cpp \
     calcTagPosWeightedTaylor.cpp \
     calcLibGeometry.cpp \
-    calcTagPosKalmanCoupled.cpp
+    calcTagPosKalmanCoupled.cpp \
+    showTagDelegate.cpp \
+    showTagModel.cpp
 
 HEADERS += \
-    showStore.h \
     _myheads.h \
     uiMainWindow.h \
     uiCanvas.h \
     dataSensorIni.h \
-    showTagRelated.h \
     dataDistanceLog.h \
     calcTagPos.h \
     calcTagNLOS.h \
@@ -67,7 +65,9 @@ HEADERS += \
     calcTagTrack.h \
     calcLibMath.h \
     armVersion/calcTagLoc_ARM.h \
-    calcLibGeometry.h
+    calcLibGeometry.h \
+    showTagDelegate.h \
+    showTagModel.h
 
 FORMS += \
     mainwindow.ui

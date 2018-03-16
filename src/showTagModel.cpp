@@ -1,4 +1,4 @@
-﻿#include "showStore.h"
+﻿#include "showTagModel.h"
 
 void storeTagInfo::addOrResetMethodInfo(const QString &methodType, const QString &method) {
     if (!methodInfo.contains(methodType)) {
@@ -9,13 +9,7 @@ void storeTagInfo::addOrResetMethodInfo(const QString &methodType, const QString
 }
 void storeTagInfo::reset(const QString &methodType, const QString &method) {
     if (methodInfo.contains(methodType)) {
-        methodInfo[methodType].Ans.clear();
-        methodInfo[methodType].AnsLines.clear();
-        methodInfo[methodType].data[0].clear();
-        methodInfo[methodType].data[1].clear();
-        methodInfo[methodType].data[2].clear();
-        methodInfo[methodType].data[3].clear();
-        methodInfo[methodType].data[4].clear();
+        methodInfo[methodType].clear();
         methodInfo[methodType].methodName = method;
     }
 }
@@ -26,11 +20,11 @@ void storeTagInfo::reset(const QString &methodType) {
     }
 }
 
-showStore::showStore()
+showTagModel::showTagModel()
 {
 }
 
-void showStore::addNewTagInfo(int tagId) {
+void showTagModel::addNewTagInfo(int tagId) {
     if (!tags.contains(tagId)) {
         storeTagInfo *tag = new storeTagInfo;
         tag->tagId = tagId;
@@ -38,7 +32,7 @@ void showStore::addNewTagInfo(int tagId) {
     }
 }
 
-storeTagInfo *showStore::getTagInfo(int tagId) {
+storeTagInfo *showTagModel::getTagInfo(int tagId) {
     if (tags.contains(tagId)) {
         return tags[tagId];
     } else {
@@ -46,23 +40,23 @@ storeTagInfo *showStore::getTagInfo(int tagId) {
     }
 }
 
-void showStore::addRawPoints(int tagId, QVector<locationCoor> points) {
+void showTagModel::addRawPoints(int tagId, QVector<locationCoor> points) {
     if (tags.contains(tagId))
         tags[tagId]->RawPoints.append(points);
 }
 
-void showStore::clearRawPoints(int tagId) {
+void showTagModel::clearRawPoints(int tagId) {
     if (tags.contains(tagId))
         tags[tagId]->RawPoints.clear();
 }
 
-void showStore::addAnsPoint(int tagId, const QString &method, locationCoor p) {
+void showTagModel::addAnsPoint(int tagId, const QString &method, locationCoor p) {
     if (tags.contains(tagId))
         if(tags[tagId]->methodInfo.contains(method))
             tags[tagId]->methodInfo[method].Ans.append(p);
 }
 
-void showStore::clearAnsPoints(int tagId, const QString &method) {
+void showTagModel::clearAnsPoints(int tagId, const QString &method) {
     if (tags.contains(tagId))
         if(tags[tagId]->methodInfo.contains(method))
             tags[tagId]->methodInfo[method].Ans.clear();

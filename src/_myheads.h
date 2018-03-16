@@ -6,6 +6,8 @@
 
 #define MAX_SENSOR 10
 
+#define MY_INT_MAX = ((int)(~(unsigned int)0 >> 1));
+
 #ifndef dType
 #define dType float
 #endif

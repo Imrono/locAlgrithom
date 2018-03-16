@@ -211,6 +211,8 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
     for (int i = 0; i < oneTagData.distData.count(); i++) {
         locationCoor tmpLastPos = tmpX;
         //qDebug() << i << tmpLastPos.toQPointF();
+
+        // copy distance, nlos distance filter may change the distance
         dist4Calc tmpDist = {{0,0,0,0,0,0}};
         for (int j = 0; j < oneTagData.distData[i].distance.count(); j++) {
             tmpDist.distance[j] = oneTagData.distData[i].distance[j];
@@ -237,12 +239,23 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
             }
             /* distance filter END */
         }
+
+        // crossed circle which measure p's quality with MSE
+        int crossed_1 = calcCrossedCircle(oneTagData.distData[i].distance.data(),
+                                          cfg_d->sensor.data(), cfg_d->sensor.count(),
+                                          tmpX, MACRO_circleR_1);
+        int crossed_2 = calcCrossedCircle(oneTagData.distData[i].distance.data(),
+                                          cfg_d->sensor.data(), cfg_d->sensor.count(),
+                                          tmpX, MACRO_circleR_2);
+
         // store and update
-        distRefined.append(tmpDist);
+        distRefined.append(tmpDist);    // used for nlos distance filter
         tagInfo->methodInfo[MEASUR_STR].time.append(oneTagData.distData[i].time);
         tagInfo->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
         tagInfo->Reliability.append(mse);
-        tagInfo->methodInfo[MEASUR_STR].data[0].append(mse);
+        tagInfo->methodInfo[MEASUR_STR].data[storeMethodInfo::STORED_MSE].append(mse);
+        tagInfo->methodInfo[MEASUR_STR].data[storeMethodInfo::STORED_Crossed1].append(crossed_1);
+        tagInfo->methodInfo[MEASUR_STR].data[storeMethodInfo::STORED_Crossed2].append(crossed_2);
         tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
         //qDebug() << tmpX.toString();
         //qDebug() << tagInfo->methodInfo[MEASUR_STR].Ans[tagInfo->methodInfo[MEASUR_STR].Ans.count() - 1].toString();

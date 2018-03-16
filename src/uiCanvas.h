@@ -6,7 +6,7 @@
 #include "dataType.h"
 #include "dataSensorIni.h"
 #include "dataDistanceLog.h"
-#include "showTagRelated.h"
+#include "showTagDelegate.h"
 #include "uiUsrFrame.h"
 
 class uiCanvas : public QWidget
@@ -23,6 +23,7 @@ public:
         if (tags.contains(tagId)) {
             tags[tagId].setPosition(methodName, p);
         }
+        pos.append(p);
     }
     void setIterPoints(int tagId, const QVector<QPointF> &p) {
         if (tags.contains(tagId)) {
@@ -75,10 +76,13 @@ public:
             tags[tagId].clearData();
         }
     }
+    void removeTagMethod(int tagId, const QString &methodName) {
+        tags[tagId].clearMethodData(methodName);
+    }
     void removeAll() {
         for (auto it = tags.begin(); it != tags.end();) {
             qDebug() << "[@uiCanvas::removeAll] erase showTagRelated tagId:" << it.key();
-            showTagRelated::eraseTagId(it.key());
+            showTagDelegate::eraseTagId(it.key());
             it = tags.erase(it);
         }
         tags.clear();
@@ -108,7 +112,7 @@ public:
     void setShowLM(bool lm) { isShowLM = lm;}
     bool getShowLM() { return isShowLM;}
     void setSigmaLM(int sigma) {
-        showTagRelated::setSigmaLM(sigma);
+        showTagDelegate::setSigmaLM(sigma);
     }
 
     void loadPicture(QString path);
@@ -119,11 +123,13 @@ public:
         update();
     }
     void zoomReset() {ratioZoom = 100;}
-    int zoomGet() {return ratioZoom;}
-    dType zoom() {return ratioZoom/100.f;}
+    int zoomGet()    {return ratioZoom;}
+    dType zoom()     {return ratioZoom/100.f;}
 
     dType widthActual{4000.f};
     dType heightActual{3000.f};
+
+    void resetPos() { pos.clear();}
 
 signals:
     void mouseChange(int x, int y);
@@ -161,10 +167,14 @@ private:
         return p*zoom()+(1.f-zoom())*center;
     }
 
-    QMap<int, showTagRelated> tags;
+    QMap<int, showTagDelegate> tags;
     bool isShowPath{false};
     bool isShowAllPos{false};
     bool isShowLM{false};
+
+    bool isShowPosInfo{false};  // 所选位置坐标的同心圆
+    QPointF showPosInfo;
+    QVector<QPointF> pos;
 
     int nCount{0};
 

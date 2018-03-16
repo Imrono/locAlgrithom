@@ -72,7 +72,8 @@ dType calcTagTrack::calcR(dType reliability, const QString &methodName) {
 dType calcTagTrack::calcR(locationCoor v_t, locationCoor v_t_1) {
     dType v_mod_square = calcDistanceSquare(v_t, v_t_1);
     dType ans = qExp(-v_mod_square/200.0f);
-    //qDebug() << v_t.toString() << v_t_1.toString() << v_mod_square << "ans=" << ans;
+    //qDebug() << "[@calcTagTrack::calcR]" << v_t.toString() << v_t_1.toString()
+    //         << v_mod_square << "ans=" << ans;
     ans = ans < 0.1 ? 0.1 : ans;
     return ans;
 }
@@ -112,7 +113,7 @@ void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo
             locationCoor z_x_meas = tagMeasInfo.Ans[i];
             T = dType(tagMeasInfo.time[i].toMSecsSinceEpoch()
                     - tagMeasInfo.time[i-1].toMSecsSinceEpoch()) / 1000.f;
-            Rx = calcR(tagMeasInfo.data[0][i], tagMeasInfo.methodName);
+            Rx = calcR(tagMeasInfo.data[storeMethodInfo::STORED_MSE][i], tagMeasInfo.methodName);
             calcOneTrack(z_x_meas, T, Rx, tagTrackParam, recParam);
             // kalman info only
             tagTrackParam.Kx = recParam.Kx;
@@ -123,9 +124,9 @@ void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo
 
         }
         tagKalmanInfo.time.append(tagMeasInfo.time[i]);
-        tagKalmanInfo.data[0].append(recParam.Kx);
-        tagKalmanInfo.data[1].append(Rx);
-        tagKalmanInfo.data[2].append(tagTrackParam.Pxx);
+        tagKalmanInfo.data[storeMethodInfo::STORED_Kx].append(recParam.Kx);
+        tagKalmanInfo.data[storeMethodInfo::STORED_Rx].append(Rx);
+        tagKalmanInfo.data[storeMethodInfo::STORED_Px].append(tagTrackParam.Pxx);
     }
 }
 

@@ -19,31 +19,25 @@ dType calcDistanceMSE(const dType *a, const dType *b, int N) {
     for (int i = 0; i < N; i++) {
         ans += (a[i] - b[i]) * (a[i] - b[i]);
     }
-    ans /= N;
-    return ans;
+    return ans / N;
 }
 dType calcDistanceMSE(const dType *dist, const dType *X, const locationCoor *sensor, int N) {
-    //dType *d_hat = new dType[N];
     dType d_hat[MAX_SENSOR];
     for (int i = 0; i < N; i++) {
-        //qDebug() << "calcDistanceMSE" << X[0] << X[1] << sensor[i].toString()
-        //         << qPow(X[0]-sensor[i].x, 2) << qPow(X[1]-sensor[i].y, 2);
         d_hat[i] = qSqrt(qPow(X[0]-sensor[i].x, 2) + qPow(X[1]-sensor[i].y, 2));
     }
     dType ans = calcDistanceMSE(dist, d_hat, N);
-    //delete []d_hat;
-    return ans;
+    return qSqrt(ans);
 }
 
 dType calcDistance(const locationCoor &a, const locationCoor &b) {
     dType ans = (a.x - b.x) * (a.x - b.x)
               + (a.y - b.y) * (a.y - b.y)
               + (a.z - b.z) * (a.z - b.z);
-    ans = qSqrt(ans);
-    return ans;
+    return qSqrt(ans);
 }
 dType calcDistance(const QPointF &a, const QPointF &b) {
-    return calcDistance({dType(a.x()), dType(a.y()), 0}, {dType(b.x()), dType(b.y()), 0});
+    return calcDistance({dType(a.x()), dType(a.y()), 0.f}, {dType(b.x()), dType(b.y()), 0.f});
 }
 dType calcTotalDistance(QVector<QLineF> &lines, int discount) {
     dType ans = 0.0f;
@@ -64,6 +58,20 @@ dType calcTotalDistanceSquare(QVector<QLineF> &lines, int discount) {
 }
 dType calcTotalAvgDistanceSquare(QVector<QLineF> &lines, int discount) {
     return calcTotalDistanceSquare(lines, discount)/(lines.count()-dType(discount));
+}
+int calcCrossedCircle (const int *distance, const locationCoor *sensor, int N,
+                       const locationCoor p, const dType d) {
+    int crossed = 0;
+    for (int i = 0; i < N; i++) {
+        dType l1 = calcDistance(sensor[i], p);
+        dType l2 = distance[i];
+        dType l3 = d;
+        // 三边能构成三角形，则说明两圆相交
+        if (l1 + l2 >= l3 && l1 + l3 >= l2 && l2 + l3 >= l1) {
+            crossed ++;
+        } else {}
+    }
+    return crossed;
 }
 
 bool calcCross2Circle(const dType ax, const dType ay, const dType ad,
@@ -92,7 +100,7 @@ bool calcCross2Circle(const dType ax, const dType ay, const dType ad,
 
     dType sqrtItem = 2.f*(n*x1+m)*y1 - y1*y1 - n*n*x1*x1 - 2.f*m*n*x1 - m*m + (1.f+n*n)*d1*d1;
 
-    //qDebug() << m << n << sqrtItem ;
+    //qDebug() << "[@calcCross2Circle]" << m << n << sqrtItem ;
 
     dType a = -(m*n-n*y1-x1);
     dType b = 1.f+n*n;

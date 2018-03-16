@@ -169,6 +169,8 @@
     <ClCompile Include="Release\moc_uiUsrInfoBtn.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="showTagDelegate.cpp" />
+    <ClCompile Include="showTagModel.cpp" />
     <ClCompile Include="_myheads.cpp" />
     <ClCompile Include="calcLibMath.cpp" />
     <ClCompile Include="armVersion\calcLibMath_ARM.c" />
@@ -184,8 +186,6 @@
     <ClCompile Include="dataDistanceLog.cpp" />
     <ClCompile Include="dataSensorIni.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="showStore.cpp" />
-    <ClCompile Include="showTagRelated.cpp" />
     <ClCompile Include="uiCanvas.cpp" />
     <ClCompile Include="uiMainWindow.cpp" />
     <ClCompile Include="uiMainwindowTedious.cpp" />
@@ -195,6 +195,8 @@
   <ItemGroup>
     <ClInclude Include="..\GeneratedFiles\ui_mainwindow.h" />
     <ClInclude Include="calcLibGeometry.h" />
+    <ClInclude Include="showTagDelegate.h" />
+    <ClInclude Include="showTagModel.h" />
     <ClInclude Include="_myheads.h" />
     <ClInclude Include="calcLibDistance.h" />
     <ClInclude Include="calcLibMath.h" />
@@ -206,8 +208,6 @@
     <ClInclude Include="dataDistanceLog.h" />
     <ClInclude Include="dataSensorIni.h" />
     <ClInclude Include="dataType.h" />
-    <ClInclude Include="showStore.h" />
-    <ClInclude Include="showTagRelated.h" />
     <CustomBuild Include="uiCanvas.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o "$(ConfigurationName)\moc_%(Filename).cpp"  -D_WINDOWS -DUNICODE -DWIN32 -DWIN64 -DQT_DEPRECATED_WARNINGS -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DNDEBUG "-I." "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtANGLE" "-I$(QTDIR)\include\QtCore" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing uiCanvas.h...</Message>

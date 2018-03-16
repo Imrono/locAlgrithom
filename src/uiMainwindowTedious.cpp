@@ -75,16 +75,16 @@ void uiMainWindow::connectUi() {
     connect(ui->canvas, SIGNAL(mouseChange(int,int)), this, SLOT(showMousePos(int, int)));
 /*************************************************************/
     // FILE
-    connect(ui->actionRead_ini,     SIGNAL(triggered(bool)), this, SLOT(loadIniConfigFile(bool)));
-    connect(ui->actionRead_dist,    SIGNAL(triggered(bool)), this, SLOT(loadLogDistanceFile(bool)));
-    connect(ui->actionRead_dist_2,  SIGNAL(triggered(bool)), this, SLOT(loadLogDistanceFile_2(bool)));
-    connect(ui->actionRead_picture, SIGNAL(triggered(bool)), this, SLOT(loadPictureFile(bool)));
+    connect(ui->actionRead_ini,     SIGNAL(triggered(bool)), this, SLOT(loadIniConfigFile()));
+    connect(ui->actionRead_dist,    SIGNAL(triggered(bool)), this, SLOT(loadLogDistanceFile()));
+    connect(ui->actionRead_dist_2,  SIGNAL(triggered(bool)), this, SLOT(loadLogDistanceFile_2()));
+    connect(ui->actionRead_picture, SIGNAL(triggered(bool)), this, SLOT(loadPictureFile()));
 
     // NLOS
-    connect(ui->actionWylie,     SIGNAL(triggered(bool)), this, SLOT(nlosWylie(bool)));
-    connect(ui->actionMultiPoint,SIGNAL(triggered(bool)), this, SLOT(nlosMultiPoint(bool)));
-    connect(ui->actionRes,       SIGNAL(triggered(bool)), this, SLOT(nlosRes(bool)));
-    connect(ui->actionSumDist,   SIGNAL(triggered(bool)), this, SLOT(nlosSumDist(bool)));
+    connect(ui->actionWylie,     SIGNAL(triggered(bool)), this, SLOT(nlosWylie()));
+    connect(ui->actionMultiPoint,SIGNAL(triggered(bool)), this, SLOT(nlosMultiPoint()));
+    connect(ui->actionRes,       SIGNAL(triggered(bool)), this, SLOT(nlosRes()));
+    connect(ui->actionSumDist,   SIGNAL(triggered(bool)), this, SLOT(nlosSumDist()));
 
     // POSITION
     connect(ui->actionFullCentroid,    SIGNAL(triggered(bool)), this, SLOT(posFullCentroid()));
@@ -225,7 +225,8 @@ void uiMainWindow::wheelEvent(QWheelEvent *e)
 }
 
 void uiMainWindow::checkData() {
-    qDebug() << "cfgData.get_q() =" << cfgData.get_q()->isInitialized
+    qDebug() << "[@uiMainWindow::checkData()]"
+             << "cfgData.get_q() =" << cfgData.get_q()->isInitialized
              << "distData.get_q() =" << distData.get_q()->isInitialized;
     if (!cfgData.get_q()->isInitialized || !distData.get_q()->isInitialized) {
         ui->actionWylie->setDisabled(true);
@@ -368,6 +369,9 @@ void uiMainWindow::showMousePos(int x, int y) {
     setStatusMousePos(x, y);
 }
 
-void uiMainWindow::setStatusIter(int n, dType mse) {
-    iterationNum->setText(QString::number(n) + QString("<") + QString::number((mse)) + QString(">"));
+void uiMainWindow::setStatusIter(int n, dType mse, int crossed1, int crossed2) {
+    iterationNum->setText(QString("nIter:") + QString::number(n) +
+                          QString("<") + QString::number(mse) + QString(">") +
+                          QString("<") + QString::number(crossed1) + QString(">") +
+                          QString("<") + QString::number(crossed2) + QString(">"));
 }

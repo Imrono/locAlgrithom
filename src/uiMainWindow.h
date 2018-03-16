@@ -11,8 +11,8 @@
 #include "dataSensorIni.h"
 #include "dataDistanceLog.h"
 
-#include "showTagRelated.h"
-#include "showStore.h"
+#include "showTagDelegate.h"
+#include "showTagModel.h"
 
 #include "calcTagPos.h"
 #include "calcTagNLOS.h"
@@ -45,7 +45,7 @@ public:
     explicit uiMainWindow(QWidget *parent = 0);
     ~uiMainWindow();
 
-    showStore store;
+    showTagModel store;
 
 private:
     Ui::MainWindow *ui;
@@ -79,7 +79,7 @@ private:
     QLabel *canvasPosShow{nullptr};
     void setStatusMousePos(int x, int y);
     QLabel *iterationNum{nullptr};
-    void setStatusIter(int n, dType mse);
+    void setStatusIter(int n, dType mse, int crossed1 = 0, int crossed2 = 0);
 
     void wheelEvent(QWheelEvent *e);
 
@@ -91,16 +91,16 @@ private:
 
 private slots:
     // FILE
-    void loadIniConfigFile(bool checked, QString pathIn = "");
-    void loadLogDistanceFile(bool checked, QString pathIn = "");
-    void loadLogDistanceFile_2(bool checked, QString pathIn = "");
-    void loadPictureFile(bool checked, QString pathIn = "");
+    void loadIniConfigFile(QString pathIn = "");
+    void loadLogDistanceFile(QString pathIn = "");
+    void loadLogDistanceFile_2(QString pathIn = "");
+    void loadPictureFile(QString pathIn = "");
 
     // NLOS
-    void nlosWylie(bool checked);
-    void nlosMultiPoint(bool checked);
-    void nlosRes(bool checked);
-    void nlosSumDist(bool checked);
+    void nlosWylie();
+    void nlosMultiPoint();
+    void nlosRes();
+    void nlosSumDist();
 
     // POS
     void posCalcPROCESS(CALC_POS_TYPE type);

@@ -3,6 +3,8 @@
 #include "_myheads.h"
 #include "datatype.h"
 
+#define MACRO_circleR_1 25.0f
+#define MACRO_circleR_2 50.0f
 // distance calculate
 dType calcDistanceSquare(const locationCoor &a, const locationCoor &b);
 dType calcDistanceSquare(const QPointF &a, const QPointF &b);
@@ -18,6 +20,8 @@ dType calcTotalAvgDistance(QVector<QLineF> &lines, int discount = 10);
 dType calcTotalDistanceSquare(QVector<QLineF> &lines, int discount = 10);
 dType calcTotalAvgDistanceSquare(QVector<QLineF> &lines, int discount = 10);
 
+int calcCrossedCircle (const int *distance, const locationCoor *sensor, int N,
+                       const locationCoor p, const dType d);
 bool calcCross2Circle(const dType ax, const dType ay, const dType ad,
                       const dType bx, const dType by, const dType bd,
                       dType &x0_1, dType &y0_1, dType &x0_2, dType &y0_2, bool &isCross);

@@ -3,7 +3,7 @@
 #include "_myheads.h"
 #include <QVector>
 #include "dataType.h"
-#include "showStore.h"
+#include "showTagModel.h"
 #include "calcLibGeometry.h"
 
 inline void calcMatrix22Mulit(const dType a, const dType b, const dType c, const dType d,

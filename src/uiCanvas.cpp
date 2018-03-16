@@ -1,16 +1,11 @@
 ﻿#include "uiCanvas.h"
+#include "calcLibGeometry.h"
 #include <QPainter>
 #include <QPainterPath>
 #include <QtMath>
 
 uiCanvas::uiCanvas(QWidget *parent) : QWidget(parent)
 {
-    // white background
-    //QPalette pal(palette());
-    //pal.setColor(QPalette::Background, Qt::white);
-    //setAutoFillBackground(true);
-    //setPalette(pal);
-
     widthCanvas = width();
     heightCanvas = height();
     ratioShow = static_cast<dType>(width()) / widthActual;
@@ -83,7 +78,7 @@ void uiCanvas::syncWithUiFrame(uiUsrFrame *frm) {
         // if tagId is not enabled but is showing, stop showing
         } else {
             qDebug() << "[@uiCanvas::syncWithUiFrame] erase showTagRelated tagId:" << it.key();
-            showTagRelated::eraseTagId(it.key());
+            showTagDelegate::eraseTagId(it.key());
             it = tags.erase(it);
         }
     }
@@ -92,8 +87,8 @@ void uiCanvas::syncWithUiFrame(uiUsrFrame *frm) {
         // if tagId is enabled but not showing, show it
         if (!tags.contains(tagId)) {
             qDebug() << "[@uiCanvas::syncWithUiFrame] insert showTagRelated tagId:" << tagId;
-            tags.insert(tagId, showTagRelated{tagId});
-            showTagRelated::recordTagId(tagId);
+            tags.insert(tagId, showTagDelegate{tagId});
+            showTagDelegate::recordTagId(tagId);
             tags[tagId].setTagView();
             frm->setBtnColorSample(tagId, tags[tagId].getTagView().color[0]);
         }
@@ -141,18 +136,12 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
 
-    // 画canvas的边框
+    // draw canvas background and frame
     painter.setPen(QPen(Qt::gray, 5));
+    //painter.setBrush(Qt::white);
     painter.drawRect(geometry());
-    // legend
-    //painter.setPen(tags[MEASUR_STR].getPen());
-    //painter.drawText(5, 5, 50, 10, Qt::AlignLeft, MEASUR_STR);
-
-    //painter.setPen(tags[KALMAN_STR].getPen());
-    //painter.drawText(5, 15, 50, 10, Qt::AlignLeft, KALMAN_STR);
 
     painter.setPen(QPen(Qt::black, 0, Qt::NoPen));
-
     if (!isShowLM) {
         // [Alarm]
         painter.setBrush(QBrush(Qt::yellow));
@@ -190,7 +179,7 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
         }
         painter.drawPath(operPath);
 
-        // 画背景
+        // draw background
         if (!backgroundImg.isNull()) {
             toZoomedPoint(QPointF(0.f, 0.f));
             QRect rect(toZoomedPoint(QPointF(0.f, 0.f)).x(),
@@ -202,7 +191,7 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
         showSensors(painter);
     }
 
-    foreach (const showTagRelated tag, tags) {
+    foreach (const showTagDelegate tag, tags) {
         if (isShowAllPos) {
             tag.drawPointsRaw(painter, ratioShow, zoom(), center);
             tag.drawPointsRefined(painter, ratioShow, zoom(), center);
@@ -211,6 +200,10 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
         if (isShowLM) {
             tag.drawLM(painter, cfg_d->sensor, width(), height(),
                        ratioShow, zoom(), center);
+        }
+
+        if (isShowPath) {
+            tag.drawLines(painter, ratioShow, zoom(), center);
         }
 
         if (isShowTrace) {
@@ -227,12 +220,13 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
         if (isShowCross) {
             tag.drawCross(painter, cfg_d->sensor, ratioShow, zoom(), center);
         }
-        if (isShowPath) {
-            tag.drawLines(painter, ratioShow, zoom(), center);
-        }
 
         tag.drawLine(painter, ratioShow, zoom(), center);
         tag.drawPoint(painter, ratioShow, zoom(), center);
+
+        if (isShowPosInfo) {
+            tag.drawPointInfo(painter, showPosInfo, ratioShow, zoom(), center);
+        }
     }
 
     // [Sensor]
@@ -243,37 +237,53 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
 void uiCanvas::mouseMoveEvent(QMouseEvent *event) {
     QPointF p = QPointF(event->x(), event->y());
     QPointF ans = ((p-center)/zoom()+center)/ratioShow;
-    emit mouseChange(ans.x(), ans.y());
+    emit mouseChange(ans.x(), ans.y()); // show mouse pos at status bar (actural pos)
 }
 
 void uiCanvas::mousePressEvent(QMouseEvent *event) {
-    dType x = event->x();
-    dType y = event->y();
+    QPointF mousePos = QPointF(event->x(), event->y());
 
+    // show radius (distance from sensor)
     isShowRadiusBold = false;
     boldRadiusIdx = -1;
     for (int i = 0; i < cfg_d->sensor.count(); i++) {
-        dType d = qSqrt(qPow(x - toZoomedPoint(sensorShow[i]).x(), 2)
-                      + qPow(y - toZoomedPoint(sensorShow[i]).y(), 2));
+        dType d = calcDistance(mousePos, toZoomedPoint(sensorShow[i]));
         if (d < 9) {
             isShowRadiusBold = true;
             boldRadiusIdx = i;
             break;
         }
     }
+
+    // pos info show
+    dType min_d = 10.f;
+    foreach (const QPointF p, pos) {
+        dType d = calcDistance(mousePos, toZoomedPoint(actual2Show(locationCoor(p))));
+        if (d < 9) {
+            isShowPosInfo = true;
+            if (min_d > d) {
+                showPosInfo = p;
+                min_d = d;
+            } else {}
+        }
+    }
+    // qDebug() << "[@uiCanvas::mousePressEvent]" << showPosInfo << isShowPosInfo << mousePos << pos;
+
     update();
 }
 void uiCanvas::mouseReleaseEvent(QMouseEvent *event) {
     Q_UNUSED(event);
     isShowRadiusBold = false;
     boldRadiusIdx = -1;
+    isShowPosInfo = false;
+
     update();
 }
 
 void uiCanvas::loadPicture(QString path) {
     backgroundImg.load(path);
 
-    // 白色变透明
+    // white to transparent
     backgroundImg = backgroundImg.convertToFormat(QImage::Format_ARGB32);
     union myrgb
     {
@@ -284,7 +294,7 @@ void uiCanvas::loadPicture(QString path) {
     int len = backgroundImg.width()*backgroundImg.height();
     while(len-- > 0)
     {
-        // 要是白色(255, 255, 255)则改为透明色
+        // if white, namely (255,255,255), change it to transparent
         mybits->rgba_bits[3] = (mybits->rgba == 0xFFFFFFFF) ? 0 : 255;
         mybits++;
     }

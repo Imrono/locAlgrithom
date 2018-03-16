@@ -6,9 +6,9 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
                                    dType &out_x, dType &out_y, dType &out_MSE,
                                    bool *usedSensor, QVector<QPointF> &iterTrace,
                                    QVector<dType> &weight, QPointF &out_x_hat) {
-    //qDebug() << type;
+    //qDebug() << "[@calcTagPos::calcKalmanCoulped]" << type;
     iterTrace.clear();
-    weight.fill(0.f, N);
+    weight.fill(0.f, N+1);
 
     dType init_W[MAX_SENSOR];
     locationCoor z_x_t_meas = {0.f, 0.f, 0.f};
@@ -66,7 +66,7 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
         kalmanData.isInitialized = true;
     } else {
 /* TRAIL COUPLED *************************************************************/
-        if (TRAIL_COUPLED == type) {    // which makes point different from ML point
+        if (TRAIL_COUPLED & type) {    // which makes point different from ML point
             kalmanData.x_t = x_hat_t * (1.f - kalmanData.K) + z_x_t_meas * kalmanData.K;
             kalmanData.v_t = v_hat_t * (1.f - kalmanData.K) +
                     (kalmanData.x_t - kalmanData.x_t_1) / T_diff * kalmanData.K;
@@ -75,7 +75,13 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
             kalmanData.v_t = {0.f, 0.f, 0.f};
         }
     }
-
+/*
+    qDebug() << "[@calcTagPos::calcKalmanCoulped]"
+             << "x_hat_t=" << x_hat_t.toString()
+             << "z_x_t_meas=" << z_x_t_meas.toString()
+             << "kalmanData.x_t=" << kalmanData.x_t.toString()
+             << "kalmanData.v_t=" << kalmanData.v_t.toString();
+*/
     kalmanData.x_t_1 = kalmanData.x_t;
     kalmanData.v_t_1 = kalmanData.v_t;
     kalmanData.Time = T_in;

@@ -1,14 +1,14 @@
-﻿#include "showTagRelated.h"
+﻿#include "showTagDelegate.h"
 #include "calcLibMath.h"
 #include "calcLibGeometry.h"
 #include <QtMath>
 
-dType showTagRelated::sigmaLM = 0.f;
+dType showTagDelegate::sigmaLM = 0.f;
 
 QList<oneTagView> tagsView::viewDatabase;
 int tagsView::count = 0;
-QMap<int, oneTagView> showTagRelated::tagViewData;
-tagsView showTagRelated::tagsViewDataBase;
+QMap<int, oneTagView> showTagDelegate::tagViewData;
+tagsView showTagDelegate::tagsViewDataBase;
 
 tagsView::tagsView(){
     viewDatabase << oneTagView{{QColor{Qt::green},  QColor{Qt::darkGreen}},  {SHOW_SHAPE::radius, SHOW_SHAPE::square}, 0, false};
@@ -21,13 +21,13 @@ tagsView::tagsView(){
 }
 
 /******************************************************************/
-showTagRelated::showTagRelated(){}
-showTagRelated::showTagRelated(int tagId) : tagId{tagId} {
+showTagDelegate::showTagDelegate(){}
+showTagDelegate::showTagDelegate(int tagId) : tagId{tagId} {
     recordTagId(tagId);
     tagView = tagViewData[tagId];
     qDebug() << "[@showTagRelated::showTagRelated] tagId:" << tagId << tagView.color[0] << tagView.color[1] << tagView.isUsed;
 }
-void showTagRelated::recordTagId(int tagId) {
+void showTagDelegate::recordTagId(int tagId) {
     if (!tagViewData.contains(tagId)) {
         for (int i = 0; i < tagsViewDataBase.viewDatabase.count(); i++) {
             if (false == tagsViewDataBase.viewDatabase[i].isUsed) {
@@ -39,7 +39,7 @@ void showTagRelated::recordTagId(int tagId) {
         }
     }
 }
-void showTagRelated::eraseTagId(int tagId) {
+void showTagDelegate::eraseTagId(int tagId) {
     if (tagViewData.contains(tagId)) {
         tagsViewDataBase.viewDatabase[tagViewData[tagId].nColorStyle].isUsed = false;
         tagViewData.remove(tagId);
@@ -47,7 +47,7 @@ void showTagRelated::eraseTagId(int tagId) {
     }
 }
 
-void showTagRelated::addMethod(const QString &name) {
+void showTagDelegate::addMethod(const QString &name) {
     if (!oneTagMethod.contains(name)) {
         showTagOneMethod tmp;
         tmp.name = name;
@@ -58,22 +58,36 @@ void showTagRelated::addMethod(const QString &name) {
         qWarning() << "showTagRelated::addMethod $>" << name << "is Already exist";
     }
 }
-void showTagRelated::setTagView() {
+void showTagDelegate::setTagView() {
     if (tagViewData.contains(tagId)) {
         tagView = tagViewData[tagId];
     }
 }
 
-void showTagRelated::drawPoint(QPainter &painter, dType ratio,
+void showTagDelegate::drawPoint(QPainter &painter, dType ratio,
                                dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setBrush(QBrush(oneMethod.posColor));
-        painter.setPen  (QPen  (QColor(Qt::darkGray), 2));
+        painter.setPen  (QPen(Qt::black, 1));
         painter.drawEllipse(toZoomedPoint(oneMethod.pos, ratio, zoom, offset),
                             shapeSize, shapeSize);
     }
 }
-void showTagRelated::drawIterPoints(QPainter &painter, dType ratio,
+void showTagDelegate::drawPointInfo(QPainter &painter, QPointF p, dType ratio,
+                                    dType zoom, QPointF offset) const {
+    foreach (showTagOneMethod oneMethod, oneTagMethod) {
+        QPointF diffPos = p - oneMethod.pos;
+        if (QPointF::dotProduct(diffPos, diffPos) < MY_EPS) {
+            painter.setPen  (QPen(QColor(Qt::darkGray), 2));
+            painter.setBrush(Qt::NoBrush);
+            painter.drawEllipse(toZoomedPoint(oneMethod.pos, ratio, zoom, offset),
+                                MACRO_circleR_1*ratio*zoom, MACRO_circleR_1*ratio*zoom);
+            painter.drawEllipse(toZoomedPoint(oneMethod.pos, ratio, zoom, offset),
+                                MACRO_circleR_2*ratio*zoom, MACRO_circleR_2*ratio*zoom);
+        } else {}
+    }
+}
+void showTagDelegate::drawIterPoints(QPainter &painter, dType ratio,
                                     dType zoom, QPointF offset) const {
     painter.setBrush(QBrush(QColor(Qt::white)));
     QFont font;
@@ -88,7 +102,7 @@ void showTagRelated::drawIterPoints(QPainter &painter, dType ratio,
         //qDebug() << "iteration" << i << iterPoints[i];
     }
 }
-void showTagRelated::drawPointsRaw(QPainter &painter, dType ratio,
+void showTagDelegate::drawPointsRaw(QPainter &painter, dType ratio,
                                    dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setBrush(QBrush(oneMethod.posColor));
@@ -99,7 +113,7 @@ void showTagRelated::drawPointsRaw(QPainter &painter, dType ratio,
         }
     }
 }
-void showTagRelated::drawPointsRefined(QPainter &painter, dType ratio,
+void showTagDelegate::drawPointsRefined(QPainter &painter, dType ratio,
                                        dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setBrush(QBrush(QColor(Qt::darkGray)));
@@ -110,7 +124,7 @@ void showTagRelated::drawPointsRefined(QPainter &painter, dType ratio,
         }
     }
 }
-void showTagRelated::drawLine(QPainter &painter, dType ratio,
+void showTagDelegate::drawLine(QPainter &painter, dType ratio,
                               dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setPen  (QPen(oneMethod.posColor, 2));
@@ -118,7 +132,7 @@ void showTagRelated::drawLine(QPainter &painter, dType ratio,
                                 toZoomedPoint(oneMethod.line.p2(), ratio, zoom, offset)});
     }
 }
-void showTagRelated::drawLines(QPainter &painter, dType ratio,
+void showTagDelegate::drawLines(QPainter &painter, dType ratio,
                                dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
         painter.setPen(QPen(oneMethod.linesColor, 2));
@@ -133,7 +147,7 @@ void showTagRelated::drawLines(QPainter &painter, dType ratio,
     }
 }
 
-void showTagRelated::drawCircle(QPainter &painter, const QVector<locationCoor> &sensor,
+void showTagDelegate::drawCircle(QPainter &painter, const QVector<locationCoor> &sensor,
                                 dType ratio, dType zoom, QPointF offset) const {
     QPen tmpPen = QPen(Qt::darkGray, 1);
     //QPen tmpPen = QPen(Qt::black, 1);
@@ -150,7 +164,7 @@ void showTagRelated::drawCircle(QPainter &painter, const QVector<locationCoor> &
     }
 }
 
-void showTagRelated::drawCircleBold(QPainter &painter, const locationCoor &sensor,
+void showTagDelegate::drawCircleBold(QPainter &painter, const locationCoor &sensor,
                                     int distIdx, dType ratio, dType zoom, QPointF offset) const {
     QPen tmpPen = QPen(Qt::darkGray, 3);
     painter.setBrush(Qt::NoBrush);
@@ -165,7 +179,7 @@ void showTagRelated::drawCircleBold(QPainter &painter, const locationCoor &senso
                         distance[distIdx] * ratio * zoom, distance[distIdx] * ratio * zoom);
 }
 
-void showTagRelated::drawCross(QPainter &painter, const QVector<locationCoor> &sensor,
+void showTagDelegate::drawCross(QPainter &painter, const QVector<locationCoor> &sensor,
                                dType ratio, dType zoom, QPointF offset) const {
     dType x0_1, x0_2, y0_1, y0_2;
     bool isCross;
@@ -195,7 +209,7 @@ void showTagRelated::drawCross(QPainter &painter, const QVector<locationCoor> &s
     }
 }
 
-void showTagRelated::drawLM(QPainter &painter, const QVector<locationCoor> &sensor, int w, int h,
+void showTagDelegate::drawLM(QPainter &painter, const QVector<locationCoor> &sensor, int w, int h,
                             dType ratio, dType zoom, QPointF offset) const {
     QVector<QPointF> zoomedSensor;
     QVector<double> zoomedDistance;
@@ -257,7 +271,7 @@ void showTagRelated::drawLM(QPainter &painter, const QVector<locationCoor> &sens
     delete []matrix;
 }
 
-void showTagRelated::drawCross(QPainter &painter, const QPointF center, const QColor &color, dType r) {
+void showTagDelegate::drawCross(QPainter &painter, const QPointF center, const QColor &color, dType r) {
     QPointF a1 = center + QPointF(-r, -r);
     QPointF b1 = center + QPointF(r, r);
     QPointF a2 = center + QPointF(r, -r);

@@ -5,7 +5,7 @@
 #include <QDateTime>
 
 struct dist4Calc {
-    int distance[6];
+    int distance[MAX_SENSOR];
 
     static dist4Calc diffDist(const dist4Calc &a, const dist4Calc &b) {
         dist4Calc ans;
@@ -31,9 +31,9 @@ struct dist4Calc {
 
 struct locationCoor
  {
-    dType x;
-    dType y;
-    dType z;
+    dType x{0.f};
+    dType y{0.f};
+    dType z{0.f};
 
     locationCoor()
     {}
@@ -42,6 +42,8 @@ struct locationCoor
     locationCoor(const locationCoor &obj):
         x(obj.x), y(obj.y), z(obj.z) {}
     locationCoor(const QPoint &obj):
+        x(obj.x()), y(obj.y()), z(0.0f) {}
+    locationCoor(const QPointF &obj):
         x(obj.x()), y(obj.y()), z(0.0f) {}
 
     locationCoor operator=(const locationCoor &t) {
