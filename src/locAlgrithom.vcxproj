@@ -171,6 +171,7 @@
     </ClCompile>
     <ClCompile Include="showTagDelegate.cpp" />
     <ClCompile Include="showTagModel.cpp" />
+    <ClCompile Include="_calcParam.cpp" />
     <ClCompile Include="_myheads.cpp" />
     <ClCompile Include="calcLibMath.cpp" />
     <ClCompile Include="armVersion\calcLibMath_ARM.c" />
@@ -197,6 +198,7 @@
     <ClInclude Include="calcLibGeometry.h" />
     <ClInclude Include="showTagDelegate.h" />
     <ClInclude Include="showTagModel.h" />
+    <ClInclude Include="_calcParam.h" />
     <ClInclude Include="_myheads.h" />
     <ClInclude Include="calcLibDistance.h" />
     <ClInclude Include="calcLibMath.h" />

@@ -186,7 +186,12 @@ public:
     static void recordTagId(int tagId);
     static void eraseTagId(int tagId);
 
-    static void drawCross(QPainter &painter, const QPointF center, const QColor &color, dType r = 2.f);
+    static void drawCross(QPainter &painter, const QPointF center, const QColor &color,
+                          dType r = 2.f);
+    static void draw5Star(QPainter &painter, const QPointF center, const QColor &color,
+                          dType r = 6.f, dType rot = 0.f);
+    static void drawTriangle(QPainter &painter, const QPointF center, const QColor &color,
+                             dType r = 4, dType rot = 0.f);
 };
 
 #endif // SHOWPOINT_H

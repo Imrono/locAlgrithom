@@ -32,53 +32,24 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 
     // clear output parameter
     iterTrace.clear();
-    if (nullptr != pos_hat)
-        weight.fill(0.f, N + 1);
-    else
-        weight.fill(0.f, N);
+    weight.fill(0.f, N+1);
 
     // sort distance
-    int idx[MAX_SENSOR] = {0};
-    dType sortedDist[MAX_SENSOR] = {0.f};
+    int idx[MAX_SENSOR]{0};
+    dType sortedDist[MAX_SENSOR]{0.f};
     locationCoor sortedSensor[MAX_SENSOR];
-    sortDistance(distance, idx, N);
+    sortDistance(distance, idx, N); // idx: sorted to original
     for (int i = 0; i < N; i++) {
         sortedDist[i] = distance[idx[i]];
         sortedSensor[i] = sensor[idx[i]];
     }
 
     // calculate weight
-    int nUnuseableNlos = 0;
-    int refIdx = (N+1)/2;
-    dType midDist = sortedDist[refIdx];
-    dType littleDist = sortedDist[refIdx-1];
-    for (int i = 0; i < N; i++) {
-        dType currDist = sortedDist[i];
-
-        float diffDist = fabsf(currDist-midDist)+1.f;
-        if (i < refIdx) {
-            usedSensor[idx[i]] = true;
-            dType sensorDist = calcDistance(sensor[refIdx-1].toQPointF(), sensor[i].toQPointF());
-            if(qAbs(littleDist - sensorDist) * 0.1f < currDist) {
-                //W_taylor[i] = 1.f * qPow(diffDist, 0.1);
-                W_taylor[i] *= (1.f + 0.01f*diffDist);
-            } else {
-                W_taylor[i] *= 1.f / qSqrt(diffDist);
-            }
-        } else {
-            if (sortedDist[i] > sortedDist[refIdx] * 1.4f) {
-                nUnuseableNlos++;
-                usedSensor[idx[i]] = false;
-                W_taylor[i] = 0.f;
-            } else {
-                usedSensor[idx[i]] = true;
-                W_taylor[i] *= 1.f / qSqrt(diffDist);
-            }
-        }
+    int matrixN = N - _calcParam::WeightedTaylor::CALC_WEIGHT(sortedSensor, sortedDist, N, W_taylor);
+    for (int i = 0; i < N; i++) {   // record
+        usedSensor[idx[i]] = i >= matrixN ? false : true;
         weight[idx[i]] = W_taylor[i];
     }
-
-    int matrixN = N - nUnuseableNlos;
 
     // TODO: refine the W_kalman
     dType W_kalman = 0.f;
@@ -121,7 +92,6 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 
     X[2] = 0.f;
     mseKeep = calcDistanceMSE(sortedDist, X, sortedSensor, matrixN);
-    //qDebug() << QPointF{X[0], X[1]} << mse;
     iterTrace.append(QPointF{X[0], X[1]});
 /*
     qDebug() << distance[0] << distance[1] << distance[2] << distance[3] << distance[4] << distance[5] << ","
@@ -132,15 +102,9 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 */
     /**********************************************************************/
     // Levenberg-Marquardt Method
-    dType lamda = .3f;
-    // iteration
-    int k_max = 20;
+    dType lamda = _calcParam::SolverLM::lamda0;
     int k = 0;
-    dType eps1 = 0.002f;
-    dType eps2 = 4.f;
-    dType eps3 = 100.f;
-
-    while (k++ < k_max) {
+    while (k++ < _calcParam::SolverLM::k_max) {
         dType X0[2];    //Taylor series expansion at x0 point
         X0[0] = X[0]; X0[1] = X[1];
         // fill the matrix
@@ -150,7 +114,6 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
             A_taylor[i][0] = ((X0[0] - sortedSensor[i].x) / tmpD) * W_taylor[i];
             A_taylor[i][1] = ((X0[1] - sortedSensor[i].y) / tmpD) * W_taylor[i];
             B_taylor[i]    = (sortedDist[i] - tmpD)               * W_taylor[i];
-            //qDebug() << A_taylor[i][0] << A_taylor[i][1] << B_taylor[i];
         }
         if (nullptr != pos_hat) {
             dType tmpD = qSqrt(qPow(X0[0] - pos_hat[0], 2) + qPow(X0[1] - pos_hat[1], 2) + MY_EPS);
@@ -166,41 +129,24 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
         X_new[1] = X0[1] + dX[1];
         mse = calcDistanceMSE(sortedDist, X_new, sortedSensor, matrixN);
 
-        /*
-        if (mse < mseKeep) {
+        if (_calcParam::SolverLM::calcIteration(mseKeep, mse, lamda,    // update λ
+                                                _calcParam::SolverLM::CONSTANT)) {
             X[0] = X_new[0];
             X[1] = X_new[1];
 
-            if (mse < eps1
-             || qSqrt(dX[0] * dX[0] + dX[1] * dX[1]) < eps2
-             || qAbs(mse - mseKeep) < eps1 * eps3) {
+            iterTrace.append(QPointF{X[0], X[1]});
+            if (mse < _calcParam::SolverLM::eps3
+             || qSqrt(dX[0] * dX[0] + dX[1] * dX[1]) < _calcParam::SolverLM::eps2
+             || qAbs(mse - mseKeep) < _calcParam::SolverLM::eps1) {
                 break;
             }
 
-            mu *= 0.9f;
             mseKeep = mse;
-            //qDebug() << lamda << QPointF{X[0], X[1]} << mse << mseKeep;
-            iterTrace.append(QPointF{X[0], X[1]});
-        } else {
-            mu *= 4.f;
         }
-        */
-        X[0] = X_new[0];
-        X[1] = X_new[1];
-
-        iterTrace.append(QPointF{X[0], X[1]});
-        if (mse < eps3
-         || qSqrt(dX[0] * dX[0] + dX[1] * dX[1]) < eps2
-         || qAbs(mse - mseKeep) < eps1 * eps3) {
-            break;
-        }
-
-        mseKeep = mse;
     };
 
     // output
     out_x   = X[0];
     out_y   = X[1];
     out_MSE = calcDistanceMSE(sortedDist, X, sortedSensor, matrixN);
-    //qDebug() << out_x << out_y << k << mse;
 }

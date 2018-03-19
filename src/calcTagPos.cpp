@@ -93,15 +93,8 @@ void calcTagPos::setConfigData(const configData *cfg_q) {
     for (int i = 0; i < ls_col; i++) {
         A_ls_inverse_AT[i] = new dType[ls_row];
     }
-    qDebug() << "[@calcTagPos::setConfigData] A_ls => row:" << ls_row <<  "col:" << ls_col;
-    //for (int i = 0; i < ls_row; i++) {
-    //    qDebug() << A_ls[i][0] << A_ls[i][1];
-    //}
+
     coefficient_B(A_ls, A_ls_inverse_AT, ls_row, ls_col);
-    qDebug() << "[@calcTagPos::setConfigData] A_ls_inverse_AT: => row:" << ls_col <<  "col:" << ls_row;
-    //for (int i = 0; i < ls_row; i++) {
-    //    qDebug() << A_ls_inverse_AT[0][i] << A_ls_inverse_AT[1][i];
-    //}
 
     // FC PART
     A_fc = new dType *[fc_row];

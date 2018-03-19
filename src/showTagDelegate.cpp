@@ -196,13 +196,15 @@ void showTagDelegate::drawCross(QPainter &painter, const QVector<locationCoor> &
 
             if (ans) {
                 if (isCross) {
-                    drawCross(painter, toZoomedPoint(QPointF(x0_1, y0_1), ratio, zoom, offset),
-                              tagView.color[0], 3.f);
-                    drawCross(painter, toZoomedPoint(QPointF(x0_2, y0_2), ratio, zoom, offset),
-                              tagView.color[0], 3.f);
+                    draw5Star(painter, toZoomedPoint(QPointF(x0_1, y0_1), ratio, zoom, offset),
+                              tagView.color[0]);
+                    draw5Star(painter, toZoomedPoint(QPointF(x0_2, y0_2), ratio, zoom, offset),
+                              tagView.color[0]);
                 } else {
-                    drawCross(painter, toZoomedPoint(QPointF(x0_1, y0_1), ratio, zoom, offset),
-                              QColor(Qt::black), 3.f);
+                    //drawCross(painter, toZoomedPoint(QPointF(x0_1, y0_1), ratio, zoom, offset),
+                    //          QColor(Qt::black), 3.f);
+                    drawTriangle(painter, toZoomedPoint(QPointF(x0_1, y0_1), ratio, zoom, offset),
+                                 QColor(Qt::black));
                 }
             }
         }
@@ -283,3 +285,37 @@ void showTagDelegate::drawCross(QPainter &painter, const QPointF center, const Q
     painter.drawLine(a2, b2);
     painter.setPen(tmpPen);
 }
+void showTagDelegate::draw5Star(QPainter &painter, const QPointF center, const QColor &color,
+                                dType r, dType rot) {
+    painter.setBrush(QBrush(color));
+    painter.setPen  (Qt::NoPen);
+    const dType coef = float(M_PI / 180.);
+    dType r2 = sin(18.f*coef)/sin(54.f*coef) * r;
+    QPolygonF tmpPolygon;
+    dType angle = -90.f - rot;
+    QPainterPath path;
+    for (int i = 0; i < 5; i++) {
+        dType tmpAngle = angle - i * 72.f;
+        dType tmpAngle2 = tmpAngle - 36.f;
+        tmpPolygon << QPointF(r * cos(tmpAngle*coef), r * sin(tmpAngle*coef)) + center;
+        tmpPolygon << QPointF(r2 * cos(tmpAngle2*coef), r2 * sin(tmpAngle2*coef)) + center;
+    }
+    path.addPolygon(tmpPolygon);
+    painter.drawPath(path);
+}
+void showTagDelegate::drawTriangle(QPainter &painter, const QPointF center, const QColor &color,
+                                   dType r, dType rot) {
+    painter.setBrush(QBrush(color));
+    painter.setPen  (Qt::NoPen);
+    const dType coef = float(M_PI / 180.);
+    QPolygonF tmpPolygon;
+    dType angle = -90.f - rot;
+    QPainterPath path;
+    for (int i = 0; i < 3; i++) {
+        dType tmpAngle = angle - i * 120.f;
+        tmpPolygon << QPointF(r * cos(tmpAngle*coef), r * sin(tmpAngle*coef)) + center;
+    }
+    path.addPolygon(tmpPolygon);
+    painter.drawPath(path);
+}
+

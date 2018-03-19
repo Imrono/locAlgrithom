@@ -10,7 +10,7 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
     iterTrace.clear();
     weight.fill(0.f, N+1);
 
-    dType init_W[MAX_SENSOR];
+    QVector<dType> init_W(MAX_SENSOR, 1.f);
     locationCoor z_x_t_meas = {0.f, 0.f, 0.f};
     dType mse = 0.f;
 
@@ -20,21 +20,15 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
     locationCoor v_hat_t = kalmanData.v_t_1;
 
 /* WEIGHT COUPLED ************************************************************/
-    for (int i = 0; i < N; i++) {
-        init_W[i] = 1.f;
-
-        if (WEIGHT_COUPLED & type) {
-            if (kalmanData.isInitialized) {
-                dType currDist_hat = calcDistance(x_hat_t, sensor[i]);
-                // TODO: refine the weight
-                init_W[i] = 1.f / (0.005f*qAbs(currDist_hat - distance[i]) + 1.f);
-            } else {}
-        } else {}
+    if (WEIGHT_COUPLED & type) {
+        _calcParam::KalmanCoupled::WEIGHT_COUPLED_weight(x_hat_t, sensor, distance, N,
+                                                         kalmanData.isInitialized, init_W.data());
     }
 /* GAUSS COUPLED *************************************************************/
     dType *x_hat = nullptr;
     dType pos_hat[3] = {x_hat_t.x, x_hat_t.y,   // x_hat
-                        0.4f};                  // x_hat's weighted coefficient
+                        // x_hat's weighted coefficient
+                        _calcParam::KalmanCoupled::GAUSS_COUPLED_weight};
     if (GAUSS_COUPLED & type) {
         x_hat = kalmanData.isInitialized ? pos_hat : nullptr;
     } else {
@@ -47,7 +41,8 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
         argDistance[i] = distance[i];
         if (SMOOTH_COUPLED & type) {    // distance filter
             dType dist_hat = calcDistance(sensor[i], x_hat_t);
-            argDistance.append(distance[i] * 0.3f + dist_hat * 0.7f);
+            argDistance.append(distance[i] * _calcParam::KalmanCoupled::SMOOTH_COUPLED_K
+                               + dist_hat * (1.f - _calcParam::KalmanCoupled::SMOOTH_COUPLED_K));
         }
     }
 
@@ -55,7 +50,7 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
 // using weighted Taylor kernel
     calcWeightedTaylor(argDistance.data(), sensor,
                        kalmanData.x_t_1,    //x_hat as lastPos is also reasonable
-                       N, init_W, x_hat,
+                       N, init_W.data(), x_hat,
                        z_x_t_meas.x, z_x_t_meas.y, mse,
                        usedSensor, iterTrace, weight);
 /**************************************************** CALCULATE POSITION END */
@@ -63,6 +58,7 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
     if (false == kalmanData.isInitialized) {
         kalmanData.x_t = z_x_t_meas;
         kalmanData.v_t = {0.f, 0.f, 0.f};
+        kalmanData.K = _calcParam::KalmanCoupled::TRAIL_COUPLED_K;
         kalmanData.isInitialized = true;
     } else {
 /* TRAIL COUPLED *************************************************************/

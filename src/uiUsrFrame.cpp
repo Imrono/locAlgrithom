@@ -53,6 +53,7 @@ void uiUsrFrame::removeAll() {
     update();
 }
 
+// HAS_DISTANCE_DATA, HAS_MEASURE_DATA, HAS_TRACK_DATA
 void uiUsrFrame::setUsrStatus(int tagId, USR_STATUS status) {
     foreach (uiUsrInfoBtn *usrBtn, usrBtns) {
         if (usrBtn->getTagId() == tagId) {

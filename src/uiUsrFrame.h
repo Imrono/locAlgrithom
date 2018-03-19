@@ -25,6 +25,8 @@ public:
     void setBtnToolTip(int tagId, bool isShowPos,
                        QPointF real = QPointF(), QPointF canvas = QPointF());
 
+    int getShowDistTagId() {return showDistTagId;}
+
 signals:
     void oneUsrBtnClicked_siganl(int tagId, bool isShowable);
     void oneUsrShowML_siganl(int tagId, bool isShowable);
@@ -39,6 +41,8 @@ private:
 
     const static int MAX_SHOWABLE_NUM;
     int tagShowLM{-1};
+
+    int showDistTagId{-1};
 };
 
 #endif // UIUSRFRAME_H

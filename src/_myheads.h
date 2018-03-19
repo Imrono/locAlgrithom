@@ -99,4 +99,6 @@ enum USR_STATUS {
     NUM_USR_STATUS
 };
 
+#include "_calcParam.h"
+
 #endif // MYHEADS_H

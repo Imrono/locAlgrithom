@@ -75,12 +75,6 @@ public:
     static void calcMatrixMulit_KP(const dType Kx, const dType Kv,
                                    const dType Pxx_pri_t, const dType Pxv_pri_t, const dType Pvv_pri_t,
                                    dType &Pxx_t, dType &Pxv_t, dType &Pvv_t);
-
-    static dType calcQ();
-    static dType calcR(dType reliability, const QString &methodName);
-    static dType calcR(locationCoor v_t, locationCoor v_t_1, dType reliability);
-    static dType calcR(locationCoor v_t, locationCoor v_t_1);
-    static dType calcR(QPoint v_t, QPoint v_t_1);
 };
 
 #endif // KALMANCALC_H

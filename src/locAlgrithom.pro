@@ -48,7 +48,8 @@ SOURCES += \
     calcLibGeometry.cpp \
     calcTagPosKalmanCoupled.cpp \
     showTagDelegate.cpp \
-    showTagModel.cpp
+    showTagModel.cpp \
+    _calcParam.cpp
 
 HEADERS += \
     _myheads.h \
@@ -67,7 +68,8 @@ HEADERS += \
     armVersion/calcTagLoc_ARM.h \
     calcLibGeometry.h \
     showTagDelegate.h \
-    showTagModel.h
+    showTagModel.h \
+    _calcParam.h
 
 FORMS += \
     mainwindow.ui

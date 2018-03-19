@@ -20,67 +20,6 @@ void calcTagTrack::calcMatrixMulit_KP(const dType Kx, const dType Kv,
     //qDebug() << c << B << d << D << c*B << d*D << dD;
 }
 
-dType calcTagTrack::calcQ() {//Q should be bigger if v is ultra high
-    return .01f;
-}
-
-dType calcTagTrack::calcR(locationCoor v_t, locationCoor v_t_1, dType reliability) {
-    dType ans = 0.0f;
-    dType k = 0.0f;
-
-    dType v_mod_square = calcDistanceSquare(v_t, v_t_1);
-    dType part1 = 1.0f / (1.0f + 3.0*qExp(-v_mod_square+10));
-    dType part2 = reliability/250.0f;
-
-    ans = k*part1 + (1.0f-k)*part2;
-    //qDebug() << v_t.toString() << v_t_1.toString() << v_mod_square
-    //         << "part1" << part1 << "part2" << part2 << reliability
-    //         << "ans=" << ans;
-    dType lBound = 0.13f;
-    ans = ans < lBound ? lBound : ans;
-    return ans;
-}
-dType calcTagTrack::calcR(dType reliability, const QString &methodName) {
-    if (METHOD_FULL_CENTROID_STR == methodName) {
-        reliability /= 100.f;
-    } else if (METHOD_SUB_LS_STR == methodName) {
-        reliability /= 100.f;
-        //qDebug() << "calcKalman::calcR" << reliability;
-    } else if (METHOD_TWO_CENTER_STR == methodName){
-    } else if (METHOD_TAYLOR_SERIES_STR == methodName) {
-        qDebug() << reliability;
-        reliability /= 100.f;
-    } else if (METHOD_WEIGHTED_TAYLOR_STR == methodName) {
-        reliability /= 100.f;
-    } else if (METHOD_KALMAN_COUPLED_STR == methodName) {
-        reliability /= 50.f;
-    } else {}
-
-    dType ans = 0.0f;
-    if (reliability < 2.5f) {
-        ans = 0.05f;
-    } else if (reliability < 8.f) {
-        ans = 0.2f;
-    } else if (reliability < 20.f) {
-        ans = 0.5f;
-    } else if (reliability >= 20.f) {
-        ans = reliability / 40.0f;
-    } else {}
-
-    return ans;
-}
-dType calcTagTrack::calcR(locationCoor v_t, locationCoor v_t_1) {
-    dType v_mod_square = calcDistanceSquare(v_t, v_t_1);
-    dType ans = qExp(-v_mod_square/200.0f);
-    //qDebug() << "[@calcTagTrack::calcR]" << v_t.toString() << v_t_1.toString()
-    //         << v_mod_square << "ans=" << ans;
-    ans = ans < 0.1 ? 0.1 : ans;
-    return ans;
-}
-dType calcTagTrack::calcR(QPoint v_t, QPoint v_t_1) {
-    return calcTagTrack::calcR(locationCoor(v_t), locationCoor(v_t_1));
-}
-
 void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo) {
     if (TRACK_METHOD::TRACK_NONE == calcTrackMethod) {
         return;
@@ -89,11 +28,11 @@ void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo
     int tagId = tagMeasInfo.parentTag->tagId;
     if (!tagsTrackParam.contains(tagId)) {
         trackParams trackParam;
-        trackParam.Pxx = .3f;
-        trackParam.Pxv = .3f;
-        trackParam.Pvv = .3f;
+        trackParam.Pxx = _calcParam::KalmanTrack::Pxx_init;
+        trackParam.Pxv = _calcParam::KalmanTrack::Pxv_init;
+        trackParam.Pvv = _calcParam::KalmanTrack::Pvv_init;
         trackParam.x_t = tagMeasInfo.Ans[0];
-        trackParam.v_t = {0.f, 0.f, 0.f};
+        trackParam.v_t = _calcParam::KalmanTrack::v_t_init;
         // kalman info only
         trackParam.i = 0;
         trackParam.numCov = 6;
@@ -113,7 +52,8 @@ void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo
             locationCoor z_x_meas = tagMeasInfo.Ans[i];
             T = dType(tagMeasInfo.time[i].toMSecsSinceEpoch()
                     - tagMeasInfo.time[i-1].toMSecsSinceEpoch()) / 1000.f;
-            Rx = calcR(tagMeasInfo.data[storeMethodInfo::STORED_MSE][i], tagMeasInfo.methodName);
+            Rx = _calcParam::KalmanTrack::calcR(
+                        tagMeasInfo.data[storeMethodInfo::STORED_MSE][i], tagMeasInfo.methodName);
             calcOneTrack(z_x_meas, T, Rx, tagTrackParam, recParam);
             // kalman info only
             tagTrackParam.Kx = recParam.Kx;
@@ -152,7 +92,7 @@ void calcTagTrack::calcKalmanPos(const locationCoor &z_x_meas,
                                  dType T, dType R,
                                  trackParams &trackParam,
                                  tagTrackRecord &recParam) {
-    dType Q = 0.01f;
+    dType Q = _calcParam::KalmanTrack::calcQ();
 
     // 1. x = Hx + Bu <= H = [1, T]
     locationCoor x_hat_t = trackParam.x_t + (trackParam.v_t * T);
@@ -182,7 +122,7 @@ void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
                                      trackParams &trackParam,
                                      tagTrackRecord &recParam) {
     dType R_v;
-    dType Q = 0.01f;
+    dType Q = _calcParam::KalmanTrack::calcQ();
 
     // 1. x = Hx + Bu
     locationCoor x_hat_t = trackParam.x_t_1 + (trackParam.v_t_1 * T);
@@ -209,8 +149,7 @@ void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
     trackParam.Pxx = Px_pri_t - Px_pri_t * recParam.Kx;
     trackParam.Pvv = Pv_pri_t - Pv_pri_t * recParam.Kv;
 
-    // TODO: smooth the v, such as using complementary filter
-    //       or using average moving for acceleration
+    // TODO: smooth the v, such as using complementary filter (average moving)
     dType v_mod = qSqrt(trackParam.v_t.x * trackParam.v_t.x
                       + trackParam.v_t.y * trackParam.v_t.y);
     v_mod -= 90.f;
