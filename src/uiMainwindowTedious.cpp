@@ -372,6 +372,8 @@ void uiMainWindow::showMousePos(int x, int y) {
 void uiMainWindow::setStatusIter(int n, dType mse, int crossed1, int crossed2) {
     iterationNum->setText(QString("nIter:") + QString::number(n) +
                           QString("<") + QString::number(mse) + QString(">") +
+                          QString("|r1:") + QString::number(MACRO_circleR_1) +
                           QString("<") + QString::number(crossed1) + QString(">") +
+                          QString("|r2:") + QString::number(MACRO_circleR_2) +
                           QString("<") + QString::number(crossed2) + QString(">"));
 }

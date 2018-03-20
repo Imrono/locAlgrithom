@@ -13,16 +13,11 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
                                     dType &out_x, dType &out_y, dType &out_MSE,
                                     bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight) {
     dType A_data[(MAX_SENSOR+1) * 2];
-    dType *A_taylor[MAX_SENSOR+1];
-    dType B_taylor [MAX_SENSOR+1];
-    dType W_taylor [MAX_SENSOR+1];
+    dType *sortedA[MAX_SENSOR+1];
+    dType sortedB [MAX_SENSOR+1];
+    dType sortedWeight [MAX_SENSOR+1];
     for (int i = 0; i < MAX_SENSOR + 1; i++) {
-        A_taylor[i] = &(A_data[i*2]);
-        if (nullptr != init_W) {
-            W_taylor[i] = init_W[i];
-        } else {
-            W_taylor[i] = 1.f;
-        }
+        sortedA[i] = &(A_data[i*2]);
     }
 
     dType X[3] = {0.f, 0.f, 0.f};
@@ -42,23 +37,19 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
     for (int i = 0; i < N; i++) {
         sortedDist[i] = distance[idx[i]];
         sortedSensor[i] = sensor[idx[i]];
+        sortedWeight[i] = init_W ? init_W[idx[i]] : 1.f;
     }
 
     // calculate weight
-    int matrixN = N - _calcParam::WeightedTaylor::CALC_WEIGHT(sortedSensor, sortedDist, N, W_taylor);
+    int matrixN = N - _calcParam::WeightedTaylor::CALC_WEIGHT(sortedSensor, sortedDist, N, sortedWeight);
+    dType W_kalman = !pos_hat ? 0.f :
+            _calcParam::WeightedTaylor::CALC_KalmanWeight(sortedWeight, matrixN, pos_hat[2]);
+
     for (int i = 0; i < N; i++) {   // record
         usedSensor[idx[i]] = i >= matrixN ? false : true;
-        weight[idx[i]] = W_taylor[i];
+        weight[idx[i]] = sortedWeight[i];
     }
-
-    // TODO: refine the W_kalman
-    dType W_kalman = 0.f;
-    if (nullptr != pos_hat) {
-        dType weightCo = pos_hat[2];
-        if (matrixN > 1) W_kalman = (W_taylor[0] + W_taylor[1]) * 0.5f * weightCo;
-        else             W_kalman = W_taylor[0] * 0.3f * weightCo;
-        weight[N] = W_kalman;
-    } else {}
+    weight[N] = W_kalman;
     /*
     qDebug() << distance[0] << distance[1] << distance[2] << distance[3] << distance[4] << distance[5] << ","
              << sortedDist[0] << sortedDist[1] << sortedDist[2] << sortedDist[3] << sortedDist[4] << sortedDist[5] << ","
@@ -80,11 +71,11 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
         }
         dType tmpB[MAX_SENSOR];
         for (int i = 0; i < N; i++) {
-            tmpA[i][0] = -2.f*sortedSensor[i].x * W_taylor[i];
-            tmpA[i][1] = -2.f*sortedSensor[i].y * W_taylor[i];
-            tmpA[i][2] = 1.f                    * W_taylor[i];
+            tmpA[i][0] = -2.f*sortedSensor[i].x * sortedWeight[i];
+            tmpA[i][1] = -2.f*sortedSensor[i].y * sortedWeight[i];
+            tmpA[i][2] = 1.f                    * sortedWeight[i];
             tmpB[i]    = (qPow(sortedDist[i], 2) - qPow(sortedSensor[i].x, 2)
-                          - qPow(sortedSensor[i].y, 2)) * W_taylor[i];
+                          - qPow(sortedSensor[i].y, 2)) * sortedWeight[i];
         }
         leastSquare_ARM(tmpA, tmpB, X, matrixN, 3, 0.f);
         //qDebug() << X[0] << X[1] << matrixN;
@@ -111,18 +102,18 @@ void calcTagPos::calcWeightedTaylor(const int *distance, const locationCoor *sen
 		int tmpN = nullptr == pos_hat ? matrixN : matrixN + 1;
         for (int i = 0; i < matrixN; i++) {
             dType tmpD =  qSqrt(qPow(X0[0] - sortedSensor[i].x, 2) + qPow(X0[1] - sortedSensor[i].y, 2));
-            A_taylor[i][0] = ((X0[0] - sortedSensor[i].x) / tmpD) * W_taylor[i];
-            A_taylor[i][1] = ((X0[1] - sortedSensor[i].y) / tmpD) * W_taylor[i];
-            B_taylor[i]    = (sortedDist[i] - tmpD)               * W_taylor[i];
+            sortedA[i][0] = ((X0[0] - sortedSensor[i].x) / tmpD) * sortedWeight[i];
+            sortedA[i][1] = ((X0[1] - sortedSensor[i].y) / tmpD) * sortedWeight[i];
+            sortedB[i]    = (sortedDist[i] - tmpD)               * sortedWeight[i];
         }
         if (nullptr != pos_hat) {
             dType tmpD = qSqrt(qPow(X0[0] - pos_hat[0], 2) + qPow(X0[1] - pos_hat[1], 2) + MY_EPS);
-            A_taylor[matrixN][0] = ((X0[0] - pos_hat[0]) / tmpD) * W_kalman;
-            A_taylor[matrixN][1] = ((X0[1] - pos_hat[1]) / tmpD) * W_kalman;
-            B_taylor[matrixN]    = - tmpD                        * W_kalman;
+            sortedA[matrixN][0] = ((X0[0] - pos_hat[0]) / tmpD) * W_kalman;
+            sortedA[matrixN][1] = ((X0[1] - pos_hat[1]) / tmpD) * W_kalman;
+            sortedB[matrixN]    = - tmpD                        * W_kalman;
         }
         //leastSquare(A_taylor, B_taylor, dX, matrixN, 2, lamda);
-        leastSquare_ARM(A_taylor, B_taylor, dX, tmpN, 2, lamda);
+        leastSquare_ARM(sortedA, sortedB, dX, tmpN, 2, lamda);
         //qDebug() << "X0[0]" << dX[0] << "X0[1]" << dX[1];
         dType X_new[2];
         X_new[0] = X0[0] + dX[0];

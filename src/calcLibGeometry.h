@@ -3,8 +3,6 @@
 #include "_myheads.h"
 #include "datatype.h"
 
-#define MACRO_circleR_1 25.0f
-#define MACRO_circleR_2 50.0f
 // distance calculate
 dType calcDistanceSquare(const locationCoor &a, const locationCoor &b);
 dType calcDistanceSquare(const QPointF &a, const QPointF &b);

@@ -21,8 +21,12 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
 
 /* WEIGHT COUPLED ************************************************************/
     if (WEIGHT_COUPLED & type) {
-        _calcParam::KalmanCoupled::WEIGHT_COUPLED_weight(x_hat_t, sensor, distance, N,
-                                                         kalmanData.isInitialized, init_W.data());
+        _calcParam::KalmanCoupled::WEIGHT_COUPLED_weight(/*x_hat_t*/kalmanData.x_t_1,
+                                                         sensor,
+                                                         distance,
+                                                         N,
+                                                         kalmanData.isInitialized,
+                                                         init_W.data());
     }
 /* GAUSS COUPLED *************************************************************/
     dType *x_hat = nullptr;

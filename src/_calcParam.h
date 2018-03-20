@@ -3,6 +3,9 @@
 #include "dataType.h"
 #include "_myheads.h"
 
+#define MACRO_circleR_1 25.0f
+#define MACRO_circleR_2 50.0f
+
 struct _calcParam
 {
     struct SolverLM {
@@ -27,6 +30,9 @@ struct _calcParam
                                const dType *sortedDist,
                                const int N,
                                dType *W_taylor); //out
+        static dType CALC_KalmanWeight(const dType *sortedWeight,
+                                       const int N,
+                                       const dType weightCo);
     };
 
     struct KalmanCoupled {
@@ -35,7 +41,7 @@ struct _calcParam
                                           const int *distance,
                                           const int N,
                                           const bool isInitialized,
-                                          dType *weight); //out
+                                          dType *sortedWeight);         //out
         static dType GAUSS_COUPLED_weight;
         static dType SMOOTH_COUPLED_K;
         static dType TRAIL_COUPLED_K;
