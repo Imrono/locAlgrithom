@@ -24,6 +24,7 @@ void uiUsrFrame::addOneUsr(int tagId, USR_STATUS status) {
     usrBtns.append(usrBtn);
     connect(usrBtn, SIGNAL(oneUsrBtnClicked(int)), this, SLOT(oneUsrBtnClicked_slot(int)));
     connect(usrBtn, SIGNAL(oneUsrShowML(int)), this, SLOT(oneUsrShowML_slot(int)));
+    connect(usrBtn, SIGNAL(oneUsrShowDistance(int)), this, SIGNAL(oneUsrShowDistance_siganl(int)));
 
     update();
 }
@@ -86,6 +87,14 @@ void uiUsrFrame::setBtnColorSample(int tagId, const QColor &color) {
             usrBtns[i]->setColorSample(color);
         }
     }
+}
+QColor uiUsrFrame::getBtnColorSample(int tagId) {
+    for (int i = 0; i < usrBtns.count(); i++) {
+        if (usrBtns[i]->getTagId() == tagId) {
+            return usrBtns[i]->getColorSample();
+        }
+    }
+    return QColor();
 }
 
 void uiUsrFrame::oneUsrBtnClicked_slot(int tagId) {
@@ -150,12 +159,31 @@ void uiUsrFrame::oneUsrShowML_slot(int tagId) {
     }
     // notice the ui to check to Max Likehood model
     emit oneUsrShowML_siganl(tagId, -1 != tagShowLM);
+    emit oneUsrShowDistance_siganl(tagId);
 }
 
-void uiUsrFrame::setBtnToolTip(int tagId, bool isShowPos, QPointF real, QPointF canvas) {
+void uiUsrFrame::setShowDistTagId(int tagId) {
+    if (showDistTagId != tagId) {
+        for (int i = 0; i < usrBtns.count(); i++) {
+            if (usrBtns[i]->getTagId() == tagId) {
+                usrBtns[i]->setIsShowingDist(true);
+            } else if (usrBtns[i]->getTagId() == showDistTagId) {
+                usrBtns[i]->setIsShowingDist(false);
+            }
+        }
+        showDistTagId = tagId;
+    } else {}
+}
+
+void uiUsrFrame::setBtnToolTip(int tagId, bool isShowPos,
+                               const int *distance,
+                               const dType * weight,
+                               const locationCoor *sensor,
+                               const int N,
+                               QPointF real, QPointF canvas) {
     for (int i = 0; i < usrBtns.count(); i++) {
         if (usrBtns[i]->getTagId() == tagId) {
-            usrBtns[i]->setShowPos(isShowPos, real, canvas);
+            usrBtns[i]->setShowToolTip(isShowPos, distance, weight, sensor, N, real, canvas);
         }
     }
 }

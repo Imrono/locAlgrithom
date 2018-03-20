@@ -89,6 +89,7 @@ private:
     void kalmanCoupledChange(bool isEnable);
     void kalmanCoupledSyncUi();
 
+    int distanceShowTagId{-1};
 private slots:
     // FILE
     void loadIniConfigFile(QString pathIn = "");

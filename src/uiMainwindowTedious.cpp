@@ -199,6 +199,10 @@ void uiMainWindow::connectUi() {
             this, SLOT(oneUsrBtnClicked(int, bool)));
     connect(ui->UsrFrm, SIGNAL(oneUsrShowML_siganl(int, bool)),
             this, SLOT(oneUsrShowML(int, bool)));
+    connect(ui->UsrFrm, &uiUsrFrame::oneUsrShowDistance_siganl, this, [this](int tagId) {
+        distanceShowTagId = ui->UsrFrm->isShowable(tagId) ? tagId : -1;
+        handleModelDataUpdate(false);
+    });
 
     // set Max Likehood's σ used in showTagRelated
     int sigmaInitValue = 250;

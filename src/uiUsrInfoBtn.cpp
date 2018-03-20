@@ -2,6 +2,8 @@
 #include <QPainter>
 #include <QKeyEvent>
 #include <QToolTip>
+#include "calcLibGeometry.h"
+#include "showTagDelegate.h"
 
 uiUsrInfoBtn::uiUsrInfoBtn(int tagId, QWidget *parent) :
     tagId{tagId}, QToolButton(parent) {
@@ -39,9 +41,14 @@ void uiUsrInfoBtn::initial() {
     contextMenu = new QMenu(this);
     showML_Action = new QAction(this);
     showML_Action->setText("show/hide LM");
+    showDistInfo = new QAction(this);
+    showDistInfo->setText("distance show");
 
     connect(showML_Action, &QAction::triggered, this, [this](void) {
         emit oneUsrShowML(this->tagId);
+    });
+    connect(showDistInfo, &QAction::triggered, this, [this](void) {
+        emit oneUsrShowDistance(this->tagId);
     });
 }
 
@@ -66,7 +73,7 @@ void uiUsrInfoBtn::syncShowable() {
     if (isShowable) {
         setStyleSheet("QToolButton{background-color:GhostWhite;}");
     } else {
-        isShowPos = false;
+        isShowToolTip = false;
         setStyleSheet("QToolButton{background-color:DimGray;}");
         setToolTip("");
     }
@@ -81,7 +88,11 @@ void uiUsrInfoBtn::paintEvent(QPaintEvent *event) {
     painter.setPen(QPen(Qt::NoPen));
     painter.setBrush(QBrush(colorSample));
     if (isShowable) {
-        painter.drawEllipse(QPointF{5.f, 5.f}, 3, 3);
+        if (isShowingDist) {
+            showTagDelegate::draw5Star(painter, QPointF{5.f, 5.f}, colorSample, 5.f, 0.f);
+        } else {
+            painter.drawEllipse(QPointF{5.f, 5.f}, 3, 3);
+        }
     }
 }
 
@@ -104,19 +115,36 @@ void uiUsrInfoBtn::contextMenuEvent(QContextMenuEvent *e) {
                       "QMenu::item:selected{background-color: lightgray;}");
         contextMenu->clear();
         contextMenu->addAction(showML_Action);
+        contextMenu->addAction(showDistInfo);
 
         contextMenu->exec(QCursor::pos());
     } else {}
     e->accept();
 }
 
-void uiUsrInfoBtn::setShowPos(bool isShow, QPointF real, QPointF canvas) {
-    isShowPos = isShow;
+void uiUsrInfoBtn::setShowToolTip(bool isShow,
+                                  const int *distance,
+                                  const dType * weight,
+                                  const locationCoor *sensor,
+                                  const int N,
+                                  QPointF real, QPointF canvas) {
+    isShowToolTip = isShow;
     posReal = real;
     posCanvas = canvas;
-    if (isShowPos) {
-        setToolTip(QString("real:(%1,%2)\nshow:(%3,%4)").arg(posReal.x()).arg(posReal.y())
-                   .arg(posCanvas.x()).arg(posCanvas.y()));
+    if (isShowToolTip) {
+        QString toolTip = QString("real:(%1,%2)\nshow:(%3,%4)\n").arg(posReal.x()).arg(posReal.y())
+                .arg(posCanvas.x()).arg(posCanvas.y());
+        if (distance && weight && sensor && N > 0) {
+            toolTip += QString("distance | weight | diffDist (%1)\n").arg(N);
+            for(int i = 0; i < N; i++) {
+                toolTip += QString("%1 | %2 | %3\n")
+                        .arg(distance[i], 8)
+                        .arg(QString::number(weight[i]).left(5), 5, QChar(' '))
+                        .arg(calcDistance(real, sensor[i].toQPointF()) - distance[i]);
+            }
+        }
+
+        setToolTip(toolTip);
         setToolTipDuration((int)(((unsigned int)(-1)) >> 1));
     } else {
         setToolTip("");

@@ -68,9 +68,10 @@ uiMainWindow::~uiMainWindow()
 }
 
 void uiMainWindow::oneUsrBtnClicked(int tagId, bool isShowable) {
-    Q_UNUSED(tagId);
     Q_UNUSED(isShowable);
     ui->canvas->syncWithUiFrame(ui->UsrFrm);
+    if (!ui->UsrFrm->isShowable(tagId))
+        distanceShowTagId = -1;
     handleModelDataUpdate(false);
 }
 void uiMainWindow::oneUsrShowML(int tagId, bool isShowML) {
@@ -108,6 +109,7 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
         // 3. for multi-tag, tags data count may different
          && oneTagInfo->methodInfo[MEASUR_STR].AnsLines.count() > distCount) {
 
+            int distanceCount = tag.distData[distCount].distance.count();
             // location pos calc part
             if (CALC_POS_TYPE::POS_NONE != calcPos.calcPosType) {
                 ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
@@ -115,6 +117,10 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
                 ui->canvas->setLines(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines);
 
                 ui->UsrFrm->setBtnToolTip(tag.tagId, true,
+                                          tag.distData[distCount].distance.data(),
+                                          oneTagInfo->weight[distCount].data(),
+                                          cfgData.get_q()->sensor.data(),
+                                          distanceCount,
                                           oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
             } else {
                 ui->canvas->removeTagMethod(tag.tagId, MEASUR_STR);
@@ -163,15 +169,25 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             }
 
             // items in uiMainWindow
-            switch (tag.distData[distCount].distance.count()) {
-            case 6: SHOW_DIST_DATA(5);
-            case 5: SHOW_DIST_DATA(4);
-            case 4: SHOW_DIST_DATA(3);
-            case 3: SHOW_DIST_DATA(2);
-            case 2: SHOW_DIST_DATA(1);
-            case 1: SHOW_DIST_DATA(0);
-            default:
-                break;
+            if (distanceShowTagId == tag.tagId || -1 == distanceShowTagId) {
+                QFont font;
+                font.setBold(true);
+                QPalette pa;
+                pa.setColor(QPalette::WindowText, ui->UsrFrm->getBtnColorSample(tag.tagId));
+                ui->label_Id->setPalette(pa);
+                ui->label_Id->setFont(font);
+                ui->label_Id->setText(QString::number(tag.tagId));
+                switch (distanceCount) {
+                case 6: SHOW_DIST_DATA(5);
+                case 5: SHOW_DIST_DATA(4);
+                case 4: SHOW_DIST_DATA(3);
+                case 3: SHOW_DIST_DATA(2);
+                case 2: SHOW_DIST_DATA(1);
+                case 1: SHOW_DIST_DATA(0);
+                default:
+                    break;
+                }
+                ui->UsrFrm->setShowDistTagId(tag.tagId);
             }
             QVector<dType>* ansQuality = oneTagInfo->methodInfo[MEASUR_STR].data;
             setStatusIter(oneTagInfo->iterPoints[distCount].count(),
@@ -182,6 +198,7 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             ui->canvas->clearData(tag.tagId);
         }
     }
+    distanceShowTagId = ui->UsrFrm->getShowDistTagId();
 
     update();
 

@@ -16,12 +16,22 @@ public:
     int  getTagId()    { return tagId;}
     bool getShowable() { return isShowable;}
     void setShowable(bool in) { isShowable = in; syncShowable();}
-    void setShowPos(bool isShow, QPointF real = QPointF(0.f, 0.f), QPointF canvas = QPointF(0.f, 0.f));
+    void setShowToolTip(bool isShow,
+                        const int *distance = nullptr,
+                        const dType * weight = nullptr,
+                        const locationCoor *sensor = nullptr,
+                        const int N = 0,
+                        QPointF real = QPointF(0.f, 0.f), QPointF canvas = QPointF(0.f, 0.f));
 
     void setColorSample(const QColor &color) {colorSample = color;}
+    QColor getColorSample() {return colorSample;}
+
+    void setIsShowingDist(bool isShowing) {isShowingDist = isShowing;}
+
 signals:
     void oneUsrBtnClicked(int tagId);
     void oneUsrShowML(int tagId);   // ML -> maximum likehood
+    void oneUsrShowDistance(int tagId);
 
 private:
     void initial();
@@ -40,10 +50,13 @@ private:
     QMenu *contextMenu{nullptr};
     QAction *showML_Action{nullptr};
     bool isShowingML{false};
+    QAction *showDistInfo{nullptr};
 
-    bool isShowPos{false};
+    bool isShowToolTip{false};
     QPointF posReal;
     QPointF posCanvas;
+
+    bool isShowingDist{false};
 };
 
 #endif // UIUSRINFOBTN_H

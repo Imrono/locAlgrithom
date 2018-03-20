@@ -138,9 +138,9 @@
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>820</x>
+      <x>810</x>
       <y>210</y>
-      <width>151</width>
+      <width>171</width>
       <height>170</height>
      </rect>
     </property>
@@ -306,6 +306,16 @@
       <widget class="QLineEdit" name="refine_5">
        <property name="enabled">
         <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_Id">
+       <property name="text">
+        <string>tagId</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>

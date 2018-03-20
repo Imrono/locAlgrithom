@@ -21,15 +21,22 @@ public:
     QList<int> getShowableTags();
 
     void setBtnColorSample(int tagId, const QColor &color);
+    QColor getBtnColorSample(int tagId);
 
     void setBtnToolTip(int tagId, bool isShowPos,
+                       const int *distance = nullptr,
+                       const dType * weight = nullptr,
+                       const locationCoor *sensor = nullptr,
+                       const int N = 0,
                        QPointF real = QPointF(), QPointF canvas = QPointF());
 
+    void setShowDistTagId(int tagId);
     int getShowDistTagId() {return showDistTagId;}
 
 signals:
     void oneUsrBtnClicked_siganl(int tagId, bool isShowable);
     void oneUsrShowML_siganl(int tagId, bool isShowable);
+    void oneUsrShowDistance_siganl(int tagId);
 
 private slots:
     void oneUsrBtnClicked_slot(int tagId);
