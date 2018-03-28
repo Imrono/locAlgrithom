@@ -27,19 +27,55 @@ void dataDistanceLog::loadNewFile_1(const QString &fileName) {
         qDebug()<<"Can't open the file!"<<endl;
         return;
     }
+
     this->fileName = fileName;
-    //qDebug() << "#BEGIN ANALYZE# dataDistanceLog::loadNewFile_1 $> fileName" << fileName;
+    QString fileData = QString(file.readAll());
+    QStringList strList = fileData.split("\n");
 
     // [2017/05/18 15:59:58:033] | 192.168.200.200| 00205-005-002426-00
     rx.setPattern("\\[(.*)\\] \\|\\s(.*)\\| (\\d{5})-(\\d{3})-(\\d{6})-(\\d{2})");
 
+    analyzeDistanceData1(strList, rx);
+
+    foreach (oneTag tag, q->tagsData) {
+        if (tag.distData.count() > maxDataCount)
+            maxDataCount = tag.distData.count();
+    }
+
+    //qDebug() << "#END ANALYZE# dataDistanceLog::loadNewFile_1 $> maxDataCount" << maxDataCount
+    //         << "; tags Count" << q->tagsData.count();
+}
+
+void dataDistanceLog::loadNewFile_2(const QString &fileName) {
+    QFile file(fileName);
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug()<<"Can't open the file!"<<endl;
+        return;
+    }
+    this->fileName = fileName;
+    QString fileData = QString(file.readAll());
+    QStringList strList = fileData.split("\n");
+
+    // [2017/05/18 16:00:29:725] | 192.168.200.200| (000203):[001606,001290,001174,001323,002599,002284]
+    // [002736-000312-000000]=>[002732-000317-000000] [03] [0-0]
+    rx.setPattern("\\[(.*)\\] \\|\\s(.*)\\| \\((\\d{6})\\):"
+                  "\\[(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6})\\] "
+                  "\\[(\\d{6})-(\\d{6})-(\\d{6})\\]=>\\[(\\d{6})-(\\d{6})-(\\d{6})\\]");
+
+    analyzeDistanceData2(strList, rx);
+
+    foreach (oneTag tag, q->tagsData) {
+        if (tag.distData.count() > maxDataCount)
+            maxDataCount = tag.distData.count();
+    }
+}
+
+void dataDistanceLog::analyzeDistanceData1(const QStringList &strList, const QRegExp &rx) {
+    q->clear();
     oneLogData tmpLogData;
     int count = 0;
     int recCount = 0;
-    while(!file.atEnd()) {
-        QByteArray line = file.readLine();
-        QString str(line);
-
+    foreach (QString str, strList) {
         //qDebug() << str;
         int pos = rx.indexIn(str);
         if (pos > -1 && 6 == rx.captureCount()) {
@@ -66,47 +102,23 @@ void dataDistanceLog::loadNewFile_1(const QString &fileName) {
                 }
                 // TODO: refine the distance to 2D from 3D using Pythagoras
                 q->tagsData[tagId].distData.append(tmpLogData);
-                //qDebug() << "dataDistanceLog::loadNewFile_1 $>" << count << tagId << q->tagsData.count() << tmpLogData.toString();
+                //qDebug() << "[@analyzeDistanceData1]" << count << tagId << q->tagsData.count() << tmpLogData.toString();
                 count ++;
             }
         }
     }
     q->isInitialized = true;
-
-    foreach (oneTag tag, q->tagsData) {
-        if (tag.distData.count() > maxDataCount)
-            maxDataCount = tag.distData.count();
-    }
-
-    //qDebug() << "#END ANALYZE# dataDistanceLog::loadNewFile_1 $> maxDataCount" << maxDataCount
-    //         << "; tags Count" << q->tagsData.count();
 }
 
-void dataDistanceLog::loadNewFile_2(const QString &fileName) {
-    QFile file(fileName);
-    if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug()<<"Can't open the file!"<<endl;
-        return;
-    }
-    this->fileName = fileName;
-    // [2017/05/18 16:00:29:725] | 192.168.200.200| (000203):[001606,001290,001174,001323,002599,002284]
-    // [002736-000312-000000]=>[002732-000317-000000] [03] [0-0]
-    rx.setPattern("\\[(.*)\\] \\|\\s(.*)\\| \\((\\d{6})\\):"
-                  "\\[(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6}),(\\d{6})\\] "
-                  "\\[(\\d{6})-(\\d{6})-(\\d{6})\\]=>\\[(\\d{6})-(\\d{6})-(\\d{6})\\]");
-
-    int tagId = -1;
-    while(!file.atEnd()) {
-        oneLogData tmpLogData;
-
-        QByteArray line = file.readLine();
-        QString str(line);
+void dataDistanceLog::analyzeDistanceData2(const QStringList &strList, const QRegExp &rx) {
+    q->clear();
+    foreach (QString str, strList) {
         //qDebug() << str;
-
+        oneLogData tmpLogData;
         int pos = rx.indexIn(str);
         if (pos > -1 && 15 == rx.captureCount()) {
             tmpLogData.time = QDateTime::fromString(rx.cap(1), "yyyy/MM/dd hh:mm:ss:zzz");
-            tagId           = rx.cap(3).toInt();
+            int tagId       = rx.cap(3).toInt();
             tmpLogData.distance.append(rx.cap(4).toInt());
             tmpLogData.distance.append(rx.cap(5).toInt());
             tmpLogData.distance.append(rx.cap(6).toInt());
@@ -127,14 +139,10 @@ void dataDistanceLog::loadNewFile_2(const QString &fileName) {
             }
             // TODO: refine the distance to 2D from 3D using Pythagoras
             q->tagsData[tagId].distData.append(tmpLogData);
-            //qDebug() << q->tagsData[tagId].tagId << tmpLogData.toString();
+            //qDebug() << [@analyzeDistanceData2]" << q->tagsData[tagId].tagId << tmpLogData.toString();
         }
     }
     q->isInitialized = true;
-}
-
-void dataDistanceLog::composeMeasData() {
-
 }
 
 QString dataDistanceLog::toString() {

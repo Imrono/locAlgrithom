@@ -1,8 +1,9 @@
 #include "_calcParam.h"
 #include <QtMath>
 #include "calcLibGeometry.h"
+#include "calcLibMath.h"
 
-dType _calcParam::SolverLM::lamda0 = .3f;
+dType _calcParam::SolverLM::lamda0 = .4f;
 // iteration
 int _calcParam::SolverLM::k_max = 20;
 dType _calcParam::SolverLM::eps1 = 0.2f;
@@ -34,27 +35,17 @@ int _calcParam::WeightedTaylor::CALC_WEIGHT(const locationCoor *sortedSensor,
     int nUnuseableNlos = 0;
     int refIdx = (N+1)/2;
     dType midDist = sortedDist[refIdx];
+    dType littleDist = sortedDist[refIdx-1];
     for (int i = 0; i < N; i++) {
         dType currDist = sortedDist[i];
         dType diffDist = fabsf(currDist-midDist)+1.f;
 
         if (i < refIdx) {
-            sortedWeight[i] *= (1.f + 0.01f*diffDist);
-            int NOK = 0;
-            for (int j = 0; j < refIdx; j++) {
-                if (i == j) continue;
-                dType r1 = sortedDist[i];
-                dType r2 = sortedDist[j];
-                dType L  = calcDistance(sortedSensor[j].toQPointF(),
-                                        sortedSensor[i].toQPointF());
-                if (qAbs(r1 - r2) - L <  0.25f * qAbs(r1 - r2)
-                       && r1 + r2 - L > -0.25f * (r1 + r2)) {
-                } else {
-                    NOK ++;
-                }
-            }
-            if (NOK >= 2) {
-                sortedWeight[i] *= 0.5f;
+            dType sensorDist = calcDistance(sortedSensor[refIdx-1].toQPointF(), sortedSensor[i].toQPointF());
+            if (qAbs(littleDist - sensorDist) * 0.1f < currDist) {
+                sortedWeight[i] *= (1.f + 0.01f*diffDist);
+            } else {
+                sortedWeight[i] *= 1.f / qSqrt(diffDist);
             }
         } else {
             if (sortedDist[i] > sortedDist[refIdx] * 1.4f) {
@@ -65,20 +56,6 @@ int _calcParam::WeightedTaylor::CALC_WEIGHT(const locationCoor *sortedSensor,
             }
         }
     }
-
-    int i_max_1, i_max_2;
-    dType tmp1 = 0.f, tmp2 = 0.f;
-    for (int i = 0; i < N; i++) {
-        if (tmp1 < sortedWeight[i]) {
-            i_max_1 = i;
-            tmp1 = sortedWeight[i];
-        } else if (sortedWeight[i] > tmp2) {
-            i_max_2 = i;
-            tmp2 = sortedWeight[i];
-        } else {}
-    }
-    //W_taylor[i_max_1] *= 2.f;
-    //W_taylor[i_max_2] *= 2.f;
 
     return nUnuseableNlos;
 }
@@ -106,7 +83,22 @@ void _calcParam::KalmanCoupled::WEIGHT_COUPLED_weight(const locationCoor x_hat,
         if (isInitialized) {
             dType currDist_hat = calcDistance(x_hat, sensor[i]);
             // TODO: refine the weight
-            weight[i] = 1.f / (qAbs(currDist_hat - distance[i]) / 100.f + 1.f);
+            dType R = 70.f;
+            dType diffDist = qAbs(currDist_hat - distance[i]);
+
+            // calculate method 1 & 2
+            dType method_1, method_2;
+            if (diffDist < R) {
+                method_1 = 1.f;
+                method_2 = 1.f;
+            } else {
+                dType x = qAbs(diffDist - R);
+                method_1 = qExp(-x*x/(10000.f));
+                method_2 = 1.f / (x / 100.f + 1.f);
+            }
+            weight[i] = method_1;
+
+            // qDebug() << i << distance[i] << method_1 << method_2 << qAbs(method_2 - method_1);
         } else {}
     }
 }

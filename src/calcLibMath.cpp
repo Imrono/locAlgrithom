@@ -119,7 +119,10 @@ void randomDraw(QVector<QVector<int>> &ans, int n, int N, int M) {
 double sqrt_2_PI = 2.5066282746310005024147107274575;
 double normalDistribution(QPointF test, QPointF anchor, double r, double sigma) {
     QPointF diff = test - anchor;
-    double x = qSqrt(diff.x() * diff.x() + diff.y() * diff.y()) - r;
+    double x = qSqrt(diff.x() * diff.x() + diff.y() * diff.y()) - r;    // x - mu
 
     return 1./(sqrt_2_PI * sigma) * qExp(- x * x / (2. * sigma * sigma));
+}
+double normalDistribution(QPointF test, double d, double sigma) {
+    return 1./(sqrt_2_PI * sigma) * qExp(- d * d / (2. * sigma * sigma));
 }

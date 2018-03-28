@@ -49,7 +49,8 @@ SOURCES += \
     calcTagPosKalmanCoupled.cpp \
     showTagDelegate.cpp \
     showTagModel.cpp \
-    _calcParam.cpp
+    _calcParam.cpp \
+    zFakeData.cpp
 
 HEADERS += \
     _myheads.h \
@@ -69,7 +70,8 @@ HEADERS += \
     calcLibGeometry.h \
     showTagDelegate.h \
     showTagModel.h \
-    _calcParam.h
+    _calcParam.h \
+    zFakeData.h
 
 FORMS += \
     mainwindow.ui

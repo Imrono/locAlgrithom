@@ -58,8 +58,13 @@ void dataSensorIni::loadNewFile(const QString &fileName) {
 
     QSettings iniSetting{fileName, QSettings::IniFormat};
     this->fileName = fileName;
-    q->clear();
 
+    analyzeCfgData(iniSetting);
+    qDebug() << toString();
+}
+
+void dataSensorIni::analyzeCfgData(QSettings &iniSetting) {
+    q->clear();
     int Cnt = 0;
     int AreaCnt = 0;
 
@@ -118,7 +123,6 @@ void dataSensorIni::loadNewFile(const QString &fileName) {
         iniSetting.endGroup();
     }
     q->isInitialized = true;
-    qDebug() << toString();
 }
 
 QString dataSensorIni::toString() {

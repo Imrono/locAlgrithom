@@ -29,7 +29,7 @@ struct _calcParam
         static int CALC_WEIGHT(const locationCoor *sortedSensor,
                                const dType *sortedDist,
                                const int N,
-                               dType *W_taylor); //out
+                               dType *sortedWeight);    //out
         static dType CALC_KalmanWeight(const dType *sortedWeight,
                                        const int N,
                                        const dType weightCo);
@@ -41,7 +41,7 @@ struct _calcParam
                                           const int *distance,
                                           const int N,
                                           const bool isInitialized,
-                                          dType *sortedWeight);         //out
+                                          dType *weight);         //out
         static dType GAUSS_COUPLED_weight;
         static dType SMOOTH_COUPLED_K;
         static dType TRAIL_COUPLED_K;

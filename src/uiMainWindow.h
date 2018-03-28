@@ -26,7 +26,7 @@
     }\
     ui->raw_##n->setText(QString("%1{%2}")\
             .arg(QString::number(tag.distData[distCount].distance[n]))\
-            .arg(QString::number(oneTagInfo->weight[distCount][n]).left(4)));\
+            .arg(QString::number(oneTagInfo->weight[distCount][n], 'f', 3)));\
     ui->refine_##n->setText(QString::number(qAbs(\
     calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[n])\
     - tag.distData[distCount].distance[n])))
@@ -90,6 +90,9 @@ private:
     void kalmanCoupledSyncUi();
 
     int distanceShowTagId{-1};
+    QString lastIniPath;
+    QString lastDistancePath;
+
 private slots:
     // FILE
     void loadIniConfigFile(QString pathIn = "");

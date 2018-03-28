@@ -25,6 +25,10 @@ struct oneTag {
 struct distanceData {
     QMap<int, oneTag> tagsData; // tag's distance
     bool isInitialized{false};  // data ready
+    void clear() {
+        tagsData.clear();
+        isInitialized = false;
+    }
 };
 
 class dataDistanceLog
@@ -33,7 +37,9 @@ public:
     explicit dataDistanceLog();
     ~dataDistanceLog();
     void loadNewFile_1(const QString &fileName);
+    void analyzeDistanceData1(const QStringList &strList, const QRegExp &rx);
     void loadNewFile_2(const QString &fileName);
+    void analyzeDistanceData2(const QStringList &strList, const QRegExp &rx);
 
     QString toString();
 
@@ -46,8 +52,6 @@ public:
             q = new distanceData;
         }
     }
-
-    void composeMeasData();
 
     int maxDataCount{0};
 

@@ -19,6 +19,7 @@ struct configData {
         stop.clear();
         alarm.clear();
         oper.clear();
+        isInitialized = false;
     }
 
     QString toString();
@@ -30,6 +31,7 @@ public:
     explicit dataSensorIni();
     ~dataSensorIni();
     void loadNewFile(const QString &fileName);
+    void analyzeCfgData(QSettings &iniSetting);
 
     QString toString();
     configData *get_q() const {

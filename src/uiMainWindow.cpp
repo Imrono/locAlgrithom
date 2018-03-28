@@ -230,6 +230,7 @@ void uiMainWindow::loadIniConfigFile(QString pathIn) {
     ui->actionRead_ini->setChecked(true);
 
     checkData();
+    lastIniPath = path;
 
     if (isInitKeep && nSensorKeep != cfgData.get_q()->sensor.count()) {
         qDebug() << "[@uiMainWindow::loadIniConfigFile] nSensor changed, need to reload distance file";
@@ -264,6 +265,7 @@ void uiMainWindow::loadLogDistanceFile(QString pathIn) {
     qDebug() << "[@uiMainWindow::loadLogDistanceFile]" << distData.toString();
 
     checkData();
+    lastDistancePath = path;
 }
 void uiMainWindow::loadLogDistanceFile_2(QString pathIn) {
     resetData();
@@ -293,6 +295,7 @@ void uiMainWindow::loadLogDistanceFile_2(QString pathIn) {
     qDebug() << "[@uiMainWindow::loadLogDistanceFile_2]" << distData.toString();
 
     checkData();
+    lastDistancePath = path;
 }
 void uiMainWindow::loadPictureFile(QString pathIn) {
     QString path;

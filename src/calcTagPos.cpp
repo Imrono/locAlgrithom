@@ -478,6 +478,9 @@ locationCoor calcTagPos::calcKalmanCoulped(const int *dist, dType &MSE, dType T,
                                            bool *usedSensor, QVector<QPointF> &iterTrace,
                                            QVector<dType> &weight, QPointF &x_hat) {
     Q_UNUSED(lastPos);
+	if (dist[0] == 605 && dist[1] == 56 && dist[2] == 14297) {
+		int a = 0;
+	}
     calcKalmanCoulped(dist, cfg_d->sensor.data(), T,
                       kalmanData, fc_row, type,
                       X[0], X[1], MSE,
