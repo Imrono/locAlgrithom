@@ -45,6 +45,7 @@ struct storeMethodInfo {
 struct oneKalmanData {  // kalman data
     locationCoor x_t   = {0,0,0};
     locationCoor v_t   = {0,0,0};
+    locationCoor a_t   = {0,0,0};
     locationCoor x_t_1 = {0,0,0};
     locationCoor v_t_1 = {0,0,0};
     dType K            = 0.6f;  //Complementary Filter, K is the measure gain

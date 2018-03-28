@@ -45,6 +45,7 @@ struct _calcParam
         static dType GAUSS_COUPLED_weight;
         static dType SMOOTH_COUPLED_K;
         static dType TRAIL_COUPLED_K;
+        static dType TRAIL_COUPLED_K_v;
     };
 
     struct KalmanTrack {

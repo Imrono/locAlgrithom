@@ -123,6 +123,3 @@ double normalDistribution(QPointF test, QPointF anchor, double r, double sigma) 
 
     return 1./(sqrt_2_PI * sigma) * qExp(- x * x / (2. * sigma * sigma));
 }
-double normalDistribution(QPointF test, double d, double sigma) {
-    return 1./(sqrt_2_PI * sigma) * qExp(- d * d / (2. * sigma * sigma));
-}

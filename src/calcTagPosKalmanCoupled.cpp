@@ -31,8 +31,8 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
     }
 /* GAUSS COUPLED *************************************************************/
     dType *x_hat = nullptr;
-    dType pos_hat[3] = {// x_hat_t.x, x_hat_t.y,   // x_hat
-                        kalmanData.x_t_1.x, kalmanData.x_t_1.y,
+    dType pos_hat[3] = {x_hat_t.x, x_hat_t.y,   // x_hat
+                        // kalmanData.x_t_1.x, kalmanData.x_t_1.y,
                         // x_hat's weighted coefficient
                         _calcParam::KalmanCoupled::GAUSS_COUPLED_weight};
     if (GAUSS_COUPLED & type) {
@@ -70,8 +70,15 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
 /* TRAIL COUPLED *************************************************************/
         if (TRAIL_COUPLED & type) {    // which makes point different from ML point
             kalmanData.x_t = x_hat_t * (1.f - kalmanData.K) + z_x_t_meas * kalmanData.K;
-            kalmanData.v_t = v_hat_t * (1.f - kalmanData.K) +
+            locationCoor tmp_v_t = v_hat_t * (1.f - kalmanData.K) +
                     (kalmanData.x_t - kalmanData.x_t_1) / T_diff * kalmanData.K;
+            // low pass for accelerate (v_t - v_t_1) / T
+            //kalmanData.a_t = (tmp_v_t - kalmanData.v_t_1) / T_diff *
+            //        _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v +
+            //        kalmanData.a_t * (1.f - _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v);
+            //kalmanData.v_t = kalmanData.a_t * T_diff + kalmanData.v_t_1;
+            kalmanData.v_t = kalmanData.v_t * _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v +
+                    kalmanData.v_t_1 * (1.f - _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v);
         } else {
             kalmanData.x_t = z_x_t_meas;
             kalmanData.v_t = {0.f, 0.f, 0.f};

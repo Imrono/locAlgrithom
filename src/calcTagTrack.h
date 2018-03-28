@@ -23,6 +23,7 @@ struct trackParams {  // used for next point calulate
     locationCoor v_t_1;
     locationCoor x_t;
     locationCoor x_t_1;
+    locationCoor a_t;
     //kalman info only
     int i{0};
     int numCov{6};

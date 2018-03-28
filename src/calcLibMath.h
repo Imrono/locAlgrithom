@@ -12,6 +12,4 @@ int combination(int up, int down);
 void randomDraw(QVector<QVector<int>> &ans, int n, int N, int M);
 
 double normalDistribution(QPointF test, QPointF anchor, double r, double sigma = 1.);
-double normalDistribution(QPointF test, double d, double sigma);
 #endif // CALCLIBMATH_H
-
