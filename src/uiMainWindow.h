@@ -25,8 +25,8 @@
         ui->raw_##n->setStyleSheet("color:black");\
     }\
     ui->raw_##n->setText(QString("%1{%2}")\
-            .arg(QString::number(tag.distData[distCount].distance[n]))\
-            .arg(QString::number(oneTagInfo->weight[distCount][n], 'f', 3)));\
+            .arg(QString::number(tag.distData[distCount].distance[n]), 5, QChar(' '))\
+            .arg(QString::number(oneTagInfo->weight[distCount][n], 'f', 3).left(5)));\
     ui->refine_##n->setText(QString::number(qAbs(\
     calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], cfgData.get_q()->sensor[n])\
     - tag.distData[distCount].distance[n])))

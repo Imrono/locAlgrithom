@@ -73,7 +73,7 @@ dType _calcParam::WeightedTaylor::CALC_KalmanWeight(const dType *sortedWeight,
 dType _calcParam::KalmanCoupled::GAUSS_COUPLED_weight = 0.2f;
 dType _calcParam::KalmanCoupled::SMOOTH_COUPLED_K = 0.3f;
 dType _calcParam::KalmanCoupled::TRAIL_COUPLED_K = 0.6f;
-dType _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v = 0.4f;
+dType _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v = 0.6f;
 void _calcParam::KalmanCoupled::WEIGHT_COUPLED_weight(const locationCoor x_hat,
                                                       const locationCoor *sensor,
                                                       const int *distance,
@@ -109,6 +109,7 @@ dType _calcParam::KalmanTrack::Pxx_init = .3f;
 dType _calcParam::KalmanTrack::Pxv_init = .3f;
 dType _calcParam::KalmanTrack::Pvv_init = .3f;
 locationCoor _calcParam::KalmanTrack::v_t_init = {0.f, 0.f, 0.f};
+dType _calcParam::KalmanTrack::LowPass_V = 0.7f;
 
 dType _calcParam::KalmanTrack::calcQ() {
     return 0.01f;

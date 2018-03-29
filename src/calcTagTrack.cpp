@@ -125,6 +125,7 @@ void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
                                      tagTrackRecord &recParam) {
     dType R_v;
     dType Q = _calcParam::KalmanTrack::calcQ();
+    if (T < 0.001)  T = 0.001f;
 
     // 1. x = Hx + Bu
     locationCoor x_hat_t = trackParam.x_t_1 + (trackParam.v_t_1 * T);
@@ -152,13 +153,10 @@ void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
     trackParam.Pvv = Pv_pri_t - Pv_pri_t * recParam.Kv;
 
     // TODO: smooth the v, such as using complementary filter (average moving)
-    locationCoor tmp_v_t = trackParam.v_t;
-    // low pass for accelerate (v_t - v_t_1) / T
-    trackParam.a_t = (tmp_v_t - trackParam.v_t_1) / T *
-            _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v +
-            trackParam.a_t * (1.f - _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v);
-    trackParam.v_t = trackParam.v_t * _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v +
-            trackParam.v_t_1 * (1.f - _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v);
+    // low pass for velocity by decrease a_t
+    locationCoor a_t = (trackParam.v_t - trackParam.v_t_1) / T;
+    a_t = a_t * _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v;
+    trackParam.v_t = a_t * T + trackParam.v_t_1;
 }
 
 void calcTagTrack::calcKalmanPosInfo(const locationCoor &z_x_meas,

@@ -55,6 +55,7 @@ struct _calcParam
         static dType Pxv_init;
         static dType Pvv_init;
         static locationCoor v_t_init;
+        static dType LowPass_V;
     };
 };
 

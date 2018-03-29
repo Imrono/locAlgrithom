@@ -16,6 +16,8 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
 
     // constant kalman or complementary filter
     dType T_diff = 1.f;
+    T_diff = T_diff < 0.001 ? 0.001 : T_diff;
+
     locationCoor x_hat_t = kalmanData.x_t_1 + (kalmanData.v_t_1 * T_diff);
     locationCoor v_hat_t = kalmanData.v_t_1;
 
@@ -70,15 +72,12 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
 /* TRAIL COUPLED *************************************************************/
         if (TRAIL_COUPLED & type) {    // which makes point different from ML point
             kalmanData.x_t = x_hat_t * (1.f - kalmanData.K) + z_x_t_meas * kalmanData.K;
-            locationCoor tmp_v_t = v_hat_t * (1.f - kalmanData.K) +
+            kalmanData.v_t = v_hat_t * (1.f - kalmanData.K) +
                     (kalmanData.x_t - kalmanData.x_t_1) / T_diff * kalmanData.K;
             // low pass for accelerate (v_t - v_t_1) / T
-            //kalmanData.a_t = (tmp_v_t - kalmanData.v_t_1) / T_diff *
-            //        _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v +
-            //        kalmanData.a_t * (1.f - _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v);
-            //kalmanData.v_t = kalmanData.a_t * T_diff + kalmanData.v_t_1;
-            kalmanData.v_t = kalmanData.v_t * _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v +
-                    kalmanData.v_t_1 * (1.f - _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v);
+            locationCoor a_t = (kalmanData.v_t - kalmanData.v_t_1) / T_diff;
+            a_t = a_t * _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v;
+            kalmanData.v_t = a_t * T_diff + kalmanData.v_t_1;
         } else {
             kalmanData.x_t = z_x_t_meas;
             kalmanData.v_t = {0.f, 0.f, 0.f};

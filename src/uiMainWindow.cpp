@@ -187,6 +187,16 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
                 default:
                     break;
                 }
+
+                ui->raw_p->setStyleSheet("color:black");
+                ui->raw_p->setText(QString("    0{%1}")
+                                   .arg(QString::number(oneTagInfo->weight[distCount][distanceCount], 'f', 3).left(5)));
+                if (oneTagInfo->isGaussPointAdded) {    // kalmanCoupled show at LM
+                    dType dist = calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], oneTagInfo->x_hat[distCount]);
+                    ui->refine_p->setText(QString::number(dist));
+                } else {
+                    ui->refine_p->setText("NaN");
+                }
                 ui->UsrFrm->setShowDistTagId(tag.tagId);
             }
             QVector<dType>* ansQuality = oneTagInfo->methodInfo[MEASUR_STR].data;
