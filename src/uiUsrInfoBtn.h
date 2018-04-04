@@ -13,6 +13,9 @@ public:
     uiUsrInfoBtn(int tagId, bool isShowable, QWidget *parent = 0);
 
     void setUsrStatus(USR_STATUS status);
+    USR_STATUS getUsrStatus() {
+        return status;
+    }
     int  getTagId()    { return tagId;}
     bool getShowable() { return isShowable;}
     void setShowable(bool in) { isShowable = in; syncShowable();}
@@ -40,6 +43,7 @@ private:
     int tagId;
     bool isShowable{true};  // if enabled, autochanged during btn click
                             // also setShowable can change it
+    USR_STATUS status;
 
     void paintEvent(QPaintEvent *event);
     void keyPressEvent (QKeyEvent *e);

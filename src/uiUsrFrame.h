@@ -15,7 +15,9 @@ public:
     void addOneUsr(int tagId, USR_STATUS status = USR_STATUS::HAS_NONE_DATA);
     void removeOneUsr(int tagId);
     void removeAll();
+    void setEnabledAll(bool enable);
     void setUsrStatus(int tagId, USR_STATUS status);
+    USR_STATUS getUsrStatus(int tagId);
 
     bool isShowable(int tagId);
     QList<int> getShowableTags();
@@ -33,6 +35,8 @@ public:
     void setShowDistTagId(int tagId);
     int getShowDistTagId() {return showDistTagId;}
 
+    int getTagShowLM() {return tagShowLM;}
+
 signals:
     void oneUsrBtnClicked_siganl(int tagId, bool isShowable);
     void oneUsrShowML_siganl(int tagId, bool isShowable);
@@ -47,9 +51,9 @@ private:
     int nShowableBtns{0};
 
     const static int MAX_SHOWABLE_NUM;
-    int tagShowLM{-1};
+    int tagShowLM{UN_INIT_LM_TAGID};
 
-    int showDistTagId{-1};
+    int showDistTagId{UN_INIT_SHOW_TAGID};
 };
 
 #endif // UIUSRFRAME_H

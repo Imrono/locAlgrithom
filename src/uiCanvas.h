@@ -14,9 +14,9 @@ class uiCanvas : public QWidget
     Q_OBJECT
 public:
     uiCanvas(QWidget *parent = 0);
+    bool isTestModel{false};
 
     void setConfigData(const configData *cfg_d);
-    void setDistanceData(const distanceData *dist_q);
     void syncWithUiFrame(uiUsrFrame *frm);
 
     void setPosition(int tagId, const QString &methodName, const QPointF &p) {
@@ -50,15 +50,15 @@ public:
             tags[tagId].setLines(methodName, lines);
         }
     }
-    void setDistance(int tagId, const int *dist, bool *usedSensor) {
+    void setDistance(int tagId, const QVector<int> &dist, const QVector<bool> &usedSensor) {
         if (tags.contains(tagId)) {
-            QVector<int> d;
-            QVector<bool> used;
-            for (int i = 0; i < cfg_d->sensor.count(); i++) {
-                d.append(dist[i]);
-                used.append(usedSensor[i]);
-            }
-            tags[tagId].setDistance(d, used);
+            tags[tagId].setDistance(dist, usedSensor);
+        }
+    }
+    void setDistance(int tagId, const QVector<int> &dist) {
+        if (tags.contains(tagId)) {
+            QVector<bool> usedSensor(MAX_SENSOR, false);
+            tags[tagId].setDistance(dist, usedSensor);
         }
     }
     void setWeight(int tagId, const QVector<dType> &weight) {
@@ -139,7 +139,6 @@ private:
     int heightCanvas{0};
 
     const configData   *cfg_d {nullptr};
-    const distanceData *dist_d{nullptr};
 
     bool isShowSensor{true};
     QVector<QPointF> sensorShow;

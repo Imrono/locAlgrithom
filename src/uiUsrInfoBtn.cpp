@@ -53,6 +53,7 @@ void uiUsrInfoBtn::initial() {
 }
 
 void uiUsrInfoBtn::setUsrStatus(USR_STATUS status) {
+    this->status = status;
     switch (status) {
     case USR_STATUS::HAS_DISTANCE_DATA:
         setIcon(QIcon(":/resource/usr/usr_D.png"));
@@ -110,7 +111,8 @@ void uiUsrInfoBtn::keyPressEvent(QKeyEvent *e) {
 }
 
 void uiUsrInfoBtn::contextMenuEvent(QContextMenuEvent *e) {
-    if (isShowable) {
+    if (isShowable
+    && status != USR_STATUS::HAS_DISTANCE_DATA) {
         setStyleSheet("QMenu{color: black;}"
                       "QMenu::item:selected{background-color: lightgray;}");
         contextMenu->clear();

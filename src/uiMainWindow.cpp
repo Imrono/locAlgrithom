@@ -39,10 +39,10 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     // load initial CFG and DIST data
 #if 1
     loadIniConfigFile(MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
-    loadLogDistanceFile_2(MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
+    loadLogDistanceFile(2, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
 #else
     loadIniConfigFile(MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/config/石煤测试5.ini"));
-    loadLogDistanceFile(MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/distance/201712201435.log"));
+    loadLogDistanceFile(1, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/石煤测试相关文件/distance/201712201435.log"));
 #endif
 
     // SET NLOS FOR calcPos
@@ -59,6 +59,14 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     posWeightedTaylor();
     //trackKalman(true);
 
+    fakeStore.addNewTagInfo(TEST_TAG_ID);
+    fakeDistData.initFakeData();
+    fakeUsrFrame.addOneUsr(TEST_TAG_ID);
+    fakeUsrFrame.setShowDistTagId(TEST_TAG_ID);
+
+    fakeUsrFrame.setParent(ui->UsrFrm);
+    realUsrFrame.setParent(ui->UsrFrm);
+
     handleModelDataUpdate(false);
 }
 
@@ -68,10 +76,10 @@ uiMainWindow::~uiMainWindow()
 }
 
 void uiMainWindow::oneUsrBtnClicked(int tagId, bool isShowable) {
-    Q_UNUSED(isShowable);
-    ui->canvas->syncWithUiFrame(ui->UsrFrm);
-    if (!ui->UsrFrm->isShowable(tagId))
-        distanceShowTagId = -1;
+    Q_UNUSED(tagId);
+    ui->canvas->syncWithUiFrame(&getUsrFrame());
+    if (!isShowable)    // if tagId change from showDist to not disable
+        distanceShowTagId = UN_INIT_SHOW_TAGID; // propose to find another tagId to show distance
     handleModelDataUpdate(false);
 }
 void uiMainWindow::oneUsrShowML(int tagId, bool isShowML) {
@@ -88,54 +96,66 @@ void uiMainWindow::sigmaChanged(int sigma) {
 
 // feed the data to canvas->showTagRelated at different time point
 void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
-    distCount = distCount < 1 ? 1 : distCount;
+    int counting = getCounting();
+    counting = counting < 1 ? 1 : counting;
     // distCount updated automaticly when timeout event occurs
     if (isUpdateCount) {
-        distCount++;
+        counting++;
     }
     // update the status bar info
     setStatusDistCount();
 
+    // clear
     ui->canvas->resetPos();
+    dataDistanceLog &distDataClear = isFaked ? realDistData : fakeDistData;
+    foreach (oneTag tag, distDataClear.get_q()->tagsData) {
+        ui->canvas->clearData(tag.tagId);
+    }
+
     // prepare model data for canvas view
+    uiUsrFrame *usrFrame = &getUsrFrame();
+    dataDistanceLog &distData = getDistData();
+    showTagModel &store = getStore();
     foreach (oneTag tag, distData.get_q()->tagsData) {
         storeTagInfo *oneTagInfo = store.getTagInfo(tag.tagId);
-
+        storeMethodInfo &measInfo = oneTagInfo->methodInfo[MEASUR_STR];
         // CONDITIONs to the data
         // 1. the user wants to show
-        if (ui->UsrFrm->isShowable(tag.tagId)
+        if (usrFrame->isShowable(tag.tagId)
         // 2. MEASURE (position) is sucessful processed
-         && oneTagInfo->isTagPosInitialed
+        && oneTagInfo->isTagPosInitialed
         // 3. for multi-tag, tags data count may different
-         && oneTagInfo->methodInfo[MEASUR_STR].AnsLines.count() > distCount) {
+        && measInfo.AnsLines.count() >= counting) {
 
-            int distanceCount = tag.distData[distCount].distance.count();
+            oneLogData &logData = tag.distData[counting];
+            // int distanceCount = logData.distance.count();
+            int sensorCount = cfgData.get_q()->sensor.count();
             // location pos calc part
-            if (CALC_POS_TYPE::POS_NONE != calcPos.calcPosType) {
-                ui->canvas->setPosition(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
-                ui->canvas->setLine(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines[distCount-1]);
-                ui->canvas->setLines(tag.tagId, MEASUR_STR, oneTagInfo->methodInfo[MEASUR_STR].AnsLines);
+            if (CALC_POS_TYPE::POS_NONE != store.calcPosType) {
+                ui->canvas->setPosition(tag.tagId, MEASUR_STR, measInfo.Ans[counting].toQPointF());
+                ui->canvas->setLine(tag.tagId, MEASUR_STR, measInfo.AnsLines[counting-1]);
+                ui->canvas->setLines(tag.tagId, MEASUR_STR, measInfo.AnsLines);
 
-                ui->UsrFrm->setBtnToolTip(tag.tagId, true,
-                                          tag.distData[distCount].distance.data(),
-                                          oneTagInfo->weight[distCount].data(),
-                                          cfgData.get_q()->sensor.data(),
-                                          distanceCount,
-                                          oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF());
+                usrFrame->setBtnToolTip(tag.tagId, true,
+                                        logData.distance.data(),
+                                        oneTagInfo->weight[counting].data(),
+                                        cfgData.get_q()->sensor.data(),
+                                        sensorCount,
+                                        measInfo.Ans[counting].toQPointF());
             } else {
                 ui->canvas->removeTagMethod(tag.tagId, MEASUR_STR);
-                ui->UsrFrm->setBtnToolTip(tag.tagId, false);
+                usrFrame->setBtnToolTip(tag.tagId, false);
             }
 
-            ui->canvas->setPointsRaw(tag.tagId, MEASUR_STR, oneTagInfo->RawPoints[distCount]);
-            ui->canvas->setPointsRefined(tag.tagId, MEASUR_STR, oneTagInfo->RefinedPoints[distCount]);
+            ui->canvas->setPointsRaw(tag.tagId, MEASUR_STR, oneTagInfo->RawPoints[counting]);
+            ui->canvas->setPointsRefined(tag.tagId, MEASUR_STR, oneTagInfo->RefinedPoints[counting]);
 
         // used for the distance data containing pos data
         /*
-            QPointF tmpOK = tag.distData[distCount].p_t.toQPointF();
-            tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - tag.distData[distCount].p_t.toQPointF();
+            QPointF tmpOK = logData.p_t.toQPointF();
+            tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - logData.p_t.toQPointF();
             ui->canvas->setPosition(tag.tagId, TRACKx_STR, tmpOK);
-            ui->canvas->setPosition(tag.tagId, TRACKx_STR, tag.distData[distCount].p_t.toQPointF());
+            ui->canvas->setPosition(tag.tagId, TRACKx_STR, logData.p_t.toQPointF());
 
             QVector<QLineF> tmpLines;
             for (int i = 0; i < tag.distData.count(); i++) {
@@ -144,40 +164,37 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
             ui->canvas->setLines(tag.tagId, TRACKx_STR, tmpLines);
         */
 
-            qDebug() << "[@handleModelDataUpdate]" << distCount << QString("<%1>").arg(tag.tagId)
-                     << oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount].toQPointF();
+            qDebug() << "[@handleModelDataUpdate]" << counting << QString("<%1>").arg(tag.tagId)
+                     << measInfo.Ans[counting].toQPointF();
 
-            if (TRACK_METHOD::TRACK_NONE != calcTrack.calcTrackMethod) {
-                ui->canvas->setPosition(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].Ans[distCount].toQPointF());
-                ui->canvas->setLine(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines[distCount-1]);
-                ui->canvas->setLines(tag.tagId, TRACKx_STR, oneTagInfo->methodInfo[TRACKx_STR].AnsLines);
+            if (TRACK_METHOD::TRACK_NONE != store.calcTrackMethod) {
+                storeMethodInfo &trackInfo = oneTagInfo->methodInfo[TRACKx_STR];
+                ui->canvas->setPosition(tag.tagId, TRACKx_STR, trackInfo.Ans[counting].toQPointF());
+                ui->canvas->setLine(tag.tagId, TRACKx_STR, trackInfo.AnsLines[counting-1]);
+                ui->canvas->setLines(tag.tagId, TRACKx_STR, trackInfo.AnsLines);
             } else {
                 ui->canvas->removeTagMethod(tag.tagId, TRACKx_STR);
             }
 
             // intermediate results
-            ui->canvas->setDistance(tag.tagId,
-                                    distData.get_q()->tagsData[tag.tagId].distData[distCount].distance.data(),
-                                    oneTagInfo->usedSeneor[distCount].data());
-            ui->canvas->setWeight(tag.tagId, oneTagInfo->weight[distCount]);
-            ui->canvas->setIterPoints(tag.tagId, oneTagInfo->iterPoints[distCount]);
+            ui->canvas->setDistance(tag.tagId, logData.distance, oneTagInfo->usedSensor[counting]);
+            ui->canvas->setWeight(tag.tagId, oneTagInfo->weight[counting]);
+            ui->canvas->setIterPoints(tag.tagId, oneTagInfo->iterPoints[counting]);
 
             if (oneTagInfo->isGaussPointAdded) {    // kalmanCoupled show at LM
-                ui->canvas->setGaussPoint(tag.tagId, true, oneTagInfo->x_hat[distCount]);
+                ui->canvas->setGaussPoint(tag.tagId, true, oneTagInfo->x_hat[counting]);
             } else {
                 ui->canvas->setGaussPoint(tag.tagId, false);
             }
 
             // items in uiMainWindow
-            if (distanceShowTagId == tag.tagId || -1 == distanceShowTagId) {
-                QFont font;
-                font.setBold(true);
+            if (isFaked
+            || (distanceShowTagId == tag.tagId || UN_INIT_SHOW_TAGID == distanceShowTagId)) {
                 QPalette pa;
-                pa.setColor(QPalette::WindowText, ui->UsrFrm->getBtnColorSample(tag.tagId));
+                pa.setColor(QPalette::WindowText, usrFrame->getBtnColorSample(tag.tagId));
                 ui->label_Id->setPalette(pa);
-                ui->label_Id->setFont(font);
-                ui->label_Id->setText(QString::number(tag.tagId));
-                switch (distanceCount) {
+                ui->label_Id->setText("<b>"+QString("%0").arg(tag.tagId, 4, 10, QChar('0'))+"<\b>");
+                switch (sensorCount) {
                 case 6: SHOW_DIST_DATA(5);
                 case 5: SHOW_DIST_DATA(4);
                 case 4: SHOW_DIST_DATA(3);
@@ -187,32 +204,33 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
                 default:
                     break;
                 }
-
                 ui->raw_p->setStyleSheet("color:black");
-                ui->raw_p->setText(QString("    0{%1}")
-                                   .arg(QString::number(oneTagInfo->weight[distCount][distanceCount], 'f', 3).left(5)));
+                ui->raw_p->setText("0");
+                ui->weight_p->setText(QString::number(oneTagInfo->weight[counting][sensorCount], 'f', 3));
                 if (oneTagInfo->isGaussPointAdded) {    // kalmanCoupled show at LM
-                    dType dist = calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[distCount], oneTagInfo->x_hat[distCount]);
+                    dType dist = calcDistance(measInfo.Ans[counting], oneTagInfo->x_hat[counting]);
                     ui->refine_p->setText(QString::number(dist));
                 } else {
                     ui->refine_p->setText("NaN");
                 }
-                ui->UsrFrm->setShowDistTagId(tag.tagId);
+
+                QVector<dType>* ansQuality = measInfo.data;
+                setStatusIter(oneTagInfo->iterPoints[counting].count(),
+                              ansQuality[storeMethodInfo::STORED_MSE][counting],
+                              ansQuality[storeMethodInfo::STORED_Crossed1][counting] + 0.1f,   // round
+                              ansQuality[storeMethodInfo::STORED_Crossed2][counting] + 0.1f);
+
+                usrFrame->setShowDistTagId(tag.tagId);
             }
-            QVector<dType>* ansQuality = oneTagInfo->methodInfo[MEASUR_STR].data;
-            setStatusIter(oneTagInfo->iterPoints[distCount].count(),
-                          ansQuality[storeMethodInfo::STORED_MSE][distCount],
-                          ansQuality[storeMethodInfo::STORED_Crossed1][distCount] + 0.1f,   // round
-                          ansQuality[storeMethodInfo::STORED_Crossed2][distCount] + 0.1f);
         } else {
             ui->canvas->clearData(tag.tagId);
         }
     }
-    distanceShowTagId = ui->UsrFrm->getShowDistTagId();
+    distanceShowTagId = usrFrame->getShowDistTagId();
 
     update();
 
-    if (distCount == distData.maxDataCount)
+    if (counting >= distData.maxDataCount)
         timer.stop();
 }
 /***********************************************************/
@@ -221,6 +239,8 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
 // FILE
 void uiMainWindow::loadIniConfigFile(QString pathIn) {
     resetData();
+    realStore.calcPosType = CALC_POS_TYPE::POS_NONE;
+    realStore.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
 
     int nSensorKeep = cfgData.get_q()->sensor.count();
     bool isInitKeep = cfgData.get_q()->isInitialized;
@@ -244,11 +264,16 @@ void uiMainWindow::loadIniConfigFile(QString pathIn) {
 
     if (isInitKeep && nSensorKeep != cfgData.get_q()->sensor.count()) {
         qDebug() << "[@uiMainWindow::loadIniConfigFile] nSensor changed, need to reload distance file";
-        loadLogDistanceFile_2();
+        loadLogDistanceFile(2);
     }
 }
-void uiMainWindow::loadLogDistanceFile(QString pathIn) {
+
+void uiMainWindow::loadLogDistanceFile(int type, QString pathIn) {
     resetData();
+    isFaked = false;
+    ui->isTest->setChecked(isFaked);
+    realStore.calcPosType = CALC_POS_TYPE::POS_NONE;
+    realStore.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
 
     QString path;
     if (0 == pathIn.length()) {
@@ -259,54 +284,32 @@ void uiMainWindow::loadLogDistanceFile(QString pathIn) {
     if (0 == path.length()) {
         return;
     }
-    qDebug() << "[@uiMainWindow::loadLogDistanceFile] Path:" << path;
+    qDebug() << "[@uiMainWindow::loadLogDistanceFile] type" << type << "Path:" << path;
 
-    distData.loadNewFile_1(path);
+    if (1 == type) {
+        realDistData.loadNewFile_1(path);
+    } else if (2 == type) {
+        realDistData.loadNewFile_2(path);
+    }
+
+    // initWithDistanceData
+    dataDistanceLog &distData = getDistData();
+    showTagModel &store = getStore();
     foreach (oneTag tag, distData.get_q()->tagsData) {
         store.addNewTagInfo(tag.tagId);
-        ui->UsrFrm->addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
+        getUsrFrame().addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
+        ui->canvas->setDistance(tag.tagId, tag.distData[0].distance);
     }
-    calcPos.setDistanceData(distData.get_q());
-    ui->canvas->setDistanceData(distData.get_q());
-    ui->canvas->syncWithUiFrame(ui->UsrFrm);
+    ui->canvas->syncWithUiFrame(&getUsrFrame());
 
-    ui->actionRead_dist->setChecked(true);
-    ui->actionRead_dist_2->setChecked(false);
-    qDebug() << "[@uiMainWindow::loadLogDistanceFile]" << distData.toString();
+    ui->actionRead_dist->setChecked(1 == type);
+    ui->actionRead_dist_2->setChecked(2 == type);
+    qDebug() << "[@uiMainWindow::loadLogDistanceFile]" << realDistData.toString();
 
     checkData();
     lastDistancePath = path;
 }
-void uiMainWindow::loadLogDistanceFile_2(QString pathIn) {
-    resetData();
 
-    QString path;
-    if (0 == pathIn.length()) {
-        path = QFileDialog::getOpenFileName(this, "Select Distance Log File", ".", "distance file(*.log)");
-    } else {
-        path = pathIn;
-    }
-    if (0 == path.length()) {
-        return;
-    }
-    qDebug() << "[@uiMainWindow::loadLogDistanceFile_2] Path:" << path;
-
-    distData.loadNewFile_2(path);
-    foreach (oneTag tag, distData.get_q()->tagsData) {
-        store.addNewTagInfo(tag.tagId);
-        ui->UsrFrm->addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
-    }
-    calcPos.setDistanceData(distData.get_q());
-    ui->canvas->setDistanceData(distData.get_q());
-    ui->canvas->syncWithUiFrame(ui->UsrFrm);
-
-    ui->actionRead_dist->setChecked(false);
-    ui->actionRead_dist_2->setChecked(true);
-    qDebug() << "[@uiMainWindow::loadLogDistanceFile_2]" << distData.toString();
-
-    checkData();
-    lastDistancePath = path;
-}
 void uiMainWindow::loadPictureFile(QString pathIn) {
     QString path;
     if (0 == pathIn.length()) {
@@ -371,8 +374,8 @@ void uiMainWindow::nlosSumDist() {
 /***********************************************************/
 // POSITION
 void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
-    // determine the position calculate method
-    calcPos.calcPosType = type;
+    showTagModel &store = getStore();
+    store.calcPosType = type;
 
     QTime time;
     time.start();
@@ -381,23 +384,26 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
         ui->canvas->clearData(info->tagId);
         info->clear();
         info->addOrResetMethodInfo(MEASUR_STR, CALC_POS2STR[type]);
-        info->calcPosType = type;
+        info->calcPosType = type;   // determine the position calculate method
+        info->kalmanCoupledType = store.kalmanCoupledType;
 
         // if none position is calculated
         if (CALC_POS_TYPE::POS_NONE != type) {
             info->isTagPosInitialed = true;
-            ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+            getUsrFrame().setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+
+            dataDistanceLog &distData = getDistData();
 /****** CALC POS MAIN BEGIN **************************************************/
-            calcPos.calcPosVector(info);
+            calcPos.calcPosVector(info, distData.get_q()->tagsData[info->tagId]);
 /**********************************************************CALC POS MAIN END */
         } else {
             info->isTagPosInitialed = false;
-            ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_DISTANCE_DATA);
+            getUsrFrame().setUsrStatus(info->tagId, USR_STATUS::HAS_DISTANCE_DATA);
         }
 
         // measure pos changed, track-info need re_calc, only clear the it here
         info->reset(TRACKx_STR);
-        calcTrack.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
+        info->calcTrackMethod = TRACK_METHOD::TRACK_NONE;
         actionNowTrack = nullptr;
 
         totalPos += info->methodInfo[MEASUR_STR].Ans.count();
@@ -418,95 +424,95 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
     ui->actionKalmanTrack->setChecked(false);
     ui->actionKalmanLiteTrack->setChecked(false);
     ui->actionKalmanInfoTrack->setChecked(false);
-    calcTrack.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
+    store.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
 
     handleModelDataUpdate(false);
 }
 
 void uiMainWindow::posFullCentroid() {
     UPDATE_POS_UI(ui->actionFullCentroid);
-    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::FullCentroid : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::FullCentroid : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posSubLS() {
     UPDATE_POS_UI(ui->actionSubLS);
-    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::SubLS : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::SubLS : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posTwoCenter() {
     UPDATE_POS_UI(ui->actionTwoCenter);
-    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::TwoCenter : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::TwoCenter : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posTaylorSeries() {
     UPDATE_POS_UI(ui->actionTaylorSeries);
-    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::Taylor : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::Taylor : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posWeightedTaylor() {
     UPDATE_POS_UI(ui->actionWeightedTaylor);
-    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::WeightedTaylor : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::WeightedTaylor : CALC_POS_TYPE::POS_NONE);
 }
 /* kalman coupled methods start **********************************************/
 void uiMainWindow::posKalmanCoupled() {
     UPDATE_POS_UI(ui->actionKalmanCoupled);
     kalmanCoupledSyncUi();
-    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::POS_KalmanCoupled : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::POS_KalmanCoupled : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posKalmanTrail() {
-    calcPos.kalmanCoupledType ^= calcTagPos::TRAIL_COUPLED;
+    getStore().kalmanCoupledType ^= KALMAN_COUPLED_TYPE::TRAIL_COUPLED;
     kalmanCoupledSyncUi();
     posCalcPROCESS(CALC_POS_TYPE::POS_KalmanTrail);
 }
 void uiMainWindow::posKalmanGauss() {
-    calcPos.kalmanCoupledType ^= calcTagPos::GAUSS_COUPLED;
+    getStore().kalmanCoupledType ^= KALMAN_COUPLED_TYPE::GAUSS_COUPLED;
     kalmanCoupledSyncUi();
     posCalcPROCESS(CALC_POS_TYPE::POS_KalmanGauss);
 }
 void uiMainWindow::posKalmanWeight() {
-    calcPos.kalmanCoupledType ^= calcTagPos::WEIGHT_COUPLED;
+    getStore().kalmanCoupledType ^= KALMAN_COUPLED_TYPE::WEIGHT_COUPLED;
     kalmanCoupledSyncUi();
     posCalcPROCESS(CALC_POS_TYPE::POS_KalmanWeight);
 }
 void uiMainWindow::posKalmanSmooth() {
-    calcPos.kalmanCoupledType ^= calcTagPos::SMOOTH_COUPLED;
+    getStore().kalmanCoupledType ^= KALMAN_COUPLED_TYPE::SMOOTH_COUPLED;
     kalmanCoupledSyncUi();
     posCalcPROCESS(CALC_POS_TYPE::POS_KalmanSmooth);
 }
 /************************************************ kalman coupled methods end */
 void uiMainWindow::posLMedS() {
     UPDATE_POS_UI(ui->actionLMedS);
-    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::LMedS : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::LMedS : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posBilateration() {
     UPDATE_POS_UI(ui->actionBilateration);
-    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::Bilateration : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::Bilateration : CALC_POS_TYPE::POS_NONE);
 }
 // ARM VERSION /////////////////////////////////////////////////////////////////
 void uiMainWindow::posCalc_ARM() {
     UPDATE_POS_UI(ui->actioncalcTagPos_ARM);
-    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::ARM_calcPos : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::ARM_calcPos : CALC_POS_TYPE::POS_NONE);
 }
 
 /***********************************************************/
 // TRACK
 void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
-    // determine the track calculate method
-    calcTrack.calcTrackMethod = type;
+    showTagModel &store = getStore();
+    store.calcTrackMethod = type;
+
     // reset kalman parameter of existing tag
     calcTrack.clearParam();
     QTime time;
     time.start();
     foreach (storeTagInfo *info, store.tags) {
         info->addOrResetMethodInfo(TRACKx_STR, TRACK_METHOD2STR[type]);
+        info->calcTrackMethod = type;   // determine the track calculate method
 
         // if none track is calculated
         if (TRACK_METHOD::TRACK_NONE != type) {
-            ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_TRACK_DATA);
+            getUsrFrame().setUsrStatus(info->tagId, USR_STATUS::HAS_TRACK_DATA);
 /* CALC TRACK MAIN BEGIN *****************************************************/
             calcTrack.calcTrackVector(info->methodInfo[MEASUR_STR], info->methodInfo[TRACKx_STR]);
 /********************************************************CALC TRACK MAIN END */
         } else {
-            ui->UsrFrm->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+            getUsrFrame().setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
         }
-
-
 
         dType measDist   = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
         dType kalmanDist = calcTotalAvgDistanceSquare(info->methodInfo[TRACKx_STR].AnsLines);

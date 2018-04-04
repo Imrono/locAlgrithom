@@ -23,6 +23,18 @@
 #define MEASUR_STR "measure"
 #define TRACKx_STR "track"
 
+#define TEST_TAG_ID -2
+#define UN_INIT_SHOW_TAGID -1
+#define UN_INIT_LM_TAGID -1
+
+enum KALMAN_COUPLED_TYPE{
+    NONE_COUPLED   = 0x00,
+    TRAIL_COUPLED  = 0x01,
+    GAUSS_COUPLED  = 0x02,
+    WEIGHT_COUPLED = 0x04,
+    SMOOTH_COUPLED = 0x08
+};
+
 enum CALC_POS_TYPE {
     POS_NONE = 0,
     FullCentroid,

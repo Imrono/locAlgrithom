@@ -73,7 +73,7 @@ struct storeTagInfo {
     QVector<dType>                 data_R;
     QVector<dType>                 data_P;
     QVector<dType>                 data_y;
-    QVector<QVector<bool>>         usedSeneor;
+    QVector<QVector<bool>>         usedSensor;
     QVector<QVector<QPointF>>      iterPoints;
     QVector<QVector<dType>>        weight;
 
@@ -84,6 +84,8 @@ struct storeTagInfo {
     QVector<QVector<locationCoor>> RefinedPoints;
 
     CALC_POS_TYPE                  calcPosType;
+    TRACK_METHOD                   calcTrackMethod;
+    unsigned                       kalmanCoupledType;
     QString toString() {
         QString ans = QString("tagId:%0. ").arg(tagId, 3);
         foreach (storeMethodInfo i, methodInfo) {
@@ -97,12 +99,13 @@ struct storeTagInfo {
 
     void clear() {
         iterPoints.clear();
-        usedSeneor.clear();
+        usedSensor.clear();
         methodInfo.clear();
         RawPoints.clear();
         RefinedPoints.clear();
         weight.clear();
         calcPosType = CALC_POS_TYPE::POS_NONE;
+        calcTrackMethod = TRACK_METHOD ::TRACK_NONE;
         isGaussPointAdded = false;
         x_hat.clear();
         calcPosKalmanData.clear();
@@ -134,6 +137,9 @@ public:
         tags.clear();
     }
 
+    unsigned kalmanCoupledType{KALMAN_COUPLED_TYPE::NONE_COUPLED};
+    CALC_POS_TYPE calcPosType    {CALC_POS_TYPE::POS_NONE};
+    TRACK_METHOD  calcTrackMethod{TRACK_METHOD ::TRACK_NONE};
     QMap<int, storeTagInfo *> tags;
 };
 

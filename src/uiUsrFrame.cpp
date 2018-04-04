@@ -3,6 +3,7 @@
 const int uiUsrFrame::MAX_SHOWABLE_NUM = 6;
 uiUsrFrame::uiUsrFrame(QWidget *parent) : QFrame(parent) {
     setStyleSheet("background-color:white;");
+    setGeometry(0, 0, 160, 180);
 }
 
 void uiUsrFrame::addOneUsr(int tagId, USR_STATUS status) {
@@ -54,6 +55,12 @@ void uiUsrFrame::removeAll() {
     update();
 }
 
+void uiUsrFrame::setEnabledAll(bool enable) {
+    foreach (uiUsrInfoBtn *btn, usrBtns) {
+        btn->setEnabled(enable);
+    }
+}
+
 // HAS_DISTANCE_DATA, HAS_MEASURE_DATA, HAS_TRACK_DATA
 void uiUsrFrame::setUsrStatus(int tagId, USR_STATUS status) {
     foreach (uiUsrInfoBtn *usrBtn, usrBtns) {
@@ -61,6 +68,15 @@ void uiUsrFrame::setUsrStatus(int tagId, USR_STATUS status) {
             usrBtn->setUsrStatus(status);
         }
     }
+}
+USR_STATUS uiUsrFrame::getUsrStatus(int tagId) {
+    USR_STATUS usrStatus;
+    foreach (uiUsrInfoBtn *usrBtn, usrBtns) {
+        if (usrBtn->getTagId() == tagId) {
+            usrStatus = usrBtn->getUsrStatus();
+        }
+    }
+    return usrStatus;
 }
 
 bool uiUsrFrame::isShowable(int tagId) {
@@ -136,7 +152,7 @@ void uiUsrFrame::oneUsrBtnClicked_slot(int tagId) {
 
 void uiUsrFrame::oneUsrShowML_slot(int tagId) {
     if (tagShowLM == tagId) {
-        tagShowLM = -1;
+        tagShowLM = UN_INIT_LM_TAGID;
     } else {
         tagShowLM = tagId;
     }
@@ -158,7 +174,7 @@ void uiUsrFrame::oneUsrShowML_slot(int tagId) {
         }
     }
     // notice the ui to check to Max Likehood model
-    emit oneUsrShowML_siganl(tagId, -1 != tagShowLM);
+    emit oneUsrShowML_siganl(tagId, UN_INIT_LM_TAGID != tagShowLM);
     emit oneUsrShowDistance_siganl(tagId);
 }
 

@@ -5,56 +5,50 @@
 
 // kalman coupled position calc related
 void uiMainWindow::UPDATE_POS_UI(QAction *action) {
-    if (!actionNowPos) {    // 1st time
-        actionNowPos = action;
-        actionNowPos->setChecked(true);
+    if (!getActionNowPos()) {    // 1st time
+        getActionNowPos() = action;
+        getActionNowPos()->setChecked(true);
         if (action != ui->actionKalmanCoupled) {
             kalmanCoupledChange(false);
         } else {
             kalmanCoupledChange(true);
         }
     } else {
-        if (actionNowPos != ui->actionKalmanCoupled && action == ui->actionKalmanCoupled) {
-            kalmanCoupledChange(true);
-        } else if (actionNowPos == ui->actionKalmanCoupled && action != ui->actionKalmanCoupled) {
-            kalmanCoupledChange(false);
+        if (getActionNowPos() != ui->actionKalmanCoupled && action == ui->actionKalmanCoupled) {
+            kalmanCoupledChange(true);  // other -> kalmanCoupled
+        } else if (getActionNowPos() == ui->actionKalmanCoupled && action != ui->actionKalmanCoupled) {
+            kalmanCoupledChange(false); // kalmanCoupled -> other
         } else {}
 
-        if (actionNowPos == action) {
-            actionNowPos->setChecked(false);
+        if (getActionNowPos() == action) {   // cancel this calcuation
+            getActionNowPos()->setChecked(false);
             kalmanCoupledChange(false);
-            actionNowPos = nullptr;
-        } else {
-            actionNowPos->setChecked(false);
-            actionNowPos = action;
-            actionNowPos->setChecked(true);
+            getActionNowPos() = nullptr;
+        } else {                        // change to other calc method
+            getActionNowPos()->setChecked(false);
+            getActionNowPos() = action;
+            getActionNowPos()->setChecked(true);
         }
     }
 }
-
 void uiMainWindow::kalmanCoupledChange(bool isEnable) {
-    if (isEnable) {
-        ui->actionKalmanTrail->setEnabled(true);
-        ui->actionKalmanGauss->setEnabled(true);
-        ui->actionKalmanWeight->setEnabled(true);
-        ui->actionKalmanSmooth->setEnabled(true);
-    } else {
-        ui->actionKalmanTrail->setDisabled(true);
-        ui->actionKalmanGauss->setDisabled(true);
-        ui->actionKalmanWeight->setDisabled(true);
-        ui->actionKalmanSmooth->setDisabled(true);
-    }
+    ui->actionKalmanTrail->setEnabled(isEnable);
+    ui->actionKalmanGauss->setEnabled(isEnable);
+    ui->actionKalmanWeight->setEnabled(isEnable);
+    ui->actionKalmanSmooth->setEnabled(isEnable);
 }
+
 void uiMainWindow::kalmanCoupledSyncUi() {
-    ui->actionKalmanTrail->setChecked (calcPos.kalmanCoupledType & calcTagPos::TRAIL_COUPLED);
-    ui->actionKalmanGauss->setChecked (calcPos.kalmanCoupledType & calcTagPos::GAUSS_COUPLED);
-    ui->actionKalmanWeight->setChecked(calcPos.kalmanCoupledType & calcTagPos::WEIGHT_COUPLED);
-    ui->actionKalmanSmooth->setChecked(calcPos.kalmanCoupledType & calcTagPos::SMOOTH_COUPLED);
-    qDebug() << "[@uiMainWindow::kalmanCoupledSyncUi]" << calcPos.kalmanCoupledType << ";"
-             << "TRAIL_COUPLED"  << (calcPos.kalmanCoupledType & calcTagPos::TRAIL_COUPLED) << ";"
-             << "GAUSS_COUPLED"  << (calcPos.kalmanCoupledType & calcTagPos::GAUSS_COUPLED) << ";"
-             << "WEIGHT_COUPLED" << (calcPos.kalmanCoupledType & calcTagPos::WEIGHT_COUPLED) << ";"
-             << "SMOOTH_COUPLED" << (calcPos.kalmanCoupledType & calcTagPos::SMOOTH_COUPLED) << ";";
+    showTagModel &store = getStore();
+    ui->actionKalmanTrail->setChecked (store.kalmanCoupledType & KALMAN_COUPLED_TYPE::TRAIL_COUPLED);
+    ui->actionKalmanGauss->setChecked (store.kalmanCoupledType & KALMAN_COUPLED_TYPE::GAUSS_COUPLED);
+    ui->actionKalmanWeight->setChecked(store.kalmanCoupledType & KALMAN_COUPLED_TYPE::WEIGHT_COUPLED);
+    ui->actionKalmanSmooth->setChecked(store.kalmanCoupledType & KALMAN_COUPLED_TYPE::SMOOTH_COUPLED);
+    qDebug() << "[@uiMainWindow::kalmanCoupledSyncUi]" << store.kalmanCoupledType << ";"
+             << "TRAIL_COUPLED"  << (store.kalmanCoupledType & KALMAN_COUPLED_TYPE::TRAIL_COUPLED) << ";"
+             << "GAUSS_COUPLED"  << (store.kalmanCoupledType & KALMAN_COUPLED_TYPE::GAUSS_COUPLED) << ";"
+             << "WEIGHT_COUPLED" << (store.kalmanCoupledType & KALMAN_COUPLED_TYPE::WEIGHT_COUPLED) << ";"
+             << "SMOOTH_COUPLED" << (store.kalmanCoupledType & KALMAN_COUPLED_TYPE::SMOOTH_COUPLED) << ";";
 }
 
 // track calc related
@@ -72,12 +66,17 @@ void uiMainWindow::UPDATE_TRACK_UI(QAction *action) {
 }
 
 void uiMainWindow::connectUi() {
+    connect(ui->isTest, SIGNAL(clicked(bool)), this, SLOT(modelChange(bool)));
     connect(ui->canvas, SIGNAL(mouseChange(int,int)), this, SLOT(showMousePos(int, int)));
 /*************************************************************/
     // FILE
     connect(ui->actionRead_ini,     SIGNAL(triggered(bool)), this, SLOT(loadIniConfigFile()));
-    connect(ui->actionRead_dist,    SIGNAL(triggered(bool)), this, SLOT(loadLogDistanceFile()));
-    connect(ui->actionRead_dist_2,  SIGNAL(triggered(bool)), this, SLOT(loadLogDistanceFile_2()));
+    connect(ui->actionRead_dist,    &QAction::triggered, this, [this](void) {
+        loadLogDistanceFile(1);
+    });
+    connect(ui->actionRead_dist_2,  &QAction::triggered, this, [this](void) {
+        loadLogDistanceFile(2);
+    });
     connect(ui->actionRead_picture, SIGNAL(triggered(bool)), this, SLOT(loadPictureFile()));
 
     // NLOS
@@ -140,15 +139,15 @@ void uiMainWindow::connectUi() {
         handleModelDataUpdate(false);
     });
     connect(ui->reset, &QPushButton::clicked, this, [this](void) {
-        distCount = 1;
+        realCounting = 1;
         handleModelDataUpdate(false);
     });
     connect(ui->previous, &QPushButton::clicked, this, [this](void) {
-        distCount --;
+        realCounting --;
         handleModelDataUpdate(false);
     });
     connect(ui->next, &QPushButton::clicked, this, [this](void) {
-        distCount ++;
+        realCounting ++;
         handleModelDataUpdate(false);
     });
 
@@ -186,21 +185,29 @@ void uiMainWindow::connectUi() {
     });
 
     connect(ui->distCountEdit, &QLineEdit::returnPressed, this, [this](void) {
-        distCount = ui->distCountEdit->text().toInt();
+        realCounting = ui->distCountEdit->text().toInt();
         handleModelDataUpdate(false);
         ui->next->setFocus();
     });
     connect(ui->gotoCount, &QPushButton::clicked, this, [this](void) {
-        distCount = ui->distCountEdit->text().toInt();
+        realCounting = ui->distCountEdit->text().toInt();
         handleModelDataUpdate(false);
     });
 
-    connect(ui->UsrFrm, SIGNAL(oneUsrBtnClicked_siganl(int, bool)),
+    connect(&realUsrFrame, SIGNAL(oneUsrBtnClicked_siganl(int, bool)),
             this, SLOT(oneUsrBtnClicked(int, bool)));
-    connect(ui->UsrFrm, SIGNAL(oneUsrShowML_siganl(int, bool)),
+    connect(&realUsrFrame, SIGNAL(oneUsrShowML_siganl(int, bool)),
             this, SLOT(oneUsrShowML(int, bool)));
-    connect(ui->UsrFrm, &uiUsrFrame::oneUsrShowDistance_siganl, this, [this](int tagId) {
-        distanceShowTagId = ui->UsrFrm->isShowable(tagId) ? tagId : -1;
+    connect(&realUsrFrame, &uiUsrFrame::oneUsrShowDistance_siganl, this, [this](int tagId) {
+        distanceShowTagId = getUsrFrame().isShowable(tagId) ? tagId : UN_INIT_SHOW_TAGID;
+        handleModelDataUpdate(false);
+    });
+    connect(&fakeUsrFrame, SIGNAL(oneUsrBtnClicked_siganl(int, bool)),
+            this, SLOT(oneUsrBtnClicked(int, bool)));
+    connect(&fakeUsrFrame, SIGNAL(oneUsrShowML_siganl(int, bool)),
+            this, SLOT(oneUsrShowML(int, bool)));
+    connect(&fakeUsrFrame, &uiUsrFrame::oneUsrShowDistance_siganl, this, [this](int tagId) {
+        distanceShowTagId = getUsrFrame().isShowable(tagId) ? tagId : UN_INIT_SHOW_TAGID;
         handleModelDataUpdate(false);
     });
 
@@ -209,6 +216,36 @@ void uiMainWindow::connectUi() {
     ui->sigmaSlider->setValue(sigmaInitValue);
     sigmaChanged(sigmaInitValue);
     connect(ui->sigmaSlider, SIGNAL(valueChanged(int)), this, SLOT(sigmaChanged(int)));
+
+    connect(ui->refresh, &QPushButton::clicked, this, [this](void) {
+        showTagModel &store = getStore();
+        if (CALC_POS_TYPE::POS_NONE != store.calcPosType) {
+            posCalcPROCESS(store.calcPosType);
+        } else {}
+        if (TRACK_METHOD::TRACK_NONE != store.calcTrackMethod) {
+            trackCalcPROCESS(store.calcTrackMethod);
+        } else {}
+    });
+
+    // distance show
+    connect(ui->raw_0, &QLineEdit::textChanged, this, [this](void) {
+        SET_DISTANCE(0);
+    });
+    connect(ui->raw_1, &QLineEdit::textChanged, this, [this](void) {
+        SET_DISTANCE(1);
+    });
+    connect(ui->raw_2, &QLineEdit::textChanged, this, [this](void) {
+        SET_DISTANCE(2);
+    });
+    connect(ui->raw_3, &QLineEdit::textChanged, this, [this](void) {
+        SET_DISTANCE(3);
+    });
+    connect(ui->raw_4, &QLineEdit::textChanged, this, [this](void) {
+        SET_DISTANCE(4);
+    });
+    connect(ui->raw_5, &QLineEdit::textChanged, this, [this](void) {
+        SET_DISTANCE(5);
+    });
 }
 
 void uiMainWindow::wheelEvent(QWheelEvent *e)
@@ -231,66 +268,39 @@ void uiMainWindow::wheelEvent(QWheelEvent *e)
 void uiMainWindow::checkData() {
     qDebug() << "[@uiMainWindow::checkData()]"
              << "cfgData.get_q() =" << cfgData.get_q()->isInitialized
-             << "distData.get_q() =" << distData.get_q()->isInitialized;
-    if (!cfgData.get_q()->isInitialized || !distData.get_q()->isInitialized) {
-        ui->actionWylie->setDisabled(true);
-        ui->actionMultiPoint->setDisabled(true);
-        ui->actionRes->setDisabled(true);
-        ui->actionSumDist->setDisabled(true);
+             << "distData.get_q() =" << realDistData.get_q()->isInitialized;
+    bool isEnabled = cfgData.get_q()->isInitialized && realDistData.get_q()->isInitialized;
+    ui->actionWylie->setEnabled(isEnabled);
+    ui->actionMultiPoint->setEnabled(isEnabled);
+    ui->actionRes->setEnabled(isEnabled);
+    ui->actionSumDist->setEnabled(isEnabled);
 
-        ui->actionFullCentroid->setDisabled(true);
-        ui->actionSubLS->setDisabled(true);
-        ui->actionTwoCenter->setDisabled(true);
-        ui->actionTaylorSeries->setDisabled(true);
+    ui->actionFullCentroid->setEnabled(isEnabled);
+    ui->actionSubLS->setEnabled(isEnabled);
+    ui->actionTwoCenter->setEnabled(isEnabled);
+    ui->actionTaylorSeries->setEnabled(isEnabled);
 
-        ui->actionWeightedTaylor->setDisabled(true);
-        ui->actionKalmanCoupled->setDisabled(true);
-        ui->actionKalmanTrail->setDisabled(true);
-        ui->actionKalmanGauss->setDisabled(true);
-        ui->actionKalmanWeight->setDisabled(true);
-        ui->actionKalmanSmooth->setDisabled(true);
+    ui->actionWeightedTaylor->setEnabled(isEnabled);
+    ui->actionKalmanCoupled->setEnabled(isEnabled);
+    ui->actionKalmanTrail->setEnabled(isEnabled);
+    ui->actionKalmanGauss->setEnabled(isEnabled);
+    ui->actionKalmanWeight->setEnabled(isEnabled);
+    ui->actionKalmanSmooth->setEnabled(isEnabled);
 
-        ui->actionLMedS->setDisabled(true);
-        ui->actionBilateration->setDisabled(true);
+    ui->actionLMedS->setEnabled(isEnabled);
+    ui->actionBilateration->setEnabled(isEnabled);
 
-        ui->actioncalcTagPos_ARM->setDisabled(true);
+    ui->actioncalcTagPos_ARM->setEnabled(isEnabled);
 
-        ui->actionKalmanTrack->setDisabled(true);
-        ui->actionKalmanLiteTrack->setDisabled(true);
-        ui->actionKalmanInfoTrack->setDisabled(true);
-    } else {
-        ui->actionWylie->setEnabled(true);
-        ui->actionMultiPoint->setEnabled(true);
-        ui->actionRes->setEnabled(true);
-        ui->actionSumDist->setEnabled(true);
-
-        ui->actionFullCentroid->setEnabled(true);
-        ui->actionSubLS->setEnabled(true);
-        ui->actionTwoCenter->setEnabled(true);
-        ui->actionTaylorSeries->setEnabled(true);
-
-        ui->actionWeightedTaylor->setEnabled(true);
-        ui->actionKalmanCoupled->setEnabled(true);
-        ui->actionKalmanTrail->setEnabled(true);
-        ui->actionKalmanGauss->setEnabled(true);
-        ui->actionKalmanWeight->setEnabled(true);
-        ui->actionKalmanSmooth->setEnabled(true);
-
-        ui->actionLMedS->setEnabled(true);
-        ui->actionBilateration->setEnabled(true);
-
-        ui->actioncalcTagPos_ARM->setEnabled(true);
-
-        ui->actionKalmanTrack->setEnabled(true);
-        ui->actionKalmanLiteTrack->setEnabled(true);
-        ui->actionKalmanInfoTrack->setEnabled(true);
-    }
+    ui->actionKalmanTrack->setEnabled(isEnabled);
+    ui->actionKalmanLiteTrack->setEnabled(isEnabled);
+    ui->actionKalmanInfoTrack->setEnabled(isEnabled);
 }
 void uiMainWindow::resetData() {
     // CLEAR LEGACY DATA
-    store.clear();
-    distData.clear();
-    ui->UsrFrm->removeAll();
+    realStore.clear();
+    realDistData.clear();
+    realUsrFrame.removeAll();
     ui->canvas->removeAll();
     // CLEAR UI
     resetUi(true, true);
@@ -298,7 +308,6 @@ void uiMainWindow::resetData() {
 
 void uiMainWindow::resetUi(bool isPos, bool isTrack) {
     if (isPos) {
-        calcPos.calcPosType = CALC_POS_TYPE::POS_NONE;
         ui->actionFullCentroid->setChecked(false);
         ui->actionSubLS->setChecked(false);
         ui->actionTwoCenter->setChecked(false);
@@ -320,7 +329,6 @@ void uiMainWindow::resetUi(bool isPos, bool isTrack) {
     } else {}
 
     if (isTrack) {
-        calcTrack.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
         ui->actionKalmanTrack->setChecked(false);
         ui->actionKalmanLiteTrack->setChecked(false);
         ui->actionKalmanInfoTrack->setChecked(false);
@@ -330,23 +338,18 @@ void uiMainWindow::resetUi(bool isPos, bool isTrack) {
 void uiMainWindow::setStatusTimeInfo() {
     QString posStr;
     QString trackStr;
-    if (CALC_POS_TYPE::POS_NONE == calcPos.calcPosType) {
-        posStr = "{pos_none}";
-    } else {
-        posStr = CALC_POS2STR[calcPos.calcPosType];
-    }
-    if (TRACK_METHOD::TRACK_NONE == calcTrack.calcTrackMethod) {
-        trackStr = "{track_none}";
-    } else {
-        trackStr = TRACK_METHOD2STR[calcTrack.calcTrackMethod];
-    }
+    posStr = CALC_POS2STR[getStore().calcPosType];
+    trackStr = TRACK_METHOD2STR[getStore().calcTrackMethod];
+
     calcTimeElapsed->setText(QString("<b>nPOS:%0</b> | <b>%1</b>:%2(s) | <b>%3</b>:%4(s)")
-                             .arg(totalPos)
-                             .arg(posStr).arg(calcTimeElapsedMeasu)
-                             .arg(trackStr).arg(calcTimeElapsedTrack));
+                             .arg(!isFaked ? totalPos : 1)
+                             .arg(posStr)
+                             .arg(!isFaked ? QString::number(calcTimeElapsedMeasu) : "NaN")
+                             .arg(trackStr)
+                             .arg(!isFaked ? QString::number(calcTimeElapsedTrack) : "NaN"));
 }
 void uiMainWindow::setStatusDistCount() {
-    distCountShow->setText(QString("distCount: <b>%0</b>").arg(distCount, 4, 10, QChar('0')));
+    distCountShow->setText(QString("distCount: <b>%0</b>").arg(getCounting(), 4, 10, QChar('0')));
 }
 void uiMainWindow::setStatusZoom() {
     distZoomShow->setText(QString("[%0%]")
@@ -380,4 +383,77 @@ void uiMainWindow::setStatusIter(int n, dType mse, int crossed1, int crossed2) {
                           QString("<") + QString::number(crossed1) + QString(">") +
                           QString("|r2:") + QString::number(MACRO_circleR_2) +
                           QString("<") + QString::number(crossed2) + QString(">"));
+}
+
+void uiMainWindow::modelChange(bool isTest) {
+    qDebug() << "isChecked (is test model)" << isTest << "isFaked" << isFaked;
+    if (isFaked != isTest) {
+        isFaked = isTest;
+
+        //initWithDistanceData();
+
+        ui->actionKalmanInfoTrack->setEnabled(!isFaked);
+        ui->actionKalmanLiteTrack->setEnabled(!isFaked);
+        ui->actionKalmanTrack->setEnabled(!isFaked);
+        //ui->UsrFrm->setEnabledAll(!isFaked);
+        ui->canvas->isTestModel = isFaked;
+
+        dataDistanceLog &distData = getDistData();
+        showTagModel &store = getStore();
+        uiUsrFrame *usrFrame = &getUsrFrame();
+        int counting = getCounting();
+        distanceShowTagId = usrFrame->getShowDistTagId();   //change showDist data
+
+        const QVector<int> &distance = distData.get_q()->
+                tagsData[distanceShowTagId].distData[counting].distance;
+        QVector<dType> weight;
+        bool isWeighted = true;
+        if (UN_INIT_SHOW_TAGID == distanceShowTagId) {
+            isWeighted = false;
+        } else if (store.tags[distanceShowTagId]->weight.count() < counting) {
+            isWeighted = false;
+        } else if (0 == store.tags[distanceShowTagId]->weight[counting].count()) {
+            isWeighted = false;
+        } else {
+            weight = store.tags[distanceShowTagId]->weight[counting];
+        }
+
+        ui->label_Id->setText("<b><font black>----<\font><\b>");
+        switch (cfgData.get_q()->sensor.count()) {
+        case 6: IS_TEST_CHANGE_DISTANCE(5);
+        case 5: IS_TEST_CHANGE_DISTANCE(4);
+        case 4: IS_TEST_CHANGE_DISTANCE(3);
+        case 3: IS_TEST_CHANGE_DISTANCE(2);
+        case 2: IS_TEST_CHANGE_DISTANCE(1);
+        case 1: IS_TEST_CHANGE_DISTANCE(0);
+        default:
+            RESET_SHOW_DIST_DATA(p);
+        }
+
+        if (isFaked) {
+            oneTag &tmpTagData = fakeDistData.get_q()->tagsData[TEST_TAG_ID];
+            ui->canvas->setDistance(TEST_TAG_ID, tmpTagData.distData[0].distance);
+        }
+
+        ui->canvas->syncWithUiFrame(usrFrame);
+        isFaked ? fakeUsrFrame.show() : realUsrFrame.show();
+        isFaked ? realUsrFrame.hide() : fakeUsrFrame.hide();
+
+        resetUi(true, true);
+
+        QAction *actionNowPos = getActionNowPos();
+        if (actionNowPos) {
+            actionNowPos->setChecked(true);
+            if (ui->actionKalmanCoupled == actionNowPos) {
+                kalmanCoupledSyncUi();
+            }
+        }
+
+        int tagShowLM = usrFrame->getTagShowLM();
+        oneUsrShowML(tagShowLM, tagShowLM != UN_INIT_LM_TAGID);
+
+        setStatusTimeInfo();
+        setStatusIter(-1, -1, -1, -1);
+        handleModelDataUpdate(false);
+    }
 }

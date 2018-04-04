@@ -65,9 +65,6 @@ void uiCanvas::setConfigData(const configData *d) {
 
     update();
 }
-void uiCanvas::setDistanceData(const distanceData *dist_q) {
-    this->dist_d = dist_q;
-}
 
 void uiCanvas::syncWithUiFrame(uiUsrFrame *frm) {
     QList<int> showableTags = frm->getShowableTags();

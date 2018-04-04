@@ -41,6 +41,8 @@ public:
     void loadNewFile_2(const QString &fileName);
     void analyzeDistanceData2(const QStringList &strList, const QRegExp &rx);
 
+    void initFakeData();
+
     QString toString();
 
     distanceData *get_q() const {

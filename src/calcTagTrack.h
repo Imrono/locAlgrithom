@@ -53,8 +53,6 @@ public:
     }
 
     // ALL IN ONE
-    TRACK_METHOD calcTrackMethod{TRACK_METHOD::TRACK_NONE};
-
     void calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo);
     void calcOneTrack(const locationCoor &z_x_meas,
                       dType T, dType Rx,
@@ -76,6 +74,8 @@ public:
     static void calcMatrixMulit_KP(const dType Kx, const dType Kv,
                                    const dType Pxx_pri_t, const dType Pxv_pri_t, const dType Pvv_pri_t,
                                    dType &Pxx_t, dType &Pxv_t, dType &Pvv_t);
+private:
+    TRACK_METHOD calcTrackMethod{TRACK_METHOD::TRACK_NONE};
 };
 
 #endif // KALMANCALC_H

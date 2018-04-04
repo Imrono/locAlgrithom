@@ -122,9 +122,7 @@ void calcTagPos::setConfigData(const configData *cfg_q) {
     // weighted
     W_taylor = new dType[fc_row];
 }
-void calcTagPos::setDistanceData(const distanceData *dist_q) {
-    this->dist_d = dist_q;
-}
+
 void calcTagPos::setNlosJudge(const calcTagNLOS *calcNlos) {
     this->calcNlos = calcNlos;
 }
@@ -175,15 +173,20 @@ QVector<locationCoor> calcTagPos::calcPosFromDistance(const int dist[], uint32_t
     return vectorAns;
 }
 
-void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
+void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData) {
     if (nullptr == tagInfo)
         return;
-    if (CALC_POS_TYPE::POS_NONE == calcPosType) {
+
+/* calcTagPos method configuration *******************************************/
+    calcPosType = tagInfo->calcPosType;
+    kalmanCoupledType = tagInfo->kalmanCoupledType;
+/*****************************************************************************/
+    if (CALC_POS_TYPE::POS_NONE == tagInfo->calcPosType) {
         return;
     }
 
     bool isNlosIgnore = false;
-    if (CALC_POS_TYPE::WeightedTaylor == calcPosType) {
+    if (CALC_POS_TYPE::WeightedTaylor == tagInfo->calcPosType) {
         isNlosIgnore = false;
     }
     int nSensor = cfg_d->sensor.count();
@@ -195,7 +198,6 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
     for (int i = 0; i < MAX_SENSOR; i++)
         usedSensor[i] = true;
 
-    const oneTag &oneTagData = dist_d->tagsData[tagInfo->tagId];
     // used for kalmanTaylor only
     oneKalmanData &kalmanData = tagInfo->calcPosKalmanData;
     tagInfo->isGaussPointAdded = kalmanCoupledType & GAUSS_COUPLED;
@@ -263,7 +265,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo) {
         for (int k = 0; k < cfg_d->sensor.count(); k++) {
             tmp.append(usedSensor[k]);
         }
-        tagInfo->usedSeneor.append(tmp);
+        tagInfo->usedSensor.append(tmp);
         if (tagInfo->isGaussPointAdded) {
             tagInfo->x_hat.append(x_hat);
         }

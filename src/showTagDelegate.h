@@ -114,7 +114,7 @@ public:
 
     void clearData() {
         oneTagMethod.clear();
-        distance.clear();
+        //distance.clear();
         weight.clear();
     }
     void clearMethodData(const QString &methodName) {

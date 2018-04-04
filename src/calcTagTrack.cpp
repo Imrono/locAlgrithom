@@ -21,6 +21,9 @@ void calcTagTrack::calcMatrixMulit_KP(const dType Kx, const dType Kv,
 }
 
 void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo) {
+/* calcTagTrack method configuration *****************************************/
+    calcTrackMethod = tagKalmanInfo.parentTag->calcTrackMethod;
+/*****************************************************************************/
     if (TRACK_METHOD::TRACK_NONE == calcTrackMethod) {
         return;
     }

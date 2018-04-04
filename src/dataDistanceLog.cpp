@@ -157,3 +157,15 @@ QString dataDistanceLog::toString() {
     }
     return ans;
 }
+
+void dataDistanceLog::initFakeData() {
+    q->clear();
+
+    oneTag tmpTag(TEST_TAG_ID);
+    q->tagsData.insert(TEST_TAG_ID, tmpTag);
+    q->tagsData[TEST_TAG_ID].tagId = TEST_TAG_ID;
+    oneLogData testLogData;
+    testLogData.distance.fill(-1, MAX_SENSOR);
+    q->tagsData[TEST_TAG_ID].distData.append(testLogData);
+    q->tagsData[TEST_TAG_ID].distData.append(testLogData);
+}

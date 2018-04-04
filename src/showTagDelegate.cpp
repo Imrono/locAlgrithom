@@ -21,7 +21,9 @@ tagsView::tagsView(){
 }
 
 /******************************************************************/
-showTagDelegate::showTagDelegate(){}
+showTagDelegate::showTagDelegate(){
+    usedSensor.fill(false, MAX_SENSOR);
+}
 showTagDelegate::showTagDelegate(int tagId) : tagId{tagId} {
     recordTagId(tagId);
     tagView = tagViewData[tagId];
@@ -152,7 +154,7 @@ void showTagDelegate::drawCircle(QPainter &painter, const QVector<locationCoor> 
     QPen tmpPen = QPen(Qt::darkGray, 1);
     //QPen tmpPen = QPen(Qt::black, 1);
     painter.setBrush(Qt::NoBrush);
-    for (int i = 0; i < distance.count(); i++) {
+    for (int i = 0; i < sensor.count(); i++) {
         if (usedSensor[i]) {
             tmpPen.setStyle(Qt::SolidLine);
         } else {
@@ -183,8 +185,8 @@ void showTagDelegate::drawCross(QPainter &painter, const QVector<locationCoor> &
                                dType ratio, dType zoom, QPointF offset) const {
     dType x0_1, x0_2, y0_1, y0_2;
     bool isCross;
-    for (int i = 0; i < distance.count(); i++) {
-        for (int j = i+1; j < distance.count(); j++) {
+    for (int i = 0; i < sensor.count(); i++) {
+        for (int j = i+1; j < sensor.count(); j++) {
             dType x1 = sensor[i].x;
             dType y1 = sensor[i].y;
             dType d1 = distance[i];

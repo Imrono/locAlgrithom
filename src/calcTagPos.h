@@ -17,9 +17,8 @@ class calcTagPos
 {
 public:
     explicit calcTagPos() {}
-    explicit calcTagPos(const configData *cfg_q, const distanceData *dist_q) {
+    explicit calcTagPos(const configData *cfg_q) {
         this->cfg_d  = cfg_q;
-        this->dist_d = dist_q;
     }
     ~calcTagPos();
     void setConfigData(const configData *cfg_q);
@@ -30,7 +29,6 @@ public:
     static locationCoor calcOnePosFor2Dim(dType dist[], locationCoor loca[]);
 
     // ALL IN ONE
-    CALC_POS_TYPE calcPosType{CALC_POS_TYPE::POS_NONE};
     locationCoor calcOnePosition(const int *dist, dType &MSE, dType T,
                                  locationCoor lastPos, oneKalmanData &kalmanData,
                                  bool *usedSensor, QVector<QPointF> &iterTrace,
@@ -70,14 +68,6 @@ public:
                                    bool *usedSensor, QVector<QPointF> &iterTrace, QVector<dType> &weight);
 
 /* KALMAN COULPED METHOD *****************************************************/
-    enum KALMAN_COUPLED_TYPE{
-        NONE_COUPLED   = 0x00,
-        TRAIL_COUPLED  = 0x01,
-        GAUSS_COUPLED  = 0x02,
-        WEIGHT_COUPLED = 0x04,
-        SMOOTH_COUPLED = 0x08
-    };
-    unsigned int kalmanCoupledType{NONE_COUPLED};   // set @ uiMainWindow
     static void calcKalmanCoulped(const int *distance, const locationCoor *sensor, dType T_in,
                                   oneKalmanData &kalmanData, int N, unsigned int type,
                                   dType &out_x, dType &out_y, dType &out_MSE,
@@ -96,17 +86,15 @@ public:
                         int N, dType &out_x, dType &out_y, dType &out_MSE, QVector<QPointF> &iterTrace);
 /*****************************************************************************/
 
-    void calcPosVector (storeTagInfo *label);
-
-    locationCoor getLoc(int idx) const {
-        return cfg_d->sensor[idx];
-    }
+    void calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData);
 
 private:
     const configData   *cfg_d {nullptr};
-    const distanceData *dist_d{nullptr};
 
     const calcTagNLOS  *calcNlos{nullptr};
+
+    CALC_POS_TYPE calcPosType{CALC_POS_TYPE::POS_NONE};
+    unsigned kalmanCoupledType{KALMAN_COUPLED_TYPE::NONE_COUPLED};   // set @ uiMainWindow
 
     void resetA();
     dType **A_fc{nullptr};
