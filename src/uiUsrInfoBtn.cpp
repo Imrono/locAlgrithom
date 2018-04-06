@@ -116,7 +116,9 @@ void uiUsrInfoBtn::contextMenuEvent(QContextMenuEvent *e) {
         setStyleSheet("QMenu{color: black;}"
                       "QMenu::item:selected{background-color: lightgray;}");
         contextMenu->clear();
-        contextMenu->addAction(showML_Action);
+        if (isEnableLM) {
+            contextMenu->addAction(showML_Action);
+        }
         contextMenu->addAction(showDistInfo);
 
         contextMenu->exec(QCursor::pos());

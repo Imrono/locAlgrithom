@@ -24,6 +24,7 @@ public:
 
     void setBtnColorSample(int tagId, const QColor &color);
     QColor getBtnColorSample(int tagId);
+    void setBtnEnableLM(int tagId, bool enable);
 
     void setBtnToolTip(int tagId, bool isShowPos,
                        const int *distance = nullptr,

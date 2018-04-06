@@ -17,6 +17,10 @@ public:
         return status;
     }
     int  getTagId()    { return tagId;}
+    void setBtnEnableLM(bool enable) {
+        isEnableLM = enable;
+    }
+
     bool getShowable() { return isShowable;}
     void setShowable(bool in) { isShowable = in; syncShowable();}
     void setShowToolTip(bool isShow,
@@ -41,6 +45,7 @@ private:
     void syncShowable();
 
     int tagId;
+    bool isEnableLM{false};
     bool isShowable{true};  // if enabled, autochanged during btn click
                             // also setShowable can change it
     USR_STATUS status;

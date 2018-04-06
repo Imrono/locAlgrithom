@@ -203,3 +203,11 @@ void uiUsrFrame::setBtnToolTip(int tagId, bool isShowPos,
         }
     }
 }
+
+void uiUsrFrame::setBtnEnableLM(int tagId, bool enable) {
+    for (int i = 0; i < usrBtns.count(); i++) {
+        if (usrBtns[i]->getTagId() == tagId) {
+            usrBtns[i]->setBtnEnableLM(enable);
+        }
+    }
+}

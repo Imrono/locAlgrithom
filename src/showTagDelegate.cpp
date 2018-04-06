@@ -181,8 +181,8 @@ void showTagDelegate::drawCircleBold(QPainter &painter, const locationCoor &sens
                         distance[distIdx] * ratio * zoom, distance[distIdx] * ratio * zoom);
 }
 
-void showTagDelegate::drawCross(QPainter &painter, const QVector<locationCoor> &sensor,
-                               dType ratio, dType zoom, QPointF offset) const {
+void showTagDelegate::drawCrossPos(QPainter &painter, const QVector<locationCoor> &sensor,
+                                   dType ratio, dType zoom, QPointF offset) const {
     dType x0_1, x0_2, y0_1, y0_2;
     bool isCross;
     for (int i = 0; i < sensor.count(); i++) {
@@ -275,7 +275,7 @@ void showTagDelegate::drawLM(QPainter &painter, const QVector<locationCoor> &sen
     delete []matrix;
 }
 
-void showTagDelegate::drawCross(QPainter &painter, const QPointF center, const QColor &color, dType r) {
+void showTagDelegate::drawCrossPos(QPainter &painter, const QPointF center, const QColor &color, dType r) {
     QPointF a1 = center + QPointF(-r, -r);
     QPointF b1 = center + QPointF(r, r);
     QPointF a2 = center + QPointF(r, -r);

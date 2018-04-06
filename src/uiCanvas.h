@@ -8,11 +8,14 @@
 #include "dataDistanceLog.h"
 #include "showTagDelegate.h"
 #include "uiUsrFrame.h"
+#include "uiShowItem.h"
 
 class uiCanvas : public QWidget
 {
     Q_OBJECT
 public:
+    //uiShowItem item{this};
+
     uiCanvas(QWidget *parent = 0);
     bool isTestModel{false};
 
@@ -131,6 +134,8 @@ public:
 
     void resetPos() { pos.clear();}
 
+    void drawClosestPos(bool isDraw, int tagId, int n, QPointF p);
+
 signals:
     void mouseChange(int x, int y);
 
@@ -174,6 +179,12 @@ private:
     bool isShowPosInfo{false};  // 所选位置坐标的同心圆
     QPointF showPosInfo;
     QVector<QPointF> pos;
+
+    bool isDrawClosestPos{false};
+    QPointF closestPos;
+    int closestPosTagId{-1};
+    int closestPosCount{-1};
+    bool isDrawClosestInfo{false};
 
     int nCount{0};
 

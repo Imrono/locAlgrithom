@@ -74,7 +74,10 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
             kalmanData.x_t = x_hat_t * (1.f - kalmanData.K) + z_x_t_meas * kalmanData.K;
             kalmanData.v_t = v_hat_t * (1.f - kalmanData.K) +
                     (kalmanData.x_t - kalmanData.x_t_1) / T_diff * kalmanData.K;
-            // low pass for accelerate (v_t - v_t_1) / T
+/* low pass for accelerate (v_t - v_t_1) / T **********************************
+   That is the interpolation in 2D, but x, y are separated (1st order);
+   using 2nd order curve is more smooth but much more diffcult for calc.
+******************************************************************************/
             locationCoor a_t = (kalmanData.v_t - kalmanData.v_t_1) / T_diff;
             a_t = a_t * _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v;
             kalmanData.v_t = a_t * T_diff + kalmanData.v_t_1;

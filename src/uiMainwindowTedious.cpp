@@ -374,6 +374,38 @@ void uiMainWindow::captureCanvas(bool) {
 
 void uiMainWindow::showMousePos(int x, int y) {
     setStatusMousePos(x, y);
+
+    int ansTagId;
+    int ansCount;
+    QPointF ansPos;
+    bool ansFound{false};
+
+    dType minDistance{15.f};
+    showTagModel &store = getStore();
+    uiUsrFrame *usrFrame = &getUsrFrame();
+    foreach (const storeTagInfo *oneTagInfo, store.tags) {
+        if (!oneTagInfo->methodInfo.contains(MEASUR_STR)) {
+            continue;
+        }
+
+        const storeMethodInfo &measInfo = oneTagInfo->methodInfo[MEASUR_STR];
+
+        if (usrFrame->isShowable(oneTagInfo->tagId) // 1. the user wants to show
+        && oneTagInfo->isTagPosInitialed) {         // 2. MEASURE (position) is sucessful processed
+            for(int i = 0; i < measInfo.Ans.count(); i++) {
+                dType currDist = calcDistance(measInfo.Ans[i].toQPointF(), QPointF(x, y));
+                if (minDistance > currDist) {
+                    ansTagId = oneTagInfo->tagId;
+                    ansCount = i;
+                    ansPos = measInfo.Ans[i].toQPointF();
+                    minDistance = currDist;
+                    ansFound = true;
+                }
+            }
+        }
+    }
+
+    ui->canvas->drawClosestPos(ansFound, ansTagId, ansCount, ansPos);
 }
 
 void uiMainWindow::setStatusIter(int n, dType mse, int crossed1, int crossed2) {

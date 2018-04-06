@@ -10,6 +10,10 @@ uiCanvas::uiCanvas(QWidget *parent) : QWidget(parent)
     heightCanvas = height();
     ratioShow = static_cast<dType>(width()) / widthActual;
     setMouseTracking(true);
+
+    //item.move(10, 10);
+    //item.setRegion(uiShowItem::CIRCLE, 3.f);
+    //item.show();
 }
 
 void uiCanvas::cfg_actualData2showData() {
@@ -215,7 +219,7 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
                                ratioShow, zoom(), center);
         }
         if (isShowCross) {
-            tag.drawCross(painter, cfg_d->sensor, ratioShow, zoom(), center);
+            tag.drawCrossPos(painter, cfg_d->sensor, ratioShow, zoom(), center);
         }
 
         tag.drawLine(painter, ratioShow, zoom(), center);
@@ -227,8 +231,18 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
     }
 
     // [Sensor]
-    if (isShowLM)
+    if (isShowLM) {
         showSensors(painter);
+    }
+
+    if (isDrawClosestPos && isShowPath) {   // show closest point
+        QPointF showPoint = showTagDelegate::toZoomedPoint(closestPos, ratioShow, zoom(), offset);
+        showTagDelegate::drawCrossPos(painter, showPoint, Qt::black, 3.f);
+        if (isDrawClosestInfo) {
+            painter.drawText(showPoint+QPointF(5,-5), QString("tagId:%1").arg(closestPosTagId));
+            painter.drawText(showPoint+QPointF(5, 5), QString("Count:%1").arg(closestPosCount));
+        }
+    }
 }
 
 void uiCanvas::mouseMoveEvent(QMouseEvent *event) {
@@ -266,6 +280,10 @@ void uiCanvas::mousePressEvent(QMouseEvent *event) {
     }
     // qDebug() << "[@uiCanvas::mousePressEvent]" << showPosInfo << isShowPosInfo << mousePos << pos;
 
+    if (isDrawClosestPos && isShowPath) {   // show closest point info
+        isDrawClosestInfo = true;
+    }
+
     update();
 }
 void uiCanvas::mouseReleaseEvent(QMouseEvent *event) {
@@ -274,6 +292,16 @@ void uiCanvas::mouseReleaseEvent(QMouseEvent *event) {
     boldRadiusIdx = -1;
     isShowPosInfo = false;
 
+    isDrawClosestInfo = false;
+
+    update();
+}
+
+void uiCanvas::drawClosestPos(bool isDraw, int tagId, int n, QPointF p) {
+    isDrawClosestPos = isDraw;
+    closestPos = p;
+    closestPosCount = n;
+    closestPosTagId = tagId;
     update();
 }
 

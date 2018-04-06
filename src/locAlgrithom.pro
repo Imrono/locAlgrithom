@@ -50,7 +50,8 @@ SOURCES += \
     showTagDelegate.cpp \
     showTagModel.cpp \
     _calcParam.cpp \
-    zFakeData.cpp
+    zFakeData.cpp \
+    uiShowItem.cpp
 
 HEADERS += \
     _myheads.h \
@@ -71,7 +72,8 @@ HEADERS += \
     showTagDelegate.h \
     showTagModel.h \
     _calcParam.h \
-    zFakeData.h
+    zFakeData.h \
+    uiShowItem.h
 
 FORMS += \
     mainwindow.ui

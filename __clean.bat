@@ -46,4 +46,4 @@ for /f "delims=" %%i in ('dir %mainProjBuild%* /ad/b') do rd "%%i" /s/q
 
 
 echo clean finished
-pause
+#pause

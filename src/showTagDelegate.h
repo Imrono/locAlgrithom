@@ -143,7 +143,7 @@ public:
                         dType ratio = 1.f, dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
     void drawLM(QPainter &painter, const QVector<locationCoor> &sensor, int w, int h,
                 dType ratio = 1.f, dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
-    void drawCross(QPainter &painter, const QVector<locationCoor> &sensor,
+    void drawCrossPos(QPainter &painter, const QVector<locationCoor> &sensor,
                    dType ratio = 1.f, dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
 
     static QPointF toZoomedPoint(QPointF p, dType ratio, dType zoom, QPointF offset) {
@@ -186,7 +186,7 @@ public:
     static void recordTagId(int tagId);
     static void eraseTagId(int tagId);
 
-    static void drawCross(QPainter &painter, const QPointF center, const QColor &color,
+    static void drawCrossPos(QPainter &painter, const QPointF center, const QColor &color,
                           dType r = 2.f);
     static void draw5Star(QPainter &painter, const QPointF center, const QColor &color,
                           dType r = 6.f, dType rot = 0.f);

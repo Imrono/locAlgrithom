@@ -295,9 +295,11 @@ void uiMainWindow::loadLogDistanceFile(int type, QString pathIn) {
     // initWithDistanceData
     dataDistanceLog &distData = getDistData();
     showTagModel &store = getStore();
+    uiUsrFrame *usrFrame = &getUsrFrame();
     foreach (oneTag tag, distData.get_q()->tagsData) {
         store.addNewTagInfo(tag.tagId);
-        getUsrFrame().addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
+        usrFrame->setBtnEnableLM(tag.tagId, false);
+        usrFrame->addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
         ui->canvas->setDistance(tag.tagId, tag.distData[0].distance);
     }
     ui->canvas->syncWithUiFrame(&getUsrFrame());
@@ -396,6 +398,8 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
 /****** CALC POS MAIN BEGIN **************************************************/
             calcPos.calcPosVector(info, distData.get_q()->tagsData[info->tagId]);
 /**********************************************************CALC POS MAIN END */
+            uiUsrFrame *usrFrame = &getUsrFrame();
+            usrFrame->setBtnEnableLM(info->tagId, true);
         } else {
             info->isTagPosInitialed = false;
             getUsrFrame().setUsrStatus(info->tagId, USR_STATUS::HAS_DISTANCE_DATA);
