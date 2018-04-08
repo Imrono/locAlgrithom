@@ -38,6 +38,9 @@ public:
 
     int getTagShowLM() {return tagShowLM;}
 
+    void setChartData(int tagId, const QString name,
+                      const QVector<qreal> &v, const QVector<qreal> &a);
+
 signals:
     void oneUsrBtnClicked_siganl(int tagId, bool isShowable);
     void oneUsrShowML_siganl(int tagId, bool isShowable);

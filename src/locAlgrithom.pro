@@ -6,7 +6,9 @@
 
 QT       += core gui
 #CONFIG   += console
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets charts
+
+CONFIG += qwt
 
 TARGET = locAlgrithom
 TEMPLATE = app
@@ -51,7 +53,8 @@ SOURCES += \
     showTagModel.cpp \
     _calcParam.cpp \
     zFakeData.cpp \
-    uiShowItem.cpp
+    uiShowItem.cpp \
+    uiUsrTooltip.cpp
 
 HEADERS += \
     _myheads.h \
@@ -73,10 +76,12 @@ HEADERS += \
     showTagModel.h \
     _calcParam.h \
     zFakeData.h \
-    uiShowItem.h
+    uiShowItem.h \
+    uiUsrTooltip.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    usrtooltip.ui
 
 QMAKE_CXXFLAGS += /wd"4819"
 QMAKE_CFLAGS += /wd"4819"
@@ -86,3 +91,8 @@ RESOURCES += \
 
 DISTFILES +=
 RC_ICONS = resource/icon/locAlg.ico
+
+INCLUDEPATH += "C:/Qt/Qt5.9.1/5.9.1/msvc2015_64/include/qwt-6.1.3/"
+DEFINES += QT_DLL QWT_DLL qwt.dll qwtd.dll
+LIBS += -L"C:\Qt\Qt5.9.1\5.9.1\msvc2015_64\lib" -lqwtd
+LIBS += -L"C:\Qt\Qt5.9.1\5.9.1\msvc2015_64\lib" -lqwt

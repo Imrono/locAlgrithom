@@ -11,9 +11,9 @@ uiCanvas::uiCanvas(QWidget *parent) : QWidget(parent)
     ratioShow = static_cast<dType>(width()) / widthActual;
     setMouseTracking(true);
 
-    //item.move(10, 10);
-    //item.setRegion(uiShowItem::CIRCLE, 3.f);
-    //item.show();
+    item.move(10, 10);
+    item.setRegion(uiShowItem::CIRCLE, 10.f);
+    item.show();
 }
 
 void uiCanvas::cfg_actualData2showData() {

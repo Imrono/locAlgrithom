@@ -190,7 +190,8 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData)
         isNlosIgnore = false;
     }
     int nSensor = cfg_d->sensor.count();
-    locationCoor tmpX = {0.f, 0.f, 0.f};
+    locationCoor ansX = {0.f, 0.f, 0.f};
+    locationCoor lastV = {0.f, 0.f, 0.f};
     dType mse = 0.f;
 
     QVector<dist4Calc> distRefined;
@@ -203,14 +204,15 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData)
     tagInfo->isGaussPointAdded = kalmanCoupledType & GAUSS_COUPLED;
     kalmanData.isInitialized = false;
 
-    for (int i = 0; i < oneTagData.distData.count(); i++) {
-        locationCoor tmpLastPos = tmpX;
+    const QVector<oneLogData> &distData = oneTagData.distData;
+    for (int i{0}; i < distData.count(); i++) {
+        locationCoor tmpLastPos = ansX;
         //qDebug() << i << tmpLastPos.toQPointF();
 
         // copy distance, nlos distance filter may change the distance
         dist4Calc tmpDist = {{0,0,0,0,0,0}};
-        for (int j = 0; j < oneTagData.distData[i].distance.count(); j++) {
-            tmpDist.distance[j] = oneTagData.distData[i].distance[j];
+        for (int j{0}; j < distData[i].distance.count(); j++) {
+            tmpDist.distance[j] = distData[i].distance[j];
         }
         tagInfo->RawPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
 
@@ -218,8 +220,8 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData)
         QVector<dType> tmpWeight;
         QPointF x_hat;
         tmpWeight.fill(0.f, 6);
-        dType T = oneTagData.distData[i].time.toMSecsSinceEpoch();
-        tmpX = calcOnePosition(tmpDist.distance, mse, T, tmpLastPos, kalmanData,
+        dType T = (distData[i].time.toMSecsSinceEpoch() % 100000) / 1000.f;
+        ansX = calcOnePosition(tmpDist.distance, mse, T, tmpLastPos, kalmanData,
                                usedSensor, tmpTrace, tmpWeight, x_hat);
         if (i >= 1) {
             /* distance filter ITERATION */
@@ -228,7 +230,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData)
                 && calcNlos->posPrecisionNLOS(mse)) {   // MSE小于阈值，直接退出循环
                 // tmpDist 即是IN也是OUT；distRefined是保存历史修正后的值
                 if (calcNlos->pointsPredictNlos(tmpDist, nSensor, distRefined)) {
-                    tmpX = calcOnePosition(tmpDist.distance, mse, T, tmpLastPos, kalmanData,
+                    ansX = calcOnePosition(tmpDist.distance, mse, T, tmpLastPos, kalmanData,
                                            usedSensor, tmpTrace, tmpWeight, x_hat);
                 } else {}
             }
@@ -236,31 +238,48 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData)
         }
 
         // crossed circle which measure p's quality with MSE
-        int crossed_1 = calcCrossedCircle(oneTagData.distData[i].distance.data(),
+        int crossed_1 = calcCrossedCircle(distData[i].distance.data(),
                                           cfg_d->sensor.data(), cfg_d->sensor.count(),
-                                          tmpX, MACRO_circleR_1);
-        int crossed_2 = calcCrossedCircle(oneTagData.distData[i].distance.data(),
+                                          ansX, MACRO_circleR_1);
+        int crossed_2 = calcCrossedCircle(distData[i].distance.data(),
                                           cfg_d->sensor.data(), cfg_d->sensor.count(),
-                                          tmpX, MACRO_circleR_2);
+                                          ansX, MACRO_circleR_2);
 
         // store and update
         distRefined.append(tmpDist);    // used for nlos distance filter
-        tagInfo->methodInfo[MEASUR_STR].time.append(oneTagData.distData[i].time);
+        storeMethodInfo &measInfo = tagInfo->methodInfo[MEASUR_STR];
+        measInfo.time.append(distData[i].time);
         tagInfo->RefinedPoints.append(calcPosFromDistance(tmpDist.distance, cfg_d->sensor.count()));
         tagInfo->Reliability.append(mse);
-        tagInfo->methodInfo[MEASUR_STR].data[storeMethodInfo::STORED_MSE].append(mse);
-        tagInfo->methodInfo[MEASUR_STR].data[storeMethodInfo::STORED_Crossed1].append(crossed_1);
-        tagInfo->methodInfo[MEASUR_STR].data[storeMethodInfo::STORED_Crossed2].append(crossed_2);
-        tagInfo->methodInfo[MEASUR_STR].Ans.append(tmpX);
+        measInfo.data[storeMethodInfo::STORED_MSE].append(mse);
+        measInfo.data[storeMethodInfo::STORED_Crossed1].append(crossed_1);
+        measInfo.data[storeMethodInfo::STORED_Crossed2].append(crossed_2);
+        measInfo.Ans.append(ansX);
         //qDebug() << tmpX.toString();
-        //qDebug() << tagInfo->methodInfo[MEASUR_STR].Ans[tagInfo->methodInfo[MEASUR_STR].Ans.count() - 1].toString();
+        //qDebug() << measInfo.Ans[measInfo.Ans.count()-1].toString();
         tagInfo->iterPoints.append(tmpTrace);
         tagInfo->weight.append(tmpWeight);
         if (i > 0) {
-            tagInfo->methodInfo[MEASUR_STR].AnsLines
-                    .append(QLineF(tagInfo->methodInfo[MEASUR_STR].Ans[i-1].toQPointF(),
-                                   tagInfo->methodInfo[MEASUR_STR].Ans[i].toQPointF()));
+            QLineF l_p = QLineF(measInfo.Ans[i-1].toQPointF(), measInfo.Ans[i].toQPointF());
+            measInfo.AnsLines.append(l_p);
+            // v and a info
+			dType lastT = (measInfo.time[i - 1].toMSecsSinceEpoch() % 100000) / 1000.f;
+            dType diffTime = T - lastT + MY_EPS;
+            locationCoor currV = (measInfo.Ans[i] - measInfo.Ans[i-1]) / diffTime;
+            measInfo.AnsV.append(qSqrt(currV.x*currV.x + currV.y*currV.y) / 100.f);
+
+            if (i > 1) {
+                locationCoor currA = (currV - lastV) / diffTime;
+                measInfo.AnsA.append(qSqrt(currA.x*currA.x + currA.y*currA.y) / 100.f);
+            } else {
+                measInfo.AnsA.append(0.f);
+            }
+            lastV = currV;
+        } else {
+            measInfo.AnsV.append(0.f);
+            measInfo.AnsA.append(0.f);
         }
+
         QVector<bool> tmp;
         for (int k = 0; k < cfg_d->sensor.count(); k++) {
             tmp.append(usedSensor[k]);
@@ -372,7 +391,7 @@ void calcTagPos::calcTwoCenter(const int *distance, const locationCoor *sensor, 
     }
 
     // average distance as MSE
-    for(int i = 0; i < nPoint; i++) {
+    for(int i{0}; i < nPoint; i++) {
         avgDist += calcDistance(points[i], center);
     }
     avgDist = avgDist/nPoint;

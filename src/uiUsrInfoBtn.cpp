@@ -5,6 +5,8 @@
 #include "calcLibGeometry.h"
 #include "showTagDelegate.h"
 
+#include <QtCharts/QChartView>
+
 uiUsrInfoBtn::uiUsrInfoBtn(int tagId, QWidget *parent) :
     tagId{tagId}, QToolButton(parent) {
     initial();
@@ -15,7 +17,15 @@ uiUsrInfoBtn::uiUsrInfoBtn(int tagId, bool isShowable, QWidget *parent) :
     initial();
 }
 
+uiUsrInfoBtn::~uiUsrInfoBtn() {
+    if (toolTipWidget) delete toolTipWidget;
+}
+
 void uiUsrInfoBtn::initial() {
+    setMouseTracking(true);
+    toolTipWidget = new uiUsrTooltip();
+    toolTipWidget->hide();
+
     setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     setFixedSize(40, 60);
     setIcon(QIcon(":/resource/usr/usr_A.png"));
@@ -25,7 +35,6 @@ void uiUsrInfoBtn::initial() {
     font.setBold(true);
     setFont(font);
     setText(QString("%0").arg(tagId, 4, 10, QChar('0')));
-
     syncShowable();
 
     connect(this, &QToolButton::clicked, this, [this](void) {
@@ -73,10 +82,13 @@ void uiUsrInfoBtn::setUsrStatus(USR_STATUS status) {
 void uiUsrInfoBtn::syncShowable() {
     if (isShowable) {
         setStyleSheet("QToolButton{background-color:GhostWhite;}");
+        if (mouseAt)
+            if (toolTipWidget->isHidden())
+                toolTipWidget->show();
     } else {
-        isShowToolTip = false;
         setStyleSheet("QToolButton{background-color:DimGray;}");
-        setToolTip("");
+        if (mouseAt)
+            toolTipWidget->hide();
     }
 }
 
@@ -125,6 +137,23 @@ void uiUsrInfoBtn::contextMenuEvent(QContextMenuEvent *e) {
     } else {}
     e->accept();
 }
+void uiUsrInfoBtn::mouseMoveEvent(QMouseEvent *e) {
+    if (isShowable && status > USR_STATUS::HAS_DISTANCE_DATA) {
+        toolTipWidget->move(mapToGlobal(e->pos() + QPoint(10, -150)));
+        if (toolTipWidget->isHidden())
+            toolTipWidget->show();
+    }
+}
+
+void uiUsrInfoBtn::enterEvent(QEvent *e) {
+    Q_UNUSED(e);
+    mouseAt = true;
+}
+void uiUsrInfoBtn::leaveEvent(QEvent *e) {
+    Q_UNUSED(e);
+    toolTipWidget->hide();
+    mouseAt = false;
+}
 
 void uiUsrInfoBtn::setShowToolTip(bool isShow,
                                   const int *distance,
@@ -132,26 +161,23 @@ void uiUsrInfoBtn::setShowToolTip(bool isShow,
                                   const locationCoor *sensor,
                                   const int N,
                                   QPointF real, QPointF canvas) {
-    isShowToolTip = isShow;
-    posReal = real;
-    posCanvas = canvas;
-    if (isShowToolTip) {
-        QString toolTip = QString("real:(%1,%2)\nshow:(%3,%4)\n").arg(posReal.x()).arg(posReal.y())
-                .arg(posCanvas.x()).arg(posCanvas.y());
-        if (distance && weight && sensor && N > 0) {
-            toolTip += QString("distance | weight | diffDist (%1)\n").arg(N);
-            for(int i = 0; i < N; i++) {
-                toolTip += QString("%1 | %2 | %3\n")
-                        .arg(distance[i], 8)
-                        .arg(QString::number(weight[i]).left(5), 5, QChar(' '))
-                        .arg(calcDistance(real, sensor[i].toQPointF()) - distance[i]);
-            }
-        }
+    tooltipInfo info;
+    info.tagId = tagId;
+    info.isShow = isShow;
 
-        setToolTip(toolTip);
-        setToolTipDuration((int)(((unsigned int)(-1)) >> 1));
-    } else {
-        setToolTip("");
-        setToolTipDuration(0);
+    if (isShow) {
+        for (int i{0}; i < N; i++) {
+            info.distance.append(distance[i]);
+            info.weight.append(weight[i]);
+            info.diff.append(calcDistance(real, sensor[i].toQPointF()) - distance[i]);
+        }
+        info.pos = real;
+        info.track = canvas;
     }
+    toolTipWidget->fillToolTipUI(info);
+}
+
+void uiUsrInfoBtn::setChartData(const QString &name,
+                                const QVector<qreal> &v, const QVector<qreal> &a) {
+    toolTipWidget->setChartData(name, v, a);
 }

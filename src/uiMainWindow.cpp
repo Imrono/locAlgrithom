@@ -96,7 +96,7 @@ void uiMainWindow::sigmaChanged(int sigma) {
 
 // feed the data to canvas->showTagRelated at different time point
 void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
-    int counting = getCounting();
+    int &counting = getCounting();
     counting = counting < 1 ? 1 : counting;
     // distCount updated automaticly when timeout event occurs
     if (isUpdateCount) {
@@ -389,20 +389,29 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
         info->calcPosType = type;   // determine the position calculate method
         info->kalmanCoupledType = store.kalmanCoupledType;
 
+        uiUsrFrame *usrFrame = &getUsrFrame();
         // if none position is calculated
         if (CALC_POS_TYPE::POS_NONE != type) {
             info->isTagPosInitialed = true;
-            getUsrFrame().setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+            usrFrame->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
 
             dataDistanceLog &distData = getDistData();
 /****** CALC POS MAIN BEGIN **************************************************/
             calcPos.calcPosVector(info, distData.get_q()->tagsData[info->tagId]);
 /**********************************************************CALC POS MAIN END */
-            uiUsrFrame *usrFrame = &getUsrFrame();
             usrFrame->setBtnEnableLM(info->tagId, true);
+
+            qDebug() << "[@uiMainWindow::posCalcPROCESS]"
+                     << info->methodInfo[MEASUR_STR].AnsV.count()
+                     << info->methodInfo[MEASUR_STR].AnsA.count();
+            usrFrame->setChartData(info->tagId, MEASUR_STR,
+                                   info->methodInfo[MEASUR_STR].AnsV,
+                                   info->methodInfo[MEASUR_STR].AnsA);
         } else {
             info->isTagPosInitialed = false;
             getUsrFrame().setUsrStatus(info->tagId, USR_STATUS::HAS_DISTANCE_DATA);
+
+            usrFrame->setChartData(info->tagId, MEASUR_STR, QVector<qreal>(), QVector<qreal>());
         }
 
         // measure pos changed, track-info need re_calc, only clear the it here
@@ -500,6 +509,7 @@ void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
     showTagModel &store = getStore();
     store.calcTrackMethod = type;
 
+    uiUsrFrame *usrFrame = &getUsrFrame();
     // reset kalman parameter of existing tag
     calcTrack.clearParam();
     QTime time;
@@ -514,8 +524,15 @@ void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
 /* CALC TRACK MAIN BEGIN *****************************************************/
             calcTrack.calcTrackVector(info->methodInfo[MEASUR_STR], info->methodInfo[TRACKx_STR]);
 /********************************************************CALC TRACK MAIN END */
+
+            usrFrame->setChartData(info->tagId, TRACKx_STR,
+                                   info->methodInfo[TRACKx_STR].AnsV,
+                                   info->methodInfo[TRACKx_STR].AnsA);
         } else {
             getUsrFrame().setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
+            usrFrame->setChartData(info->tagId, MEASUR_STR,
+                                   info->methodInfo[MEASUR_STR].AnsV,
+                                   info->methodInfo[MEASUR_STR].AnsA);
         }
 
         dType measDist   = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);

@@ -36,8 +36,8 @@ void matrixMuti(dType const * const * const a, const dType * const b,
 }
 
 void matrixTrans(dType const * const * const A, dType * const * const AT, const long nRow, const long nCol) {
-    for(int i = 0; i < nRow; i++)
-        for(int j = 0; j < nCol; j++)
+    for(int i{0}; i < nRow; i++)
+        for(int j{0}; j < nCol; j++)
             AT[j][i] = A[i][j];
 }
 

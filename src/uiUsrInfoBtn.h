@@ -4,6 +4,8 @@
 #include <QToolButton>
 #include <QMenu>
 #include <QAction>
+#include <QMouseEvent>
+#include "uiUsrTooltip.h"
 
 class uiUsrInfoBtn : public QToolButton
 {
@@ -11,6 +13,7 @@ class uiUsrInfoBtn : public QToolButton
 public:
     uiUsrInfoBtn(int tagId, QWidget *parent = 0);
     uiUsrInfoBtn(int tagId, bool isShowable, QWidget *parent = 0);
+    ~uiUsrInfoBtn();
 
     void setUsrStatus(USR_STATUS status);
     USR_STATUS getUsrStatus() {
@@ -35,6 +38,9 @@ public:
 
     void setIsShowingDist(bool isShowing) {isShowingDist = isShowing;}
 
+    void setChartData(const QString &name,
+                      const QVector<qreal> &v, const QVector<qreal> &a);
+
 signals:
     void oneUsrBtnClicked(int tagId);
     void oneUsrShowML(int tagId);   // ML -> maximum likehood
@@ -53,6 +59,9 @@ private:
     void paintEvent(QPaintEvent *event);
     void keyPressEvent (QKeyEvent *e);
     void contextMenuEvent(QContextMenuEvent *e);
+    void enterEvent(QEvent *e);
+    void leaveEvent(QEvent *e);
+    void mouseMoveEvent(QMouseEvent *e);
 
     QColor colorSample;
 
@@ -61,11 +70,10 @@ private:
     bool isShowingML{false};
     QAction *showDistInfo{nullptr};
 
-    bool isShowToolTip{false};
-    QPointF posReal;
-    QPointF posCanvas;
-
     bool isShowingDist{false};
+
+    uiUsrTooltip *toolTipWidget{nullptr};
+    bool mouseAt{false};
 };
 
 #endif // UIUSRINFOBTN_H

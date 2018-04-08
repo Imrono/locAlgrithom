@@ -71,7 +71,7 @@ void dataSensorIni::analyzeCfgData(QSettings &iniSetting) {
     // [Sensor]
     iniSetting.beginGroup("/Sensor");
     Cnt = iniSetting.value("/Cnt").toInt();
-    for(int coorIdx = 0; coorIdx < Cnt; coorIdx++) {
+    for(int coorIdx{0}; coorIdx < Cnt; coorIdx++) {
         q->sensor.append({iniSetting.value(my2Str("x", coorIdx)).toFloat(),
                           iniSetting.value(my2Str("y", coorIdx)).toFloat(),
                           iniSetting.value(my2Str("z", coorIdx)).toFloat()});
@@ -80,7 +80,7 @@ void dataSensorIni::analyzeCfgData(QSettings &iniSetting) {
 
     // [Stop]
     AreaCnt = iniSetting.value("/Stop/AreaCnt").toInt();
-    for(int i = 0; i < AreaCnt; i++) {
+    for(int i{0}; i < AreaCnt; i++) {
         iniSetting.beginGroup(my2Str("/Stop", i));
         Cnt = iniSetting.value("/Cnt").toInt();
         QVector<locationCoor> tmp;
@@ -95,7 +95,7 @@ void dataSensorIni::analyzeCfgData(QSettings &iniSetting) {
 
     // [Alarm]
     AreaCnt = iniSetting.value("/Alarm/AreaCnt").toInt();
-    for(int i = 0; i < AreaCnt; i++) {
+    for(int i{0}; i < AreaCnt; i++) {
         iniSetting.beginGroup(my2Str("/Alarm", i));
         Cnt = iniSetting.value("/Cnt").toInt();
         QVector<locationCoor> tmp;
@@ -110,7 +110,7 @@ void dataSensorIni::analyzeCfgData(QSettings &iniSetting) {
 
     // [Oper]
     AreaCnt = iniSetting.value("/Oper/AreaCnt").toInt();
-    for(int i = 0; i < AreaCnt; i++) {
+    for(int i{0}; i < AreaCnt; i++) {
         iniSetting.beginGroup(my2Str("/Oper", i));
         Cnt = iniSetting.value("/Cnt").toInt();
         QVector<locationCoor> tmp;

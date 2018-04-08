@@ -20,13 +20,15 @@ void calcTagTrack::calcMatrixMulit_KP(const dType Kx, const dType Kv,
     //qDebug() << c << B << d << D << c*B << d*D << dD;
 }
 
-void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagKalmanInfo) {
+void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagTrackInfo) {
 /* calcTagTrack method configuration *****************************************/
-    calcTrackMethod = tagKalmanInfo.parentTag->calcTrackMethod;
+    calcTrackMethod = tagTrackInfo.parentTag->calcTrackMethod;
 /*****************************************************************************/
     if (TRACK_METHOD::TRACK_NONE == calcTrackMethod) {
         return;
     }
+
+    locationCoor lastV = {0.f, 0.f, 0.f};
 
     int tagId = tagMeasInfo.parentTag->tagId;
     if (!tagsTrackParam.contains(tagId)) {
@@ -46,17 +48,19 @@ void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo
         tagsTrackParam.insert(tagId, trackParam);
     }
 
-    for(int i = 0; i < tagMeasInfo.Ans.count(); i++) {
+    for(int i{0}; i < tagMeasInfo.Ans.count(); i++) {
         trackParams &tagTrackParam = tagsTrackParam[tagId];
         tagTrackRecord recParam;    // get extra data for analyze, output only
-        dType T = 0.f;
+        dType T = MY_EPS;
         dType Rx = 0.f;
         if (i == 0) {
-            tagKalmanInfo.Ans.append(tagMeasInfo.Ans[0]);
+            tagTrackInfo.Ans.append(tagMeasInfo.Ans[0]);
+            tagTrackInfo.AnsV.append(0.f);
+            tagTrackInfo.AnsA.append(0.f);
         } else {
             locationCoor z_x_meas = tagMeasInfo.Ans[i];
             T = dType(tagMeasInfo.time[i].toMSecsSinceEpoch()
-                    - tagMeasInfo.time[i-1].toMSecsSinceEpoch()) / 1000.f;
+                    - tagMeasInfo.time[i-1].toMSecsSinceEpoch());
             Rx = _calcParam::KalmanTrack::calcR(
                         tagMeasInfo.data[storeMethodInfo::STORED_MSE][i], tagMeasInfo.methodName);
             calcOneTrack(z_x_meas, T, Rx, tagTrackParam, recParam);
@@ -64,14 +68,25 @@ void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo
             tagTrackParam.Kx = recParam.Kx;
             tagTrackParam.Kv = recParam.Kv;
 
-            tagKalmanInfo.Ans.append(tagTrackParam.x_t);
-            tagKalmanInfo.AnsLines.append(QLine{tagTrackParam.x_t_1.toQPoint(), tagTrackParam.x_t.toQPoint()});
+            tagTrackInfo.Ans.append(tagTrackParam.x_t);
+            tagTrackInfo.AnsLines.append(QLine{tagTrackParam.x_t_1.toQPoint(), tagTrackParam.x_t.toQPoint()});
 
+            dType diffT = T / 1000.f;
+            locationCoor currV = (tagTrackInfo.Ans[i] - tagTrackInfo.Ans[i-1]) / diffT;
+            tagTrackInfo.AnsV.append(qSqrt(currV.x*currV.x + currV.y*currV.y) / 100.f);
+
+            if (i > 1) {
+                locationCoor currA = (currV - lastV) / diffT;
+                tagTrackInfo.AnsA.append(qSqrt(currA.x*currA.x + currA.y*currA.y) / 100.f );
+            } else {
+                tagTrackInfo.AnsA.append(0.f);
+            }
+            lastV = currV;
         }
-        tagKalmanInfo.time.append(tagMeasInfo.time[i]);
-        tagKalmanInfo.data[storeMethodInfo::STORED_Kx].append(recParam.Kx);
-        tagKalmanInfo.data[storeMethodInfo::STORED_Rx].append(Rx);
-        tagKalmanInfo.data[storeMethodInfo::STORED_Px].append(tagTrackParam.Pxx);
+        tagTrackInfo.time.append(tagMeasInfo.time[i]);
+        tagTrackInfo.data[storeMethodInfo::STORED_Kx].append(recParam.Kx);
+        tagTrackInfo.data[storeMethodInfo::STORED_Rx].append(Rx);
+        tagTrackInfo.data[storeMethodInfo::STORED_Px].append(tagTrackParam.Pxx);
     }
 }
 
@@ -128,7 +143,6 @@ void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
                                      tagTrackRecord &recParam) {
     dType R_v;
     dType Q = _calcParam::KalmanTrack::calcQ();
-    if (T < 0.001)  T = 0.001f;
 
     // 1. x = Hx + Bu
     locationCoor x_hat_t = trackParam.x_t_1 + (trackParam.v_t_1 * T);
@@ -159,6 +173,10 @@ void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
     // low pass for velocity by decrease a_t
     locationCoor a_t = (trackParam.v_t - trackParam.v_t_1) / T;
     a_t = a_t * _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v;
+    dType mod_a = qSqrt(a_t.x * a_t.x + a_t.y * a_t.y);
+    if (mod_a > 200.f) {
+        a_t = a_t / mod_a * 200;
+    } else {}
     trackParam.v_t = a_t * T + trackParam.v_t_1;
 }
 

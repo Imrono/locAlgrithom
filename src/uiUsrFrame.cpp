@@ -211,3 +211,12 @@ void uiUsrFrame::setBtnEnableLM(int tagId, bool enable) {
         }
     }
 }
+
+void uiUsrFrame::setChartData(int tagId, const QString name,
+                              const QVector<qreal> &v, const QVector<qreal> &a) {
+    for (int i = 0; i < usrBtns.count(); i++) {
+        if (usrBtns[i]->getTagId() == tagId) {
+            usrBtns[i]->setChartData(name, v, a);
+        }
+    }
+}

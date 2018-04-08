@@ -20,6 +20,8 @@ struct storeMethodInfo {
     QVector<QDateTime>    time;
     QVector<locationCoor> Ans;
     QVector<QLineF>       AnsLines;
+    QVector<qreal>        AnsV;
+    QVector<qreal>        AnsA;
 
     enum DATA_STORED {
         STORED_MSE = 0,

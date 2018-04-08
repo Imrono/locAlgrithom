@@ -9,6 +9,8 @@ uiShowItem::uiShowItem(QWidget *parent) : QWidget(parent)
     setPalette(pal);
 
     setSharpSize(R);
+    setWindowFlags(Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_TranslucentBackground);
 }
 
 void uiShowItem::setRegion() {

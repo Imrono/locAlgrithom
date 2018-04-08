@@ -14,7 +14,7 @@ class uiCanvas : public QWidget
 {
     Q_OBJECT
 public:
-    //uiShowItem item{this};
+    uiShowItem item{this};
 
     uiCanvas(QWidget *parent = 0);
     bool isTestModel{false};
