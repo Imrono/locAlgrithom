@@ -20,6 +20,7 @@ void calcTagTrack::calcMatrixMulit_KP(const dType Kx, const dType Kv,
     //qDebug() << c << B << d << D << c*B << d*D << dD;
 }
 
+/** measure should independ with track*/
 void calcTagTrack::calcTrackVector(storeMethodInfo &tagMeasInfo, storeMethodInfo &tagTrackInfo) {
 /* calcTagTrack method configuration *****************************************/
     calcTrackMethod = tagTrackInfo.parentTag->calcTrackMethod;
@@ -103,6 +104,8 @@ void calcTagTrack::calcOneTrack(const locationCoor &z_x_meas,
         calcKalmanPosLite(z_x_meas, T, Rx, trackParam, recParam);
     } else if (TRACK_METHOD::TRACK_KALMAN_INFO == calcTrackMethod) {
         calcKalmanPosInfo(z_x_meas, T, trackParam, recParam);
+    } else if (TRACK_METHOD::TRACK_LOW_PASS == calcTrackMethod) {
+        calcMovingAverage(z_x_meas, T, trackParam, recParam);
     } else if (TRACK_METHOD::TRACK_NONE == calcTrackMethod) {
         // cleared but do nothing
     } else {}
@@ -175,7 +178,7 @@ void calcTagTrack::calcKalmanPosLite(const locationCoor &z_x_meas,
     a_t = a_t * _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v;
     dType mod_a = qSqrt(a_t.x * a_t.x + a_t.y * a_t.y);
     if (mod_a > 200.f) {
-        a_t = a_t / mod_a * 200;
+        a_t = a_t / mod_a * 200.f;
     } else {}
     trackParam.v_t = a_t * T + trackParam.v_t_1;
 }
@@ -249,4 +252,15 @@ void calcTagTrack::calcKalmanPosInfo(const locationCoor &z_x_meas,
     trackParam.Kx = recParam.Kx;
     trackParam.Kv = recParam.Kv;
     trackParam.i++;
+}
+
+void calcTagTrack::calcMovingAverage(const locationCoor &z_x_meas, dType T,
+                                     trackParams &trackParam,
+                                     tagTrackRecord &recParam) {
+    Q_UNUSED(recParam);
+    dType Kx = 0.9f;
+    dType Kv = 0.7f;
+    locationCoor z_v_meas = (z_x_meas - trackParam.x_t_1) / T;
+    trackParam.x_t = z_x_meas * Kx + trackParam.x_t_1 * (1.0f - Kx) ;
+    trackParam.v_t = z_v_meas * Kv + trackParam.v_t_1 * (1.0f - Kv);
 }

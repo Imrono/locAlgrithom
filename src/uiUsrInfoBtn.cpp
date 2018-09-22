@@ -140,8 +140,9 @@ void uiUsrInfoBtn::contextMenuEvent(QContextMenuEvent *e) {
 void uiUsrInfoBtn::mouseMoveEvent(QMouseEvent *e) {
     if (isShowable && status > USR_STATUS::HAS_DISTANCE_DATA) {
         toolTipWidget->move(mapToGlobal(e->pos() + QPoint(10, -150)));
-        if (toolTipWidget->isHidden())
+        if (toolTipWidget->isHidden()) {
             toolTipWidget->show();
+        }
     }
 }
 

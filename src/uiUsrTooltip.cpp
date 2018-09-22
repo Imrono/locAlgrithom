@@ -1,4 +1,4 @@
-#include "uiUsrTooltip.h"
+﻿#include "uiUsrTooltip.h"
 #include "ui_usrtooltip.h"
 #include <QPainter>
 
@@ -102,16 +102,15 @@ void uiUsrTooltip::paintEvent(QPaintEvent *)
     linear.setColorAt(0, QColor(247, 247, 250));
     linear.setColorAt(0.5, QColor(240, 242, 247));
     linear.setColorAt(1, QColor(233, 233, 242));
-
     QPainter painter(this);
     painter.setPen(Qt::black);
     painter.setBrush(linear);
     static const QPointF points[4] =
     {
         QPointF(0, 0),
-        QPointF(0, this->height()-1),
-        QPointF(this->width()-1, this->height()-1),
-        QPointF(this->width()-1, 0),
+        QPointF(0, this->height()-4),
+        QPointF(this->width()-4, this->height()-4),
+        QPointF(this->width()-4, 0),
     };
-    painter.drawPolygon(points, 8);
+    painter.drawPolygon(points, 4);
 }

@@ -1,4 +1,6 @@
+﻿#include <math.h>
 #include "calcTagLoc_ARM.h"
+
 char Cal3DTrack(LPST_COL3D lpstCol3DLoc, float T, float Rx,
                 LPST_TRACK3D param, char bInitLocIncluded) {
     ST_COL3D x_hat_t;

@@ -1,5 +1,9 @@
-#ifndef CALCPOS_H
+﻿#ifndef CALCPOS_H
 #define CALCPOS_H
+
+extern "C" {
+#include "armVersion/calcTagLoc_ARM.h"
+}
 #include "_myheads.h"
 #include "dataSensorIni.h"
 #include "dataDistanceLog.h"
@@ -9,9 +13,6 @@
 #include "calcTagNLOS.h"
 #include "calcLibGeometry.h"
 #include "calcLibMath.h"
-extern "C"{
-#include "armVersion/calcTagLoc_ARM.h"
-}
 
 class calcTagPos
 {

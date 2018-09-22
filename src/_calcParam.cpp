@@ -72,8 +72,9 @@ dType _calcParam::WeightedTaylor::CALC_KalmanWeight(const dType *sortedWeight,
 /*****************************************************************************/
 dType _calcParam::KalmanCoupled::GAUSS_COUPLED_weight = 0.2f;
 dType _calcParam::KalmanCoupled::SMOOTH_COUPLED_K = 0.3f;
-dType _calcParam::KalmanCoupled::TRAIL_COUPLED_K = 0.6f;
-dType _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v = 0.6f;
+dType _calcParam::KalmanCoupled::TRAIL_COUPLED_K_x = 0.9f;
+dType _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v = 0.7f;
+dType _calcParam::KalmanCoupled::TRAIL_COUPLED_K_a = 0.5f;
 void _calcParam::KalmanCoupled::WEIGHT_COUPLED_weight(const locationCoor x_hat,
                                                       const locationCoor *sensor,
                                                       const int *distance,
@@ -89,14 +90,14 @@ void _calcParam::KalmanCoupled::WEIGHT_COUPLED_weight(const locationCoor x_hat,
 
             // calculate method 1 & 2
             dType method_1, method_2;
+            dType x = qAbs(diffDist - R);
             if (diffDist < R) {
                 method_1 = 1.f;
-                method_2 = 1.f;
             } else {
-                dType x = qAbs(diffDist - R);
-                method_1 = qExp(-x*x/(10000.f));
-                method_2 = 1.f / (x / 100.f + 1.f);
+                method_1 = qExp(-x*x/(50000.f));    // gauss distribute, fade fast when d is large
             }
+
+            method_2 = 1.f / (x / 100.f + 1.f);     // hyperbola distribute
             weight[i] = method_1;
 
             // qDebug() << i << distance[i] << method_1 << method_2 << qAbs(method_2 - method_1);

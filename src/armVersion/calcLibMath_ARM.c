@@ -1,3 +1,4 @@
+﻿#include <math.h>
 #include "calcTagLoc_ARM.h"
 
 float InvSqrt(float x)

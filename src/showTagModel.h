@@ -50,7 +50,8 @@ struct oneKalmanData {  // kalman data
     locationCoor a_t   = {0,0,0};
     locationCoor x_t_1 = {0,0,0};
     locationCoor v_t_1 = {0,0,0};
-    dType K            = 0.6f;  //Complementary Filter, K is the measure gain
+    dType Kx           = 1.f;  //Complementary Filter, K is the measure gain
+    dType Kv           = 1.f;  //Complementary Filter, K is the measure gain
     dType Time         = 0.f;
     bool isInitialized = false;
     void clear() {

@@ -70,6 +70,10 @@ public:
                                   dType T,
                                   trackParams &tagParam,
                                   tagTrackRecord &recParam);
+    static void calcMovingAverage(const locationCoor &z_x_meas,
+                                  dType T,
+                                  trackParams &tagParam,
+                                  tagTrackRecord &recParam);
 
     static void calcMatrixMulit_KP(const dType Kx, const dType Kv,
                                    const dType Pxx_pri_t, const dType Pxv_pri_t, const dType Pvv_pri_t,

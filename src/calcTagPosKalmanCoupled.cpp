@@ -66,20 +66,24 @@ void calcTagPos::calcKalmanCoulped(const int *distance, const locationCoor *sens
     if (false == kalmanData.isInitialized) {
         kalmanData.x_t = z_x_t_meas;
         kalmanData.v_t = {0.f, 0.f, 0.f};
-        kalmanData.K = _calcParam::KalmanCoupled::TRAIL_COUPLED_K;
+        kalmanData.Kx = _calcParam::KalmanCoupled::TRAIL_COUPLED_K_x;
+        kalmanData.Kv = _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v;
         kalmanData.isInitialized = true;
     } else {
 /* TRAIL COUPLED *************************************************************/
         if (TRAIL_COUPLED & type) {    // which makes point different from ML point
-            kalmanData.x_t = x_hat_t * (1.f - kalmanData.K) + z_x_t_meas * kalmanData.K;
-            kalmanData.v_t = v_hat_t * (1.f - kalmanData.K) +
-                    (kalmanData.x_t - kalmanData.x_t_1) / T_diff * kalmanData.K;
+//            kalmanData.x_t = x_hat_t * (1.f - kalmanData.Kx) + z_x_t_meas * kalmanData.Kx;
+//            kalmanData.v_t = v_hat_t * (1.f - kalmanData.Kv) +
+//                    (kalmanData.x_t - kalmanData.x_t_1) / T_diff * kalmanData.Kv;
+            kalmanData.x_t = kalmanData.x_t_1 * (1.f - kalmanData.Kx) + z_x_t_meas * kalmanData.Kx;
+            kalmanData.v_t = kalmanData.v_t_1 * (1.f - kalmanData.Kv) +
+                    (kalmanData.x_t - kalmanData.x_t_1) / T_diff * kalmanData.Kv;
 /* low pass for accelerate (v_t - v_t_1) / T **********************************
    That is the interpolation in 2D, but x, y are separated (1st order);
    using 2nd order curve is more smooth but much more diffcult for calc.
 ******************************************************************************/
             locationCoor a_t = (kalmanData.v_t - kalmanData.v_t_1) / T_diff;
-            a_t = a_t * _calcParam::KalmanCoupled::TRAIL_COUPLED_K_v;
+            a_t = a_t * _calcParam::KalmanCoupled::TRAIL_COUPLED_K_a;
             kalmanData.v_t = a_t * T_diff + kalmanData.v_t_1;
         } else {
             kalmanData.x_t = z_x_t_meas;

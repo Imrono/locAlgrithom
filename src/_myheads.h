@@ -84,6 +84,7 @@ enum TRACK_METHOD {
     TRACK_KALMAN,
     TRACK_KALMAN_LITE,
     TRACK_KALMAN_INFO,
+    TRACK_LOW_PASS,
     NUM_TRACK_METHOD
 };
 
@@ -91,6 +92,7 @@ enum TRACK_METHOD {
 #define METHOD_KALMAN_STR      "{method:KalmanTrack}"
 #define METHOD_KALMAN_LITE_STR "{method:LiteKalmanTrack}"
 #define METHOD_KALMAN_INFO_STR "{method:InfoKalmanTrack}"
+#define METHOD_LOW_PASS_STR    "{method:LowPassTrack}"
 extern QString TRACK_METHOD2STR[TRACK_METHOD::NUM_TRACK_METHOD];
 
 enum SHOW_SHAPE {

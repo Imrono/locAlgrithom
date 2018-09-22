@@ -1,7 +1,6 @@
-#ifndef CALCTAGPOS_WEIGHTTAYLOR_ARMVERSION_H
+﻿#ifndef CALCTAGPOS_WEIGHTTAYLOR_ARMVERSION_H
 #define CALCTAGPOS_WEIGHTTAYLOR_ARMVERSION_H
 #include <stdlib.h>
-#include <math.h>
 #include <stdio.h>
 
 #define MAX_REF_NUM 10

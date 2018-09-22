@@ -1,4 +1,7 @@
 @echo off
+echo delete .\bin\
+rd /s /q .\bin
+
 echo delete .\x64\
 rd /s /q .\x64
 echo delete .\src\x64\

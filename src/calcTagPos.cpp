@@ -1,10 +1,6 @@
 ﻿#include "calcTagPos.h"
 #include <QtMath>
 #include "calcLibMatrixOp.h"
-#include "calcLibMath.h"
-extern "C" {
-#include "armVersion/calcTagLoc_ARM.h"
-}
 
 calcTagPos::~calcTagPos() {
     resetA();

@@ -93,6 +93,9 @@ DISTFILES +=
 RC_ICONS = resource/icon/locAlg.ico
 
 INCLUDEPATH += "C:/Qt/Qt5.9.1/5.9.1/msvc2015_64/include/qwt-6.1.3/"
-DEFINES += QT_DLL QWT_DLL qwt.dll qwtd.dll
-LIBS += -L"C:\Qt\Qt5.9.1\5.9.1\msvc2015_64\lib" -lqwtd
-LIBS += -L"C:\Qt\Qt5.9.1\5.9.1\msvc2015_64\lib" -lqwt
+DEFINES += QWT_DLL
+CONFIG(debug, debug|release) {
+    unix|win32: LIBS += -L"C:\Qt\Qt5.9.1\5.9.1\msvc2015_64\lib" -lqwtd
+} else {
+    unix|win32: LIBS += -L"C:\Qt\Qt5.9.1\5.9.1\msvc2015_64\lib" -lqwt
+}
