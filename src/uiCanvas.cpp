@@ -71,28 +71,12 @@ void uiCanvas::setConfigData(const configData *d) {
 }
 
 void uiCanvas::syncWithUiFrame(uiUsrFrame *frm) {
-    QList<int> showableTags = frm->getShowableTags();
-    for (auto it = tags.begin(); it != tags.end();) {
-        // if tagId is enabled and is showing, discard it
-        if (showableTags.contains(it.key())) {
-            ++it;
-        // if tagId is not enabled but is showing, stop showing
-        } else {
-            qDebug() << "[@uiCanvas::syncWithUiFrame] erase showTagRelated tagId:" << it.key();
-            showTagDelegate::eraseTagId(it.key());
-            it = tags.erase(it);
-        }
-    }
+    // 1. canvas has more tag than usrFrame -> delete
+    QMap<int, oneTagView> showableTags = frm->getShowableTags();
+    tags.clear();
 
-    foreach (int tagId, showableTags) {
-        // if tagId is enabled but not showing, show it
-        if (!tags.contains(tagId)) {
-            qDebug() << "[@uiCanvas::syncWithUiFrame] insert showTagRelated tagId:" << tagId;
-            tags.insert(tagId, showTagDelegate{tagId});
-            showTagDelegate::recordTagId(tagId);
-            tags[tagId].setTagView();
-            frm->setBtnColorSample(tagId, tags[tagId].getTagView().color[0]);
-        }
+    for (auto it = showableTags.begin(); it != showableTags.end(); it++) {
+        tags.insert(it.key(), showTagDelegate{it.key(), it.value()});
     }
 
     qDebug() << "[@uiCanvas::syncWithUiFrame] current tags count:" << tags.count();
@@ -192,6 +176,7 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
         showSensors(painter);
     }
 
+    pos.clear();
     foreach (const showTagDelegate tag, tags) {
         if (isShowAllPos) {
             tag.drawPointsRaw(painter, ratioShow, zoom(), center);
@@ -224,6 +209,10 @@ void uiCanvas::paintEvent(QPaintEvent *event) {
 
         tag.drawLine(painter, ratioShow, zoom(), center);
         tag.drawPoint(painter, ratioShow, zoom(), center);
+        if (isShowTagId) {
+            tag.drawTagId(painter, ratioShow, zoom(), center);
+        }
+        pos.append(tag.getOneTagMeasurePos());
 
         if (isShowPosInfo) {
             tag.drawPointInfo(painter, showPosInfo, ratioShow, zoom(), center);

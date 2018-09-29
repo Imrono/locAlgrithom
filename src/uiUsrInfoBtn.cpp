@@ -1,12 +1,10 @@
-#include "uiUsrInfoBtn.h"
+﻿#include "uiUsrInfoBtn.h"
 #include <QPainter>
 #include <QKeyEvent>
 #include <QToolTip>
+#include <QtCharts/QChartView>
 #include "calcLibGeometry.h"
 #include "showTagDelegate.h"
-
-#include <QtCharts/QChartView>
-
 uiUsrInfoBtn::uiUsrInfoBtn(int tagId, QWidget *parent) :
     tagId{tagId}, QToolButton(parent) {
     initial();
@@ -27,24 +25,29 @@ void uiUsrInfoBtn::initial() {
     toolTipWidget->hide();
 
     setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    setFixedSize(40, 60);
+    setFixedSize(30, 50);
     setIcon(QIcon(":/resource/usr/usr_A.png"));
-    setIconSize(QSize(38, 38));
+    setIconSize(QSize(28, 28));
 
     QFont font;
     font.setBold(true);
     setFont(font);
-    setText(QString("%0").arg(tagId, 4, 10, QChar('0')));
+    setText(QString("%0").arg(tagId, 3, 10, QChar('0')));
     syncShowable();
 
     connect(this, &QToolButton::clicked, this, [this](void) {
-        setFocus();
-        this->isShowable = !this->isShowable;
-        syncShowable();
+        if (0 != tagId) {
+            setFocus();
+            // isShowable will update @ oneUsrBtnClicked -> usrFrame.oneUsrBtnClicked_slot
+            this->isShowable = !this->isShowable;
+            syncShowable();
+        }
     });
 
     connect(this, &QToolButton::clicked, this, [this](void) {
-        emit oneUsrBtnClicked(this->tagId);
+        if (0 != tagId) {
+            emit oneUsrBtnClicked(this);
+        }
     });
 
     contextMenu = new QMenu(this);
@@ -83,8 +86,9 @@ void uiUsrInfoBtn::syncShowable() {
     if (isShowable) {
         setStyleSheet("QToolButton{background-color:GhostWhite;}");
         if (mouseAt)
-            if (toolTipWidget->isHidden())
-                toolTipWidget->show();
+            if (toolTipWidget->isHidden()) {
+                //toolTipWidget->show();
+            }
     } else {
         setStyleSheet("QToolButton{background-color:DimGray;}");
         if (mouseAt)
@@ -141,7 +145,7 @@ void uiUsrInfoBtn::mouseMoveEvent(QMouseEvent *e) {
     if (isShowable && status > USR_STATUS::HAS_DISTANCE_DATA) {
         toolTipWidget->move(mapToGlobal(e->pos() + QPoint(10, -150)));
         if (toolTipWidget->isHidden()) {
-            toolTipWidget->show();
+            //toolTipWidget->show();
         }
     }
 }

@@ -1,4 +1,4 @@
-#include "uiMainWindow.h"
+﻿#include "uiMainWindow.h"
 #include "ui_mainwindow.h"
 #include <QEvent>
 #include <QClipboard>
@@ -49,6 +49,17 @@ void uiMainWindow::kalmanCoupledSyncUi() {
              << "GAUSS_COUPLED"  << (store.kalmanCoupledType & KALMAN_COUPLED_TYPE::GAUSS_COUPLED) << ";"
              << "WEIGHT_COUPLED" << (store.kalmanCoupledType & KALMAN_COUPLED_TYPE::WEIGHT_COUPLED) << ";"
              << "SMOOTH_COUPLED" << (store.kalmanCoupledType & KALMAN_COUPLED_TYPE::SMOOTH_COUPLED) << ";";
+}
+
+void uiMainWindow::reflashUI() {
+    showTagModel &store = getStore();
+
+    if (CALC_POS_TYPE::POS_NONE != store.calcPosType) {
+        posCalcPROCESS(store.calcPosType);
+    } else {}
+    if (TRACK_METHOD::TRACK_NONE != store.calcTrackMethod) {
+        trackCalcPROCESS(store.calcTrackMethod);
+    } else {}
 }
 
 // track calc related
@@ -183,6 +194,10 @@ void uiMainWindow::connectUi() {
         }
         handleModelDataUpdate(false);
     });
+    connect(ui->btn_drawTagId, &QPushButton::clicked, this, [this](void) {
+        ui->canvas->reverseShowTagId();
+        handleModelDataUpdate(false);
+    });
 
     connect(ui->distCountEdit, &QLineEdit::returnPressed, this, [this](void) {
         realCounting = ui->distCountEdit->text().toInt();
@@ -217,15 +232,7 @@ void uiMainWindow::connectUi() {
     sigmaChanged(sigmaInitValue);
     connect(ui->sigmaSlider, SIGNAL(valueChanged(int)), this, SLOT(sigmaChanged(int)));
 
-    connect(ui->refresh, &QPushButton::clicked, this, [this](void) {
-        showTagModel &store = getStore();
-        if (CALC_POS_TYPE::POS_NONE != store.calcPosType) {
-            posCalcPROCESS(store.calcPosType);
-        } else {}
-        if (TRACK_METHOD::TRACK_NONE != store.calcTrackMethod) {
-            trackCalcPROCESS(store.calcTrackMethod);
-        } else {}
-    });
+    connect(ui->refresh, SIGNAL(clicked()), this, SLOT(reflashUI()));
 
     // distance show
     connect(ui->raw_0, &QLineEdit::textChanged, this, [this](void) {
@@ -298,7 +305,7 @@ void uiMainWindow::checkData() {
 }
 void uiMainWindow::resetData() {
     // CLEAR LEGACY DATA
-    realStore.clear();
+    realStore.removeAll();
     realDistData.clear();
     realUsrFrame.removeAll();
     ui->canvas->removeAll();

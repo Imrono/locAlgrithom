@@ -1,4 +1,4 @@
-#ifndef SHOWSTORE_H
+﻿#ifndef SHOWSTORE_H
 #define SHOWSTORE_H
 #include "_myheads.h"
 #include <QVector>
@@ -66,6 +66,10 @@ struct oneKalmanData {  // kalman data
 
 struct storeTagInfo {
     int tagId{-1};
+    int operInfo;
+    int areaInfo;
+    int batteryInfo;
+
     bool isTagPosInitialed{false};
     QMap<QString, storeMethodInfo> methodInfo;
 
@@ -132,7 +136,7 @@ public:
     void addAnsPoint(int tagId, const QString &method, locationCoor p);
     void clearAnsPoints(int tagId, const QString &method);
 
-    void clear() {
+    void removeAll() {
         foreach (storeTagInfo *info, tags) {
             info->clear();
             delete info;
@@ -145,5 +149,8 @@ public:
     TRACK_METHOD  calcTrackMethod{TRACK_METHOD ::TRACK_NONE};
     QMap<int, storeTagInfo *> tags;
 };
+
+extern showTagModel g_realStore;
+extern showTagModel g_fakeStore;
 
 #endif // SHOWSTORE_H

@@ -1,4 +1,4 @@
-#ifndef UI_CANVAS_H
+﻿#ifndef UI_CANVAS_H
 #define UI_CANVAS_H
 #include "_myheads.h"
 #include <QWidget>
@@ -6,6 +6,7 @@
 #include "dataType.h"
 #include "dataSensorIni.h"
 #include "dataDistanceLog.h"
+#include "showTagColor.h"
 #include "showTagDelegate.h"
 #include "uiUsrFrame.h"
 #include "uiShowItem.h"
@@ -26,7 +27,7 @@ public:
         if (tags.contains(tagId)) {
             tags[tagId].setPosition(methodName, p);
         }
-        pos.append(p);
+        //pos.append(p);
     }
     void setIterPoints(int tagId, const QVector<QPointF> &p) {
         if (tags.contains(tagId)) {
@@ -85,7 +86,6 @@ public:
     void removeAll() {
         for (auto it = tags.begin(); it != tags.end();) {
             qDebug() << "[@uiCanvas::removeAll] erase showTagRelated tagId:" << it.key();
-            showTagDelegate::eraseTagId(it.key());
             it = tags.erase(it);
         }
         tags.clear();
@@ -110,6 +110,10 @@ public:
     bool reverseShowCross() {
         isShowCross = !isShowCross;
         return isShowCross;
+    }
+    bool reverseShowTagId() {
+        isShowTagId = !isShowTagId;
+        return isShowTagId;
     }
 
     void setShowLM(bool lm) { isShowLM = lm;}
@@ -162,6 +166,7 @@ private:
     int  boldRadiusIdx{-1};
     bool isShowTrace{false};
     bool isShowCross{false};
+    bool isShowTagId{false};
 
     dType ratioShow{1.f};
     QPoint center;

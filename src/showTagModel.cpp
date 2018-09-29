@@ -1,5 +1,8 @@
 ﻿#include "showTagModel.h"
 
+showTagModel g_realStore;
+showTagModel g_fakeStore;
+
 void storeTagInfo::addOrResetMethodInfo(const QString &methodType, const QString &method) {
     if (!methodInfo.contains(methodType)) {
         methodInfo.insert(methodType, storeMethodInfo(method, this));

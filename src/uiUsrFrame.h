@@ -1,4 +1,4 @@
-#ifndef UIUSRFRAME_H
+﻿#ifndef UIUSRFRAME_H
 #define UIUSRFRAME_H
 #include "_myheads.h"
 #include <QFrame>
@@ -15,12 +15,13 @@ public:
     void addOneUsr(int tagId, USR_STATUS status = USR_STATUS::HAS_NONE_DATA);
     void removeOneUsr(int tagId);
     void removeAll();
+    bool containTagId(int tagId);
     void setEnabledAll(bool enable);
     void setUsrStatus(int tagId, USR_STATUS status);
     USR_STATUS getUsrStatus(int tagId);
 
     bool isShowable(int tagId);
-    QList<int> getShowableTags();
+    QMap<int, oneTagView> getShowableTags();
 
     void setBtnColorSample(int tagId, const QColor &color);
     QColor getBtnColorSample(int tagId);
@@ -47,7 +48,7 @@ signals:
     void oneUsrShowDistance_siganl(int tagId);
 
 private slots:
-    void oneUsrBtnClicked_slot(int tagId);
+    void oneUsrBtnClicked_slot(uiUsrInfoBtn *clickedBtn);
     void oneUsrShowML_slot(int tagId);
 
 private:

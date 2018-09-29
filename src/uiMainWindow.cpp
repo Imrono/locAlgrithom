@@ -36,8 +36,11 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     statusBar()->addWidget(iterationNum);
     setStatusIter(0, 0.f);
 
+    mpPosInput.setParent(this);
+
     // load initial CFG and DIST data
 #if 1
+    loadIniConfigFile(MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/机车配置文件/demo-6d.ini"));
     loadIniConfigFile(MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
     loadLogDistanceFile(2, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
 #else
@@ -56,7 +59,7 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     // initial calculate method
     //nlosRes(true);
     //nlosMultiPoint(true);
-    posWeightedTaylor();
+    //posWeightedTaylor();
     //trackKalman(true);
 
     fakeStore.addNewTagInfo(TEST_TAG_ID);
@@ -302,6 +305,10 @@ void uiMainWindow::loadLogDistanceFile(int type, QString pathIn) {
         usrFrame->addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
         ui->canvas->setDistance(tag.tagId, tag.distData[0].distance);
     }
+    for (int i = 0; i < 32 - distData.get_q()->tagsData.count(); i++) {
+        usrFrame->addOneUsr(0, USR_STATUS::HAS_NONE_DATA);
+    }
+
     ui->canvas->syncWithUiFrame(&getUsrFrame());
 
     ui->actionRead_dist->setChecked(1 == type);
@@ -562,4 +569,46 @@ void uiMainWindow::trackKalmanLite() {
 void uiMainWindow::trackKalmanInfo() {
     UPDATE_TRACK_UI(ui->actionKalmanInfoTrack);
     trackCalcPROCESS(actionNowTrack ? TRACK_METHOD::TRACK_KALMAN_INFO : TRACK_METHOD::TRACK_NONE);
+}
+
+void uiMainWindow::on_btn_mpPos_clicked()
+{
+    ui->btn_mpPos->setEnabled(false);
+
+    showTagModel &store = getStore();
+    uiUsrFrame *usrFrame = &getUsrFrame();
+
+    usrFrame->removeAll();
+    store.removeAll();
+    ui->canvas->removeAll();
+
+    if (!isMpPosInput) {
+        disconnect(&realUsrFrame, SIGNAL(oneUsrBtnClicked_siganl(int, bool)),
+                   this, SLOT(oneUsrBtnClicked(int, bool)));
+        disconnect(&realUsrFrame, SIGNAL(oneUsrShowML_siganl(int, bool)),
+                  this, SLOT(oneUsrShowML(int, bool)));
+        store.calcPosType = CALC_POS_TYPE::Mp_Pos_In;
+        mpPosInput.startMpReqTimer();
+    } else {
+        connect(&realUsrFrame, SIGNAL(oneUsrBtnClicked_siganl(int, bool)),
+                this, SLOT(oneUsrBtnClicked(int, bool)));
+        connect(&realUsrFrame, SIGNAL(oneUsrShowML_siganl(int, bool)),
+                this, SLOT(oneUsrShowML(int, bool)));
+        mpPosInput.stopMpReqTimer();
+        dataDistanceLog &distData = getDistData();
+        foreach (oneTag tag, distData.get_q()->tagsData) {
+            store.addNewTagInfo(tag.tagId);
+            usrFrame->setBtnEnableLM(tag.tagId, false);
+            usrFrame->addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
+            ui->canvas->setDistance(tag.tagId, tag.distData[0].distance);
+        }
+        for (int i = 0; i < 32 - distData.get_q()->tagsData.count(); i++) {
+            usrFrame->addOneUsr(0, USR_STATUS::HAS_NONE_DATA);
+        }
+        ui->canvas->syncWithUiFrame(usrFrame);
+        //reflashUI();
+    }
+    isMpPosInput = !isMpPosInput;
+
+    ui->btn_mpPos->setEnabled(true);
 }

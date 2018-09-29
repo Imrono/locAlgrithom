@@ -1,4 +1,4 @@
-#ifndef UIUSRINFOBTN_H
+﻿#ifndef UIUSRINFOBTN_H
 #define UIUSRINFOBTN_H
 #include "_myheads.h"
 #include <QToolButton>
@@ -6,11 +6,14 @@
 #include <QAction>
 #include <QMouseEvent>
 #include "uiUsrTooltip.h"
+#include "showTagColor.h"
 
+class uiUsrFrame;
 class uiUsrInfoBtn : public QToolButton
 {
     Q_OBJECT
 public:
+    friend class uiUsrFrame;
     uiUsrInfoBtn(int tagId, QWidget *parent = 0);
     uiUsrInfoBtn(int tagId, bool isShowable, QWidget *parent = 0);
     ~uiUsrInfoBtn();
@@ -41,8 +44,19 @@ public:
     void setChartData(const QString &name,
                       const QVector<qreal> &v, const QVector<qreal> &a);
 
+    void setTagView(const oneTagView &tagView) {
+        this->tagView = tagView;
+        colorSample = tagView.color[0];
+        qDebug() << "[@uiUsrInfoBtn::setTagView] tagId:" << tagId << tagView.color[0] << tagView.color[1] << tagView.isUsed;
+    }
+    void resetTagView() {
+        this->tagView = oneTagView();
+        colorSample = QColor(Qt::black);
+        qDebug() << "[@uiUsrInfoBtn::resetTagView] tagId:" << tagId << tagView.color[0] << tagView.color[1] << tagView.isUsed;
+    }
+
 signals:
-    void oneUsrBtnClicked(int tagId);
+    void oneUsrBtnClicked(uiUsrInfoBtn *clickedBtn);
     void oneUsrShowML(int tagId);   // ML -> maximum likehood
     void oneUsrShowDistance(int tagId);
 
@@ -64,6 +78,7 @@ private:
     void mouseMoveEvent(QMouseEvent *e);
 
     QColor colorSample;
+    oneTagView tagView;     // color of pen & brush
 
     QMenu *contextMenu{nullptr};
     QAction *showML_Action{nullptr};

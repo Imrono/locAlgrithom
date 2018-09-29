@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include "_myheads.h"
 #include <QMainWindow>
@@ -9,6 +9,7 @@
 #include "dataType.h"
 #include "uiUsrFrame.h"
 
+#include "dataMpPos.h"
 #include "dataSensorIni.h"
 #include "dataDistanceLog.h"
 
@@ -70,6 +71,8 @@ public:
     explicit uiMainWindow(QWidget *parent = 0);
     ~uiMainWindow();
 
+    friend class dataMpPos;
+
 private:
     Ui::MainWindow *ui;
     QTimer timer;
@@ -84,6 +87,9 @@ private:
     calcTagPos calcPos;
     calcTagNLOS calcNlos;
     calcTagTrack calcTrack;
+
+    dataMpPos mpPosInput;
+    bool isMpPosInput{false};
 
     // sensor location and oper, alarm, stop
     dataSensorIni cfgData;
@@ -143,6 +149,8 @@ private:
     void kalmanCoupledChange(bool isEnable);
     void kalmanCoupledSyncUi();
 
+    void reflashUI();
+
     int distanceShowTagId{UN_INIT_SHOW_TAGID};
     QString lastIniPath;
     QString lastDistancePath;
@@ -199,6 +207,7 @@ private slots:
     void showMousePos(int x, int y);
 
     void modelChange(bool isTest);
+    void on_btn_mpPos_clicked();
 };
 
 #endif // MAINWINDOW_H

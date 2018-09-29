@@ -6,7 +6,7 @@
 
 QT       += core gui
 #CONFIG   += console
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets charts
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets charts network
 
 CONFIG += qwt
 
@@ -54,7 +54,9 @@ SOURCES += \
     _calcParam.cpp \
     zFakeData.cpp \
     uiShowItem.cpp \
-    uiUsrTooltip.cpp
+    uiUsrTooltip.cpp \
+    showTagColor.cpp \
+    dataMpPos.cpp
 
 HEADERS += \
     _myheads.h \
@@ -77,7 +79,9 @@ HEADERS += \
     _calcParam.h \
     zFakeData.h \
     uiShowItem.h \
-    uiUsrTooltip.h
+    uiUsrTooltip.h \
+    showTagColor.h \
+    dataMpPos.h
 
 FORMS += \
     mainwindow.ui \

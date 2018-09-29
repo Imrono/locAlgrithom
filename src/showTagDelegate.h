@@ -1,23 +1,11 @@
-#ifndef SHOWPOINT_H
+﻿#ifndef SHOWPOINT_H
 #define SHOWPOINT_H
 #include "_myheads.h"
 #include <QPainter>
 #include <QColor>
 #include <QDebug>
 #include "dataType.h"
-
-struct oneTagView {
-    QColor color[2];
-    SHOW_SHAPE type[2];
-    int nColorStyle;
-    bool isUsed;
-};
-
-struct tagsView {
-    tagsView();
-    static QList<oneTagView> viewDatabase;
-    static int count;
-};
+#include "showTagColor.h"
 
 struct showTagOneMethod {
     QString name;
@@ -44,10 +32,10 @@ class showTagDelegate
 public:
     explicit showTagDelegate();
     explicit showTagDelegate(int tagId);
+    explicit showTagDelegate(int tagId, const oneTagView &tagView);
 
 /******************************************************************/
     void addMethod(const QString &name);
-    void setTagView();
     oneTagView getTagView() { return tagView;}
 
 /******************************************************************/
@@ -125,6 +113,8 @@ public:
 /******************************************************************/
     void drawPoint(QPainter &painter, dType ratio = 1.f,
                    dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
+    void drawTagId(QPainter &painter, dType ratio = 1.f,
+                   dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
     void drawPointInfo(QPainter &painter, QPointF p, dType ratio = 1.f,
                        dType zoom = 1.f, QPointF offset = QPointF(0,0)) const;
     void drawIterPoints(QPainter &painter, dType ratio = 1.f,
@@ -151,10 +141,17 @@ public:
     }
 
     //showTagRelated& operator=(const showTagRelated &sp);
-    static void resetColorCount() {tagsViewDataBase.count = 0;}
     // static set Max Likehood sigma
     static void setSigmaLM(int sigma) {
         sigmaLM = sigma;
+    }
+
+    QPointF getOneTagMeasurePos() const {
+        if (oneTagMethod.contains(MEASUR_STR)) {
+            return oneTagMethod[MEASUR_STR].pos;
+        } else {
+            return QPointF(0, 0);
+        }
     }
 
 private:
@@ -177,17 +174,12 @@ private:
 
 /******************************************************************/
 private:
-    static QMap<int, oneTagView> tagViewData;
-    static tagsView              tagsViewDataBase;
-
     // static Max Likehood sigma
     static dType sigmaLM;
 public:
-    static void recordTagId(int tagId);
-    static void eraseTagId(int tagId);
 
     static void drawCrossPos(QPainter &painter, const QPointF center, const QColor &color,
-                          dType r = 2.f);
+                             dType r = 2.f);
     static void draw5Star(QPainter &painter, const QPointF center, const QColor &color,
                           dType r = 6.f, dType rot = 0.f);
     static void drawTriangle(QPainter &painter, const QPointF center, const QColor &color,

@@ -5,48 +5,18 @@
 
 dType showTagDelegate::sigmaLM = 0.f;
 
-QList<oneTagView> tagsView::viewDatabase;
-int tagsView::count = 0;
-QMap<int, oneTagView> showTagDelegate::tagViewData;
-tagsView showTagDelegate::tagsViewDataBase;
-
-tagsView::tagsView(){
-    viewDatabase << oneTagView{{QColor{Qt::green},  QColor{Qt::darkGreen}},  {SHOW_SHAPE::radius, SHOW_SHAPE::square}, 0, false};
-    viewDatabase << oneTagView{{QColor{Qt::red},    QColor{Qt::darkRed}},    {SHOW_SHAPE::radius, SHOW_SHAPE::square}, 1, false};
-    viewDatabase << oneTagView{{QColor{Qt::blue},   QColor{Qt::darkBlue}},   {SHOW_SHAPE::radius, SHOW_SHAPE::square}, 2, false};
-    viewDatabase << oneTagView{{QColor{Qt::cyan},   QColor{Qt::darkCyan}},   {SHOW_SHAPE::radius, SHOW_SHAPE::square}, 3, false};
-    viewDatabase << oneTagView{{QColor{Qt::magenta},QColor{Qt::darkMagenta}},{SHOW_SHAPE::radius, SHOW_SHAPE::square}, 4, false};
-    viewDatabase << oneTagView{{QColor{Qt::yellow}, QColor{Qt::darkYellow}}, {SHOW_SHAPE::radius, SHOW_SHAPE::square}, 5, false};
-    count = 0;
-}
-
 /******************************************************************/
 showTagDelegate::showTagDelegate(){
     usedSensor.fill(false, MAX_SENSOR);
 }
 showTagDelegate::showTagDelegate(int tagId) : tagId{tagId} {
-    recordTagId(tagId);
-    tagView = tagViewData[tagId];
-    qDebug() << "[@showTagRelated::showTagRelated] tagId:" << tagId << tagView.color[0] << tagView.color[1] << tagView.isUsed;
+    qDebug() << "[@showTagRelated::showTagRelated] tagId:" << this->tagId;
 }
-void showTagDelegate::recordTagId(int tagId) {
-    if (!tagViewData.contains(tagId)) {
-        for (int i = 0; i < tagsViewDataBase.viewDatabase.count(); i++) {
-            if (false == tagsViewDataBase.viewDatabase[i].isUsed) {
-                tagsViewDataBase.viewDatabase[i].isUsed = true;
-                tagViewData.insert(tagId, tagsViewDataBase.viewDatabase[i]);
-                tagsViewDataBase.count++;
-                break;
-            }
-        }
-    }
-}
-void showTagDelegate::eraseTagId(int tagId) {
-    if (tagViewData.contains(tagId)) {
-        tagsViewDataBase.viewDatabase[tagViewData[tagId].nColorStyle].isUsed = false;
-        tagViewData.remove(tagId);
-        tagsViewDataBase.count--;
-    }
+showTagDelegate::showTagDelegate(int tagId, const oneTagView &tagView)
+    : tagId{tagId}, tagView{tagView}
+{
+    qDebug() << "[@showTagRelated::showTagRelated] tagId:" << this->tagId
+             << this->tagView.color[0] << this->tagView.color[1] << this->tagView.isUsed;
 }
 
 void showTagDelegate::addMethod(const QString &name) {
@@ -60,11 +30,6 @@ void showTagDelegate::addMethod(const QString &name) {
         qWarning() << "showTagRelated::addMethod $>" << name << "is Already exist";
     }
 }
-void showTagDelegate::setTagView() {
-    if (tagViewData.contains(tagId)) {
-        tagView = tagViewData[tagId];
-    }
-}
 
 void showTagDelegate::drawPoint(QPainter &painter, dType ratio,
                                dType zoom, QPointF offset) const {
@@ -75,6 +40,16 @@ void showTagDelegate::drawPoint(QPainter &painter, dType ratio,
                             shapeSize, shapeSize);
     }
 }
+void showTagDelegate::drawTagId(QPainter &painter, dType ratio,
+                                dType zoom, QPointF offset) const {
+    foreach (showTagOneMethod oneMethod, oneTagMethod) {
+        painter.setBrush(QBrush(oneMethod.posColor));
+        painter.setPen  (QPen(Qt::black, 1));
+        painter.drawText(toZoomedPoint(oneMethod.pos, ratio, zoom, offset) + QPoint(shapeSize+2, shapeSize),
+                         QString("%1").arg(tagId));
+    }
+}
+
 void showTagDelegate::drawPointInfo(QPainter &painter, QPointF p, dType ratio,
                                     dType zoom, QPointF offset) const {
     foreach (showTagOneMethod oneMethod, oneTagMethod) {
@@ -151,34 +126,39 @@ void showTagDelegate::drawLines(QPainter &painter, dType ratio,
 
 void showTagDelegate::drawCircle(QPainter &painter, const QVector<locationCoor> &sensor,
                                 dType ratio, dType zoom, QPointF offset) const {
-    QPen tmpPen = QPen(Qt::darkGray, 1);
-    //QPen tmpPen = QPen(Qt::black, 1);
-    painter.setBrush(Qt::NoBrush);
-    for (int i = 0; i < sensor.count(); i++) {
-        if (usedSensor[i]) {
-            tmpPen.setStyle(Qt::SolidLine);
-        } else {
-            tmpPen.setStyle(Qt::DotLine);
+    int maxDistIdx = sensor.count() - 1;
+    if (distance.count() > maxDistIdx && usedSensor.count() > maxDistIdx) {
+        QPen tmpPen = QPen(Qt::darkGray, 1);
+        //QPen tmpPen = QPen(Qt::black, 1);
+        painter.setBrush(Qt::NoBrush);
+        for (int i = 0; i < sensor.count(); i++) {
+            if (usedSensor[i]) {
+                tmpPen.setStyle(Qt::SolidLine);
+            } else {
+                tmpPen.setStyle(Qt::DotLine);
+            }
+            painter.setPen(tmpPen);
+            painter.drawEllipse(toZoomedPoint(sensor[i].toQPointF(), ratio, zoom, offset),
+                                distance[i] * ratio * zoom, distance[i] * ratio * zoom);
         }
-        painter.setPen(tmpPen);
-        painter.drawEllipse(toZoomedPoint(sensor[i].toQPointF(), ratio, zoom, offset),
-                            distance[i] * ratio * zoom, distance[i] * ratio * zoom);
     }
 }
 
 void showTagDelegate::drawCircleBold(QPainter &painter, const locationCoor &sensor,
                                     int distIdx, dType ratio, dType zoom, QPointF offset) const {
-    QPen tmpPen = QPen(Qt::darkGray, 3);
-    painter.setBrush(Qt::NoBrush);
-    if (usedSensor[distIdx]) {
-        tmpPen.setStyle(Qt::SolidLine);
-    } else {
-        tmpPen.setStyle(Qt::DotLine);
-    }
-    painter.setPen(tmpPen);
+    if (distance.count() > distIdx && usedSensor.count() > distIdx) {
+        QPen tmpPen = QPen(Qt::darkGray, 3);
+        painter.setBrush(Qt::NoBrush);
+        if (usedSensor[distIdx]) {
+            tmpPen.setStyle(Qt::SolidLine);
+        } else {
+            tmpPen.setStyle(Qt::DotLine);
+        }
+        painter.setPen(tmpPen);
 
-    painter.drawEllipse(toZoomedPoint(sensor.toQPointF(), ratio, zoom, offset),
-                        distance[distIdx] * ratio * zoom, distance[distIdx] * ratio * zoom);
+        painter.drawEllipse(toZoomedPoint(sensor.toQPointF(), ratio, zoom, offset),
+                            distance[distIdx] * ratio * zoom, distance[distIdx] * ratio * zoom);
+    }
 }
 
 void showTagDelegate::drawCrossPos(QPainter &painter, const QVector<locationCoor> &sensor,

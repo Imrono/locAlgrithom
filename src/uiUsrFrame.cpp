@@ -1,9 +1,9 @@
-#include "uiUsrFrame.h"
+﻿#include "uiUsrFrame.h"
 
 const int uiUsrFrame::MAX_SHOWABLE_NUM = 6;
 uiUsrFrame::uiUsrFrame(QWidget *parent) : QFrame(parent) {
     setStyleSheet("background-color:white;");
-    setGeometry(0, 0, 160, 180);
+    setGeometry(0, 0, 240, 200);
 }
 
 void uiUsrFrame::addOneUsr(int tagId, USR_STATUS status) {
@@ -11,8 +11,11 @@ void uiUsrFrame::addOneUsr(int tagId, USR_STATUS status) {
     if (MAX_SHOWABLE(nShowableBtns+1)) {
         usrBtn = new uiUsrInfoBtn(tagId, true, this);
         nShowableBtns ++;
+        showTagColor::getInstance()->recordTagId(tagId);
+        usrBtn->setTagView(showTagColor::getInstance()->getTagId(tagId));
     } else {
         usrBtn = new uiUsrInfoBtn(tagId, false, this);
+        usrBtn->resetTagView();
     }
     qDebug() << "[@uiUsrFrame::addOneUsr] tagId:" << tagId << "nShowableBtns:" << nShowableBtns;
     usrBtn->show();
@@ -23,7 +26,7 @@ void uiUsrFrame::addOneUsr(int tagId, USR_STATUS status) {
     usrBtn->setGeometry(x, y, usrBtn->width(), usrBtn->height());
 
     usrBtns.append(usrBtn);
-    connect(usrBtn, SIGNAL(oneUsrBtnClicked(int)), this, SLOT(oneUsrBtnClicked_slot(int)));
+    connect(usrBtn, SIGNAL(oneUsrBtnClicked(uiUsrInfoBtn *)), this, SLOT(oneUsrBtnClicked_slot(uiUsrInfoBtn *)));
     connect(usrBtn, SIGNAL(oneUsrShowML(int)), this, SLOT(oneUsrShowML_slot(int)));
     connect(usrBtn, SIGNAL(oneUsrShowDistance(int)), this, SIGNAL(oneUsrShowDistance_siganl(int)));
 
@@ -38,15 +41,17 @@ void uiUsrFrame::removeOneUsr(int tagId) {
         }
     }
 
+    showTagColor::getInstance()->eraseTagId(tagId);
     nShowableBtns --;
     update();
 }
 
 void uiUsrFrame::removeAll() {
     tagShowLM = -1;
-	emit oneUsrShowML_siganl(tagShowLM, false);
+    emit oneUsrShowML_siganl(tagShowLM, false);
 
     for (int i = 0; i < usrBtns.count(); i++) {
+        showTagColor::getInstance()->eraseTagId(usrBtns[i]->tagId);
         delete usrBtns[i];
     }
     usrBtns.clear();
@@ -79,6 +84,15 @@ USR_STATUS uiUsrFrame::getUsrStatus(int tagId) {
     return usrStatus;
 }
 
+bool uiUsrFrame::containTagId(int tagId) {
+    foreach (uiUsrInfoBtn *usrBtn, usrBtns) {
+        if (usrBtn->getTagId() == tagId) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool uiUsrFrame::isShowable(int tagId) {
     for (int i = 0; i < usrBtns.count(); i++) {
         if (usrBtns[i]->getTagId() == tagId) {
@@ -87,11 +101,12 @@ bool uiUsrFrame::isShowable(int tagId) {
     }
     return false;
 }
-QList<int> uiUsrFrame::getShowableTags() {
-    QList<int> ans;
+
+QMap<int, oneTagView> uiUsrFrame::getShowableTags() {
+    QMap<int, oneTagView> ans;
     for (int i = 0; i < usrBtns.count(); i++) {
         if (usrBtns[i]->getShowable()) {
-            ans.append(usrBtns[i]->getTagId());
+            ans.insert(usrBtns[i]->getTagId(), usrBtns[i]->tagView);
         }
     }
     return ans;
@@ -113,40 +128,47 @@ QColor uiUsrFrame::getBtnColorSample(int tagId) {
     return QColor();
 }
 
-void uiUsrFrame::oneUsrBtnClicked_slot(int tagId) {
-    for (int i = 0; i < usrBtns.count(); i++) {
-        if (usrBtns[i]->getTagId() == tagId) {
-            // if not enabled, try to enable it
-            if (usrBtns[i]->getShowable()) {    // isShowable is changed during btn click
-                // pool is full, discard the command
-                if (!MAX_SHOWABLE(nShowableBtns + 1)) {
-                    qDebug() << "[@uiUsrFrame::oneUsrBtnClicked_slot] reject show, tagId:" << tagId;
-                    usrBtns[i]->setShowable(false);
-                // pool is not full, enable the button
-                } else {
-                    // max likehood show model, disable old tag and enable this tag
-                    if (-1 != tagShowLM && tagId != tagShowLM) {
-                        for (int j = 0; j < usrBtns.count(); j++) {
-                            if(usrBtns[j]->getTagId() == tagShowLM) {
-                                usrBtns[j]->setShowable(false);
-                                emit oneUsrBtnClicked_siganl(tagShowLM, false);
-                                nShowableBtns --;
-                                break;
-                            }
-                        }
-                        tagShowLM = tagId;
-                    // normal show model, do nothing
-                    } else {}
+void uiUsrFrame::oneUsrBtnClicked_slot(uiUsrInfoBtn *clickedBtn) {
+    int tagId = clickedBtn->getTagId();
+    // if not enabled, try to enable it
+    if (clickedBtn->getShowable()) {    // isShowable is changed during btn click
+        // pool is full, discard the command
+        if (!MAX_SHOWABLE(nShowableBtns + 1)) {
+            qDebug() << "[@uiUsrFrame::oneUsrBtnClicked_slot] reject show, tagId:" << tagId;
+            clickedBtn->setShowable(false);
+        // pool is not full, enable the button
+        } else {
+            // max likehood show model(one tag is showing), disable old tag and enable this tag
+            if (-1 != tagShowLM && tagId != tagShowLM) {
+                for (int i = 0; i < usrBtns.count(); i++) {
+                    if(usrBtns[i]->getTagId() == tagShowLM) {
+                        usrBtns[i]->setShowable(false);
+                        emit oneUsrBtnClicked_siganl(tagShowLM, false);
 
-                    nShowableBtns ++;
-                    emit oneUsrBtnClicked_siganl(tagId, true);
+                        clickedBtn->resetTagView();
+                        showTagColor::getInstance()->eraseTagId(usrBtns[i]->tagId);
+                        nShowableBtns --;
+                        break;
+                    }
                 }
-            // if enabled, disable it
-            } else {
-                emit oneUsrBtnClicked_siganl(tagId, false);
-                nShowableBtns --;
-            }
+                tagShowLM = tagId;
+            // normal show model, do nothing
+            } else {}
+
+            nShowableBtns ++;
+            showTagColor::getInstance()->recordTagId(tagId);
+            clickedBtn->setTagView(showTagColor::getInstance()->getTagId(tagId));
+
+            emit oneUsrBtnClicked_siganl(tagId, true);
         }
+
+    // if enabled, disable it
+    } else {
+        emit oneUsrBtnClicked_siganl(tagId, false);
+
+        clickedBtn->resetTagView();
+        showTagColor::getInstance()->eraseTagId(tagId);
+        nShowableBtns --;
     }
 }
 
@@ -162,13 +184,16 @@ void uiUsrFrame::oneUsrShowML_slot(int tagId) {
         if (usrBtns[i]->getTagId() == tagId) {
             if (!usrBtns[i]->getShowable()) {
                 usrBtns[i]->setShowable(true);
-                nShowableBtns ++;
+
                 emit oneUsrBtnClicked_siganl(tagId, true);
             }
         } else {
             if (usrBtns[i]->getShowable()) {
                 usrBtns[i]->setShowable(false);
-                emit oneUsrBtnClicked_siganl(tagId, false);
+                emit oneUsrBtnClicked_siganl(usrBtns[i]->tagId, false);
+
+                usrBtns[i]->resetTagView();
+                showTagColor::getInstance()->eraseTagId(usrBtns[i]->tagId);
                 nShowableBtns --;
             }
         }

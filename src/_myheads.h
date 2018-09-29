@@ -1,4 +1,4 @@
-#ifndef MYHEADS_H
+﻿#ifndef MYHEADS_H
 #define MYHEADS_H
 
 #include <QVector>
@@ -20,6 +20,7 @@
 #define MY_EPS  0.000001f
 #endif
 
+#define MP_POS_STR "mpPos"
 #define MEASUR_STR "measure"
 #define TRACKx_STR "track"
 
@@ -37,6 +38,7 @@ enum KALMAN_COUPLED_TYPE{
 
 enum CALC_POS_TYPE {
     POS_NONE = 0,
+    Mp_Pos_In,
     FullCentroid,
     SubLS,
     TwoCenter,
@@ -54,6 +56,7 @@ enum CALC_POS_TYPE {
 };
 
 #define METHOD_POS_NONE_STR        "{method:PosNone}"
+#define METHOD_MP_POS_IN           "{method:mpPosIn}"
 #define METHOD_FULL_CENTROID_STR   "{method:FullCentroid}"
 #define METHOD_SUB_LS_STR          "{method:SubLS}"
 #define METHOD_TWO_CENTER_STR      "{method:TwoCenter}"
