@@ -9,9 +9,12 @@
 #include "dataType.h"
 #include "uiUsrFrame.h"
 
-#include "dataMpPos.h"
+#include "dataInput_calcAnalyzeSet.h"
+#include "dataInputPos.h"
+#include "dataInputCan.h"
+#include "dataInputLog.h"
+#include "dataInputTest.h"
 #include "dataSensorIni.h"
-#include "dataDistanceLog.h"
 
 #include "showTagDelegate.h"
 #include "showTagModel.h"
@@ -20,44 +23,44 @@
 #include "calcTagNLOS.h"
 #include "calcTagTrack.h"
 
-#define IS_TEST_CHANGE_DISTANCE(n) \
+#define IS_TEST_CHANGE_DISTANCE(n, ui, isEnable) \
     ui->raw_##n->setStyleSheet("color:black");\
-    ui->raw_##n->setEnabled(isFaked);\
+    ui->weight_##n->setStyleSheet("color:black");\
+    ui->raw_##n->setEnabled(isEnable);\
     ui->raw_##n->setText(QString::number(distance[n]));\
-    if (!isWeighted) {\
-        ui->weight_##n->setText("NaN");\
-        ui->refine_##n->setText("NaN");\
-    }
+    ui->weight_##n->setText("NaN");\
+    ui->refine_##n->setText("NaN");\
+
 
 #define SET_DISTANCE(n) \
-    if (isFaked) {\
-        oneTag &tmpTagData = fakeDistData.get_q()->tagsData[TEST_TAG_ID];\
-        int dist = ui->raw_##n->text().toInt();\
-        tmpTagData.distData[0].distance[n] = dist;\
-        tmpTagData.distData[1].distance[n] = dist;\
-        ui->canvas->setDistance(TEST_TAG_ID, tmpTagData.distData[0].distance);\
+    if (calcAnalyzeInput[CALC_TEST_ANALYZE]->isActive) {\
+        int dist = ui->raw_n->text().toInt();\
+        dataInputTest *dataInput = static_cast<dataInputTest *>(calcAnalyzeInput[CALC_TEST_ANALYZE]->dataInputHandler);\
+        if (dataInput->oneDistData.distance.count() < 6) {\
+            dataInput->oneDistData.distance = QVector<int>(6, 0);\
+        }\
+        dataInput->oneDistData.distance[n] = dist;\
+        ui->canvas->setDistance(TEST_TAG_ID, dataInput->oneDistData.distance);\
     }
 
-#define RESET_SHOW_DIST_DATA(n) \
+#define RESET_SHOW_DIST_DATA(n, ui) \
     ui->raw_##n->setText(QString("0"));\
     ui->weight_##n->setText(QString("0"));\
     ui->refine_##n->setText(QString("0"));\
 
-#define SHOW_DIST_DATA(n) \
-    if ("1" == QString::number(oneTagInfo->weight[counting][n])) {\
+#define SHOW_DIST_DATA(n, weight, distance) \
+    if ("1" == QString::number(weight[n])) {\
         ui->raw_##n->setStyleSheet("color:red");\
         ui->weight_##n->setStyleSheet("color:red");\
     } else {\
         ui->raw_##n->setStyleSheet("color:black");\
         ui->weight_##n->setStyleSheet("color:black");\
     }\
-    ui->raw_##n->setText   (QString::number(tag.distData[counting].distance[n]));\
-    ui->weight_##n->setText(QString::number(oneTagInfo->weight[counting][n], 'f', 3).left(5));\
-    ui->refine_##n->setText(QString::number(qAbs(\
-    calcDistance(oneTagInfo->methodInfo[MEASUR_STR].Ans[counting], cfgData.get_q()->sensor[n])\
-    - tag.distData[counting].distance[n])))
-// ui->refine_##n->setText(QString::number(\
-// calcDistance(tag.distData[counting].p_t, cfgData.get_q()->sensor[n])))
+    ui->raw_##n->setText   (QString::number(distance[n]));\
+    ui->weight_##n->setText(QString::number(weight[n], 'f', 3).left(5));\
+    ui->refine_##n->setText(QString::number(\
+    qAbs(calcDistance(tag->methodInfo[MEASUR_STR].Ans[counting], cfgData.get_q()->sensor[n]) - distance[n])))
+
 
 namespace Ui {
 class MainWindow;
@@ -71,60 +74,50 @@ public:
     explicit uiMainWindow(QWidget *parent = 0);
     ~uiMainWindow();
 
-    friend class dataMpPos;
+    friend class dataInputPos;
+    friend class dataInputCan;
+    friend class dataInput_calcAnalyzeSet;
+
+    enum ANALYZE_STATUS {
+        CALC_LOG_ANALYZE,
+        CALC_TEST_ANALYZE,
+        CALC_CAN_ANALYZE,
+        CALC_POS_ANALYZE,
+        NUM_ANALYZE_STATUS
+    };
 
 private:
     Ui::MainWindow *ui;
-    QTimer timer;
-    bool timerStarted;
 
-    int realCounting{0};
-    int fakeCounting{1};
+    ANALYZE_STATUS analyzeStatus;
+    dataInput_calcAnalyzeSet *calcAnalyzeInput[NUM_ANALYZE_STATUS];
+
+    QTimer stepShowTimer;
+    bool stepShowTimerStarted;
+
     int &getCounting() {
-        return !isFaked ? realCounting : fakeCounting;
+        return calcAnalyzeInput[analyzeStatus]->counting;
     }
 
     calcTagPos calcPos;
     calcTagNLOS calcNlos;
     calcTagTrack calcTrack;
 
-    dataMpPos mpPosInput;
-    bool isMpPosInput{false};
-
     // sensor location and oper, alarm, stop
     dataSensorIni cfgData;
 
-    bool isFaked{false};
-    dataDistanceLog realDistData;
-    showTagModel realStore;     //store result
+    showTagModel *workingStore{nullptr};
+    uiUsrFrame *workingUsrFrame{nullptr};
 
-    dataDistanceLog fakeDistData;
-    showTagModel fakeStore;     //store result
+    QAction *actionNowPos{nullptr};
+    QAction *actionNowTrack{nullptr};
 
-    uiUsrFrame fakeUsrFrame;
-    uiUsrFrame realUsrFrame;
-
-    QAction *actionRealNowPos{nullptr};
-    QAction *actionFakeNowPos{nullptr};
-
-    dataDistanceLog &getDistData() {
-        return !isFaked ? realDistData : fakeDistData;
-    }
     showTagModel &getStore() {
-        return !isFaked ? realStore : fakeStore;
+        return calcAnalyzeInput[analyzeStatus]->modelStore;
     }
     uiUsrFrame &getUsrFrame() {
-        return !isFaked ? realUsrFrame : fakeUsrFrame;
+        return calcAnalyzeInput[analyzeStatus]->usrFrame;
     }
-    QAction *&getActionNowPos() {
-        return !isFaked ? actionRealNowPos : actionFakeNowPos;
-    }
-
-    void initWithDistanceData();
-
-    int totalPos{0};
-    dType calcTimeElapsedMeasu{0.f};
-    dType calcTimeElapsedTrack{0.f};
 
     void checkData();
     void resetData();
@@ -144,16 +137,14 @@ private:
 
     void wheelEvent(QWheelEvent *e);
 
-    QAction *actionNowTrack{nullptr};
-
     void kalmanCoupledChange(bool isEnable);
     void kalmanCoupledSyncUi();
-
-    void reflashUI();
 
     int distanceShowTagId{UN_INIT_SHOW_TAGID};
     QString lastIniPath;
     QString lastDistancePath;
+
+    void syncTestDistanceData();
 
 private slots:
     // FILE
@@ -199,6 +190,8 @@ private slots:
     void posCalc_ARM();
 
 private slots:
+    void reflashUI();
+
     void handleModelDataUpdate(bool isUpdateCount = true);
     void oneUsrBtnClicked(int tagId, bool isShowable);
     void oneUsrShowML(int tagId, bool isShowML);
@@ -206,8 +199,8 @@ private slots:
 
     void showMousePos(int x, int y);
 
-    void modelChange(bool isTest);
-    void on_btn_mpPos_clicked();
+    void on_cbAnalyzeMode_currentIndexChanged(int index);
+    void on_refresh_clicked();
 };
 
 #endif // MAINWINDOW_H

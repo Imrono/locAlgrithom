@@ -6,7 +6,7 @@ extern "C" {
 }
 #include "_myheads.h"
 #include "dataSensorIni.h"
-#include "dataDistanceLog.h"
+#include "dataInputLog.h"
 #include <QVector>
 #include "dataType.h"
 #include "showTagModel.h"
@@ -87,7 +87,7 @@ public:
                         int N, dType &out_x, dType &out_y, dType &out_MSE, QVector<QPointF> &iterTrace);
 /*****************************************************************************/
 
-    void calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData);
+    void calcPosVector (storeTagInfo *tagInfo, QVector<oneLogData> &distData, bool isUpdateP_t_1);
 
 private:
     const configData   *cfg_d {nullptr};

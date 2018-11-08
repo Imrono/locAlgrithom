@@ -50,6 +50,7 @@ void uiUsrFrame::removeAll() {
     tagShowLM = -1;
     emit oneUsrShowML_siganl(tagShowLM, false);
 
+    setShowDistTagId(UN_INIT_SHOW_TAGID);
     for (int i = 0; i < usrBtns.count(); i++) {
         showTagColor::getInstance()->eraseTagId(usrBtns[i]->tagId);
         delete usrBtns[i];
@@ -205,12 +206,15 @@ void uiUsrFrame::oneUsrShowML_slot(int tagId) {
 
 void uiUsrFrame::setShowDistTagId(int tagId) {
     if (showDistTagId != tagId) {
+        qDebug() << "@uiUsrFrame::setShowDistTagId" << showDistTagId << tagId;
         for (int i = 0; i < usrBtns.count(); i++) {
             if (usrBtns[i]->getTagId() == tagId) {
                 usrBtns[i]->setIsShowingDist(true);
-            } else if (usrBtns[i]->getTagId() == showDistTagId) {
+            } else
+            if (usrBtns[i]->getTagId() == showDistTagId) {
                 usrBtns[i]->setIsShowingDist(false);
             }
+            usrBtns[i]->update();
         }
         showDistTagId = tagId;
     } else {}

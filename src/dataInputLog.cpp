@@ -1,27 +1,26 @@
-#include "dataDistanceLog.h"
+#include "dataInputLog.h"
 #include <QFile>
 #include <QDebug>
 
-QString oneLogData::toString() {
-    QString ans = QString("[%0]").arg(time.toString("yyyy/MM/dd hh:mm:ss:zzz"));
-    for (int i = 0; i < distance.count(); i++) {
-        ans += QString("{%0,%1}").arg(i).arg(distance[i], 6, 10, QChar('0'));
-    }
-    ans += (p_t_1.toString() + p_t.toString());
-    return ans;
-}
-
 /*************************************************************/
-dataDistanceLog::dataDistanceLog()
+dataInputLog::dataInputLog()
 {
     q = new distanceData;
 }
 
-dataDistanceLog::~dataDistanceLog() {
+dataInputLog::~dataInputLog() {
 
 }
 
-void dataDistanceLog::loadNewFile_1(const QString &fileName) {
+void dataInputLog::loadNewFile(const int type, const QString &fileName) {
+    if (1 == type) {
+        loadNewFile_1(fileName);
+    } else if (2 == type) {
+        loadNewFile_2(fileName);
+    }
+}
+
+void dataInputLog::loadNewFile_1(const QString &fileName) {
     QFile file(fileName);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug()<<"Can't open the file!"<<endl;
@@ -46,7 +45,7 @@ void dataDistanceLog::loadNewFile_1(const QString &fileName) {
     //         << "; tags Count" << q->tagsData.count();
 }
 
-void dataDistanceLog::loadNewFile_2(const QString &fileName) {
+void dataInputLog::loadNewFile_2(const QString &fileName) {
     QFile file(fileName);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug()<<"Can't open the file!"<<endl;
@@ -70,7 +69,7 @@ void dataDistanceLog::loadNewFile_2(const QString &fileName) {
     }
 }
 
-void dataDistanceLog::analyzeDistanceData1(const QStringList &strList, const QRegExp &rx) {
+void dataInputLog::analyzeDistanceData1(const QStringList &strList, const QRegExp &rx) {
     q->clear();
     oneLogData tmpLogData;
     int count = 0;
@@ -110,7 +109,7 @@ void dataDistanceLog::analyzeDistanceData1(const QStringList &strList, const QRe
     q->isInitialized = true;
 }
 
-void dataDistanceLog::analyzeDistanceData2(const QStringList &strList, const QRegExp &rx) {
+void dataInputLog::analyzeDistanceData2(const QStringList &strList, const QRegExp &rx) {
     q->clear();
     foreach (QString str, strList) {
         //qDebug() << str;
@@ -145,7 +144,7 @@ void dataDistanceLog::analyzeDistanceData2(const QStringList &strList, const QRe
     q->isInitialized = true;
 }
 
-QString dataDistanceLog::toString() {
+QString dataInputLog::toString() {
     QString ans = QString("dataDistanceLog::toString $> fileName:%0, tags:%1 | ")
             .arg(fileName)
             .arg(q->tagsData.count());
@@ -158,14 +157,3 @@ QString dataDistanceLog::toString() {
     return ans;
 }
 
-void dataDistanceLog::initFakeData() {
-    q->clear();
-
-    oneTag tmpTag(TEST_TAG_ID);
-    q->tagsData.insert(TEST_TAG_ID, tmpTag);
-    q->tagsData[TEST_TAG_ID].tagId = TEST_TAG_ID;
-    oneLogData testLogData;
-    testLogData.distance.fill(-1, MAX_SENSOR);
-    q->tagsData[TEST_TAG_ID].distData.append(testLogData);
-    q->tagsData[TEST_TAG_ID].distData.append(testLogData);
-}

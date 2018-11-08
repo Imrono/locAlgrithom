@@ -167,8 +167,8 @@
       <InputFile>%(FullPath)</InputFile>
     </QtRcc>
     <QtUic>
-      <QTDIR>C:\QT\QT5.9.1\5.9.1\MSVC2015_64</QTDIR>
       <OutputFile>.\..\GeneratedFiles\ui_%(Filename).h</OutputFile>
+      <QTDIR>C:\QT\QT5.9.1\5.9.1\MSVC2015_64</QTDIR>
       <ExecutionDescription>Uic'ing %(Identity)...</ExecutionDescription>
       <InputFile>%(FullPath)</InputFile>
     </QtUic>
@@ -235,8 +235,8 @@
       <InputFile>%(FullPath)</InputFile>
     </QtRcc>
     <QtUic>
-      <QTDIR>C:\QT\QT5.9.1\5.9.1\MSVC2015_64</QTDIR>
       <OutputFile>.\..\GeneratedFiles\ui_%(Filename).h</OutputFile>
+      <QTDIR>C:\QT\QT5.9.1\5.9.1\MSVC2015_64</QTDIR>
       <ExecutionDescription>Uic'ing %(Identity)...</ExecutionDescription>
       <InputFile>%(FullPath)</InputFile>
     </QtUic>
@@ -301,8 +301,8 @@
       <IncludePath>.\..\GeneratedFiles\$(ConfigurationName);.\..\GeneratedFiles;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/mkspecs/$(Platform)-msvc;.;C:/Qt/Qt5.9.1/5.9.1/msvc2015_64/include/qwt-6.1.3;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include/QtCharts;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include/QtWidgets;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include/QtGui;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include/QtANGLE;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include/QtNetwork;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include/QtCore;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\INCLUDE;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\INCLUDE;C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt;C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um;C:\Program Files (x86)\Windows Kits\8.1\include\\shared;C:\Program Files (x86)\Windows Kits\8.1\include\\um;C:\Program Files (x86)\Windows Kits\8.1\include\\winrt</IncludePath>
     </QtMoc>
     <QtUic>
-      <QTDIR>C:\QT\QT5.9.1\5.9.1\MSVC2015_64</QTDIR>
       <OutputFile>.\..\GeneratedFiles\ui_%(Filename).h</OutputFile>
+      <QTDIR>C:\QT\QT5.9.1\5.9.1\MSVC2015_64</QTDIR>
       <ExecutionDescription>Uic'ing %(Identity)...</ExecutionDescription>
       <InputFile>%(FullPath)</InputFile>
     </QtUic>
@@ -368,8 +368,8 @@
       <IncludePath>.\..\GeneratedFiles\$(ConfigurationName);.\..\GeneratedFiles;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/mkspecs/$(Platform)-msvc;.;C:/Qt/Qt5.9.1/5.9.1/msvc2015_64/include/qwt-6.1.3;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include/QtCharts;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include/QtWidgets;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include/QtGui;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include/QtANGLE;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include/QtNetwork;C:/QT/QT5.9.1/5.9.1/MSVC2015_64/include/QtCore;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\INCLUDE;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\INCLUDE;C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt;C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um;C:\Program Files (x86)\Windows Kits\8.1\include\\shared;C:\Program Files (x86)\Windows Kits\8.1\include\\um;C:\Program Files (x86)\Windows Kits\8.1\include\\winrt</IncludePath>
     </QtMoc>
     <QtUic>
-      <QTDIR>C:\QT\QT5.9.1\5.9.1\MSVC2015_64</QTDIR>
       <OutputFile>.\..\GeneratedFiles\ui_%(Filename).h</OutputFile>
+      <QTDIR>C:\QT\QT5.9.1\5.9.1\MSVC2015_64</QTDIR>
       <ExecutionDescription>Uic'ing %(Identity)...</ExecutionDescription>
       <InputFile>%(FullPath)</InputFile>
     </QtUic>
@@ -391,8 +391,12 @@
     <ClCompile Include="armVersion\calcTagPos_ARM.c" />
     <ClCompile Include="calcTagTrack.cpp" />
     <ClCompile Include="armVersion\calcTagTrack_ARM.c" />
-    <ClCompile Include="dataDistanceLog.cpp" />
-    <ClCompile Include="dataMpPos.cpp" />
+    <ClCompile Include="dataInputBase.cpp" />
+    <ClCompile Include="dataInputCan.cpp" />
+    <ClCompile Include="dataInputLog.cpp" />
+    <ClCompile Include="dataInputPos.cpp" />
+    <ClCompile Include="dataInputTest.cpp" />
+    <ClCompile Include="dataInput_calcAnalyzeSet.cpp" />
     <ClCompile Include="dataSensorIni.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="showTagColor.cpp" />
@@ -417,9 +421,16 @@
     <ClInclude Include="calcTagNLOS.h" />
     <ClInclude Include="calcTagPos.h" />
     <ClInclude Include="calcTagTrack.h" />
-    <ClInclude Include="dataDistanceLog.h" />
-    <QtMoc Include="dataMpPos.h">
+    <QtMoc Include="dataInputBase.h">
     </QtMoc>
+    <QtMoc Include="dataInputCan.h">
+    </QtMoc>
+    <ClInclude Include="dataInputLog.h" />
+    <QtMoc Include="dataInputPos.h">
+    </QtMoc>
+    <QtMoc Include="dataInputTest.h">
+    </QtMoc>
+    <ClInclude Include="dataInput_calcAnalyzeSet.h" />
     <ClInclude Include="dataSensorIni.h" />
     <ClInclude Include="dataType.h" />
     <ClInclude Include="showTagColor.h" />
@@ -465,8 +476,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </CustomBuild>
-    <ClInclude Include="ui_mainwindow.h" />
-    <ClInclude Include="ui_usrtooltip.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="mainwindow.ui">

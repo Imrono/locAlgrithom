@@ -166,7 +166,8 @@ char leastSquare_ARM(float const * const * const A, float const * const b,
 
     if (2 == nCol) {
         ans = matrix22_inverse_ARM(ATA, ATA_inverse);
-    } else if (3 == nCol) {
+    } else
+    if (3 == nCol) {
         //printf("%f %f %f | %f\n", ATA[0][0], ATA[0][1], ATA[0][2], ATb[0]);
         //printf("%f %f %f | %f\n", ATA[1][0], ATA[1][1], ATA[1][2], ATb[1]);
         //printf("%f %f %f | %f\n", ATA[2][0], ATA[2][1], ATA[2][2], ATb[2]);

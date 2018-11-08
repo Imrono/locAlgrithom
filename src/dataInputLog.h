@@ -1,26 +1,10 @@
 #ifndef DATADISTANCELOG_H
 #define DATADISTANCELOG_H
+#include "dataInputBase.h"
 #include "_myheads.h"
 #include "dataType.h"
 #include <QVector>
 #include <QLine>
-
-struct oneLogData {     // distance data
-    QDateTime time;
-    QVector<int> distance;
-    locationCoor p_t_1;
-    locationCoor p_t;
-    QLineF l_t;
-    QString toString();
-};
-
-struct oneTag {
-    oneTag(int tagId) : tagId{tagId} {}
-    oneTag() {}
-
-    int tagId;
-    QVector<oneLogData> distData;
-};
 
 struct distanceData {
     QMap<int, oneTag> tagsData; // tag's distance
@@ -31,17 +15,17 @@ struct distanceData {
     }
 };
 
-class dataDistanceLog
+class dataInputLog : public dataInputBase
 {
 public:
-    explicit dataDistanceLog();
-    ~dataDistanceLog();
+    explicit dataInputLog();
+    ~dataInputLog();
+
+    void loadNewFile(const int type, const QString &fileName);
     void loadNewFile_1(const QString &fileName);
     void analyzeDistanceData1(const QStringList &strList, const QRegExp &rx);
     void loadNewFile_2(const QString &fileName);
     void analyzeDistanceData2(const QStringList &strList, const QRegExp &rx);
-
-    void initFakeData();
 
     QString toString();
 

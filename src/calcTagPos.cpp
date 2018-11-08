@@ -169,17 +169,18 @@ QVector<locationCoor> calcTagPos::calcPosFromDistance(const int dist[], uint32_t
     return vectorAns;
 }
 
-void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData) {
-    if (nullptr == tagInfo)
+void calcTagPos::calcPosVector (storeTagInfo *tagInfo, QVector<oneLogData> &distData, bool isUpdateP_t_1) {
+    if (nullptr == tagInfo) {
         return;
+    }
+    if (CALC_POS_TYPE::POS_NONE == tagInfo->calcPosType) {
+        return;
+    }
 
 /* calcTagPos method configuration *******************************************/
     calcPosType = tagInfo->calcPosType;
     kalmanCoupledType = tagInfo->kalmanCoupledType;
 /*****************************************************************************/
-    if (CALC_POS_TYPE::POS_NONE == tagInfo->calcPosType) {
-        return;
-    }
 
     bool isNlosIgnore = false;
     if (CALC_POS_TYPE::WeightedTaylor == tagInfo->calcPosType) {
@@ -200,9 +201,18 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData)
     tagInfo->isGaussPointAdded = kalmanCoupledType & GAUSS_COUPLED;
     kalmanData.isInitialized = false;
 
-    const QVector<oneLogData> &distData = oneTagData.distData;
+    locationCoor tmpLastPos = {0.f, 0.f, 0.f};
     for (int i{0}; i < distData.count(); i++) {
-        locationCoor tmpLastPos = ansX;
+        if (isUpdateP_t_1) {
+            if (i > 0) {
+                tmpLastPos = distData[i-1].p_t;
+            } else {
+                tmpLastPos = {0.f, 0.f, 0.f};
+            }
+            distData[i].p_t_1 = tmpLastPos;
+        } else {
+            tmpLastPos = distData[i].p_t_1;
+        }
         //qDebug() << i << tmpLastPos.toQPointF();
 
         // copy distance, nlos distance filter may change the distance
@@ -219,6 +229,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData)
         dType T = (distData[i].time.toMSecsSinceEpoch() % 100000) / 1000.f;
         ansX = calcOnePosition(tmpDist.distance, mse, T, tmpLastPos, kalmanData,
                                usedSensor, tmpTrace, tmpWeight, x_hat);
+
         if (i >= 1) {
             /* distance filter ITERATION */
             int iterCount = 1;
@@ -232,6 +243,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData)
             }
             /* distance filter END */
         }
+        distData[i].p_t = ansX;
 
         // crossed circle which measure p's quality with MSE
         int crossed_1 = calcCrossedCircle(distData[i].distance.data(),
@@ -242,6 +254,12 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData)
                                           ansX, MACRO_circleR_2);
 
         // store and update
+        calcPosData posReqData;
+        posReqData.time = distData[i].time;
+        posReqData.p_t_1 = distData[i].p_t_1;
+        posReqData.distance = distData[i].distance;
+        tagInfo->calcPosReqData.append(posReqData);
+
         distRefined.append(tmpDist);    // used for nlos distance filter
         storeMethodInfo &measInfo = tagInfo->methodInfo[MEASUR_STR];
         measInfo.time.append(distData[i].time);
@@ -259,7 +277,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData)
             QLineF l_p = QLineF(measInfo.Ans[i-1].toQPointF(), measInfo.Ans[i].toQPointF());
             measInfo.AnsLines.append(l_p);
             // v and a info
-			dType lastT = (measInfo.time[i - 1].toMSecsSinceEpoch() % 100000) / 1000.f;
+            dType lastT = (measInfo.time[i - 1].toMSecsSinceEpoch() % 100000) / 1000.f;
             dType diffTime = T - lastT + MY_EPS;
             locationCoor currV = (measInfo.Ans[i] - measInfo.Ans[i-1]) / diffTime;
             measInfo.AnsV.append(qSqrt(currV.x*currV.x + currV.y*currV.y) / 100.f);
@@ -272,6 +290,7 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, const oneTag &oneTagData)
             }
             lastV = currV;
         } else {
+            measInfo.AnsLines.append(QLineF(measInfo.Ans[i].toQPointF(), measInfo.Ans[i].toQPointF()));
             measInfo.AnsV.append(0.f);
             measInfo.AnsA.append(0.f);
         }

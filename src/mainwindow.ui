@@ -30,7 +30,7 @@
      </font>
     </property>
     <property name="text">
-     <string>显示路径</string>
+     <string>PATH</string>
     </property>
    </widget>
    <widget class="QPushButton" name="beginTrack">
@@ -417,7 +417,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>显示半径</string>
+     <string>Radius</string>
     </property>
    </widget>
    <widget class="QPushButton" name="showTrace">
@@ -430,7 +430,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>显示iter</string>
+     <string>iterPath</string>
     </property>
    </widget>
    <widget class="QFrame" name="UsrFrm">
@@ -485,7 +485,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>显示交点</string>
+     <string>CROSS</string>
     </property>
    </widget>
    <widget class="QSlider" name="sigmaSlider">
@@ -516,22 +516,6 @@
      <enum>QSlider::TicksBothSides</enum>
     </property>
    </widget>
-   <widget class="QCheckBox" name="isTest">
-    <property name="geometry">
-     <rect>
-      <x>810</x>
-      <y>10</y>
-      <width>71</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>test</string>
-    </property>
-    <property name="checked">
-     <bool>false</bool>
-    </property>
-   </widget>
    <widget class="QPushButton" name="refresh">
     <property name="geometry">
      <rect>
@@ -543,22 +527,6 @@
     </property>
     <property name="text">
      <string>refresh</string>
-    </property>
-    <property name="autoDefault">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_mpPos">
-    <property name="geometry">
-     <rect>
-      <x>1000</x>
-      <y>120</y>
-      <width>51</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>mpPos</string>
     </property>
     <property name="autoDefault">
      <bool>true</bool>
@@ -580,6 +548,29 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QComboBox" name="cbAnalyzeMode">
+    <property name="geometry">
+     <rect>
+      <x>870</x>
+      <y>0</y>
+      <width>141</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_11">
+    <property name="geometry">
+     <rect>
+      <x>810</x>
+      <y>0</y>
+      <width>61</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>工作模式：</string>
+    </property>
+   </widget>
    <zorder>showPath</zorder>
    <zorder>beginTrack</zorder>
    <zorder>reset</zorder>
@@ -595,10 +586,10 @@
    <zorder>gotoCount</zorder>
    <zorder>showCross</zorder>
    <zorder>sigmaSlider</zorder>
-   <zorder>isTest</zorder>
    <zorder>refresh</zorder>
-   <zorder>btn_mpPos</zorder>
    <zorder>btn_drawTagId</zorder>
+   <zorder>cbAnalyzeMode</zorder>
+   <zorder>label_11</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -902,27 +893,42 @@
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>cbAnalyzeMode</tabstop>
+  <tabstop>showCross</tabstop>
+  <tabstop>showRadius</tabstop>
+  <tabstop>showTrace</tabstop>
+  <tabstop>beginTrack</tabstop>
   <tabstop>previous</tabstop>
+  <tabstop>sigmaSlider</tabstop>
+  <tabstop>allPos</tabstop>
+  <tabstop>showPath</tabstop>
+  <tabstop>reset</tabstop>
   <tabstop>next</tabstop>
+  <tabstop>btn_drawTagId</tabstop>
   <tabstop>distCountEdit</tabstop>
   <tabstop>gotoCount</tabstop>
-  <tabstop>showTrace</tabstop>
-  <tabstop>showPath</tabstop>
-  <tabstop>showRadius</tabstop>
-  <tabstop>reset</tabstop>
-  <tabstop>raw_3</tabstop>
-  <tabstop>raw_2</tabstop>
+  <tabstop>refresh</tabstop>
   <tabstop>raw_0</tabstop>
+  <tabstop>raw_1</tabstop>
+  <tabstop>raw_2</tabstop>
+  <tabstop>raw_3</tabstop>
+  <tabstop>raw_4</tabstop>
+  <tabstop>raw_5</tabstop>
+  <tabstop>raw_p</tabstop>
+  <tabstop>weight_0</tabstop>
+  <tabstop>weight_1</tabstop>
+  <tabstop>weight_2</tabstop>
+  <tabstop>weight_3</tabstop>
+  <tabstop>weight_4</tabstop>
+  <tabstop>weight_5</tabstop>
+  <tabstop>weight_p</tabstop>
   <tabstop>refine_0</tabstop>
   <tabstop>refine_1</tabstop>
+  <tabstop>refine_2</tabstop>
   <tabstop>refine_3</tabstop>
-  <tabstop>raw_4</tabstop>
   <tabstop>refine_4</tabstop>
   <tabstop>refine_5</tabstop>
-  <tabstop>raw_1</tabstop>
-  <tabstop>beginTrack</tabstop>
-  <tabstop>refine_2</tabstop>
-  <tabstop>allPos</tabstop>
+  <tabstop>refine_p</tabstop>
  </tabstops>
  <resources/>
  <connections/>

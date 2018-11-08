@@ -5,33 +5,36 @@
 
 // kalman coupled position calc related
 void uiMainWindow::UPDATE_POS_UI(QAction *action) {
-    if (!getActionNowPos()) {    // 1st time
-        getActionNowPos() = action;
-        getActionNowPos()->setChecked(true);
+    if (!actionNowPos) {    // 1st time
+        actionNowPos = action;
+        actionNowPos->setChecked(true);
         if (action != ui->actionKalmanCoupled) {
             kalmanCoupledChange(false);
         } else {
             kalmanCoupledChange(true);
         }
     } else {
-        if (getActionNowPos() != ui->actionKalmanCoupled && action == ui->actionKalmanCoupled) {
+        if (actionNowPos != ui->actionKalmanCoupled && action == ui->actionKalmanCoupled) {
             kalmanCoupledChange(true);  // other -> kalmanCoupled
-        } else if (getActionNowPos() == ui->actionKalmanCoupled && action != ui->actionKalmanCoupled) {
+        } else
+        if (actionNowPos == ui->actionKalmanCoupled && action != ui->actionKalmanCoupled) {
             kalmanCoupledChange(false); // kalmanCoupled -> other
         } else {}
 
-        if (getActionNowPos() == action) {   // cancel this calcuation
-            getActionNowPos()->setChecked(false);
+        if (actionNowPos == action) {   // cancel this calcuation
+            actionNowPos->setChecked(false);
             kalmanCoupledChange(false);
-            getActionNowPos() = nullptr;
+            actionNowPos = nullptr;
         } else {                        // change to other calc method
-            getActionNowPos()->setChecked(false);
-            getActionNowPos() = action;
-            getActionNowPos()->setChecked(true);
+            actionNowPos->setChecked(false);
+            actionNowPos = action;
+            actionNowPos->setChecked(true);
         }
     }
 }
+
 void uiMainWindow::kalmanCoupledChange(bool isEnable) {
+    qDebug() << "[@uiMainWindow::kalmanCoupledChange]" << isEnable;
     ui->actionKalmanTrail->setEnabled(isEnable);
     ui->actionKalmanGauss->setEnabled(isEnable);
     ui->actionKalmanWeight->setEnabled(isEnable);
@@ -77,7 +80,6 @@ void uiMainWindow::UPDATE_TRACK_UI(QAction *action) {
 }
 
 void uiMainWindow::connectUi() {
-    connect(ui->isTest, SIGNAL(clicked(bool)), this, SLOT(modelChange(bool)));
     connect(ui->canvas, SIGNAL(mouseChange(int,int)), this, SLOT(showMousePos(int, int)));
 /*************************************************************/
     // FILE
@@ -128,69 +130,69 @@ void uiMainWindow::connectUi() {
     // ARM
     connect(ui->actioncalcTagPos_ARM, SIGNAL(triggered(bool)), this, SLOT(posCalc_ARM()));
 /*****************************************************************************/
-    connect(&timer, SIGNAL(timeout()), this, SLOT(handleModelDataUpdate()));
+    connect(&stepShowTimer, SIGNAL(timeout()), this, SLOT(handleModelDataUpdate()));
 
     connect(ui->beginTrack, &QPushButton::clicked, this, [this](void) {
-        if (timerStarted) {
-            timer.stop();
+        if (stepShowTimerStarted) {
+            stepShowTimer.stop();
             this->ui->beginTrack->setText("track");
         } else {
-            timer.start(500);
+            stepShowTimer.start(500);
             ui->beginTrack->setText("stop");
         }
-        timerStarted = !timerStarted;
+        stepShowTimerStarted = !stepShowTimerStarted;
     });
     connect(ui->showPath, &QPushButton::clicked, this, [this](void) {
         ui->showPath->setStyleSheet("font-weight: bold;");
         if (!ui->canvas->reverseShowPath()) {
-            ui->showPath->setText("显示路径");
+            ui->showPath->setText("PATH");
         } else {
-            ui->showPath->setText("隐藏路径");
+            ui->showPath->setText("!PATH");
         }
         handleModelDataUpdate(false);
     });
     connect(ui->reset, &QPushButton::clicked, this, [this](void) {
-        realCounting = 1;
+        getCounting() = 1;
         handleModelDataUpdate(false);
     });
     connect(ui->previous, &QPushButton::clicked, this, [this](void) {
-        realCounting --;
+        getCounting() --;
         handleModelDataUpdate(false);
     });
     connect(ui->next, &QPushButton::clicked, this, [this](void) {
-        realCounting ++;
+        getCounting() ++;
         handleModelDataUpdate(false);
     });
 
     connect(ui->showCross, &QPushButton::clicked, this, [this](void) {
         if (!ui->canvas->reverseShowCross()) {
-            ui->showCross->setText("显示交点");
+            ui->showCross->setText("CROSS");
         } else {
-            ui->showCross->setText("隐藏交点");
+            ui->showCross->setText("!CROSS");
         }
         handleModelDataUpdate(false);
     });
     connect(ui->allPos, &QPushButton::clicked, this, [this](void) {
         if (!ui->canvas->reverseShowAllPos()) {
-            ui->allPos->setText("显示raw");
+            ui->allPos->setText("Show raw");
         } else {
-            ui->allPos->setText("隐藏raw");
+            ui->allPos->setText("Hide raw");
         }
         handleModelDataUpdate(false);
     });
     connect(ui->showRadius, &QPushButton::clicked, this, [this](void) {
         if (!ui->canvas->reverseShowRadius()) {
-            ui->showRadius->setText("显示半径");
+            ui->showRadius->setText("Radius");
         } else {
-            ui->showRadius->setText("隐藏半径");
+            ui->showRadius->setText("!Radius");
         }
         handleModelDataUpdate(false);
     });
     connect(ui->showTrace, &QPushButton::clicked, this, [this](void) {
         if (!ui->canvas->reverseShowTrack()) {
-            ui->showTrace->setText("显示iter");
+            ui->showTrace->setText("iterPath");
         } else {
-            ui->showTrace->setText("隐藏iter");
+            ui->showTrace->setText("!iterPath");
         }
         handleModelDataUpdate(false);
     });
@@ -200,29 +202,12 @@ void uiMainWindow::connectUi() {
     });
 
     connect(ui->distCountEdit, &QLineEdit::returnPressed, this, [this](void) {
-        realCounting = ui->distCountEdit->text().toInt();
+        getCounting() = ui->distCountEdit->text().toInt();
         handleModelDataUpdate(false);
         ui->next->setFocus();
     });
     connect(ui->gotoCount, &QPushButton::clicked, this, [this](void) {
-        realCounting = ui->distCountEdit->text().toInt();
-        handleModelDataUpdate(false);
-    });
-
-    connect(&realUsrFrame, SIGNAL(oneUsrBtnClicked_siganl(int, bool)),
-            this, SLOT(oneUsrBtnClicked(int, bool)));
-    connect(&realUsrFrame, SIGNAL(oneUsrShowML_siganl(int, bool)),
-            this, SLOT(oneUsrShowML(int, bool)));
-    connect(&realUsrFrame, &uiUsrFrame::oneUsrShowDistance_siganl, this, [this](int tagId) {
-        distanceShowTagId = getUsrFrame().isShowable(tagId) ? tagId : UN_INIT_SHOW_TAGID;
-        handleModelDataUpdate(false);
-    });
-    connect(&fakeUsrFrame, SIGNAL(oneUsrBtnClicked_siganl(int, bool)),
-            this, SLOT(oneUsrBtnClicked(int, bool)));
-    connect(&fakeUsrFrame, SIGNAL(oneUsrShowML_siganl(int, bool)),
-            this, SLOT(oneUsrShowML(int, bool)));
-    connect(&fakeUsrFrame, &uiUsrFrame::oneUsrShowDistance_siganl, this, [this](int tagId) {
-        distanceShowTagId = getUsrFrame().isShowable(tagId) ? tagId : UN_INIT_SHOW_TAGID;
+        getCounting() = ui->distCountEdit->text().toInt();
         handleModelDataUpdate(false);
     });
 
@@ -236,23 +221,39 @@ void uiMainWindow::connectUi() {
 
     // distance show
     connect(ui->raw_0, &QLineEdit::textChanged, this, [this](void) {
-        SET_DISTANCE(0);
+        syncTestDistanceData();
     });
     connect(ui->raw_1, &QLineEdit::textChanged, this, [this](void) {
-        SET_DISTANCE(1);
+        syncTestDistanceData();
     });
     connect(ui->raw_2, &QLineEdit::textChanged, this, [this](void) {
-        SET_DISTANCE(2);
+        syncTestDistanceData();
     });
     connect(ui->raw_3, &QLineEdit::textChanged, this, [this](void) {
-        SET_DISTANCE(3);
+        syncTestDistanceData();
     });
     connect(ui->raw_4, &QLineEdit::textChanged, this, [this](void) {
-        SET_DISTANCE(4);
+        syncTestDistanceData();
     });
     connect(ui->raw_5, &QLineEdit::textChanged, this, [this](void) {
-        SET_DISTANCE(5);
+        syncTestDistanceData();
     });
+}
+
+void uiMainWindow::syncTestDistanceData() {
+    if (calcAnalyzeInput[CALC_TEST_ANALYZE]->isActive) {
+        dataInputTest *dataInput = static_cast<dataInputTest *>(calcAnalyzeInput[CALC_TEST_ANALYZE]->dataInputHandler);
+        if (dataInput->oneDistData.distance.count() < 6) {
+            dataInput->oneDistData.distance = QVector<int>(6, 0);
+        }
+        dataInput->oneDistData.distance[0] = ui->raw_0->text().toInt();
+        dataInput->oneDistData.distance[1] = ui->raw_1->text().toInt();
+        dataInput->oneDistData.distance[2] = ui->raw_2->text().toInt();
+        dataInput->oneDistData.distance[3] = ui->raw_3->text().toInt();
+        dataInput->oneDistData.distance[4] = ui->raw_4->text().toInt();
+        dataInput->oneDistData.distance[5] = ui->raw_5->text().toInt();
+        ui->canvas->setDistance(TEST_TAG_ID, dataInput->oneDistData.distance);
+    }
 }
 
 void uiMainWindow::wheelEvent(QWheelEvent *e)
@@ -273,10 +274,18 @@ void uiMainWindow::wheelEvent(QWheelEvent *e)
 }
 
 void uiMainWindow::checkData() {
+    bool logInited = ((dataInputLog*)calcAnalyzeInput[analyzeStatus]->dataInputHandler)->get_q()->isInitialized;
     qDebug() << "[@uiMainWindow::checkData()]"
              << "cfgData.get_q() =" << cfgData.get_q()->isInitialized
-             << "distData.get_q() =" << realDistData.get_q()->isInitialized;
-    bool isEnabled = cfgData.get_q()->isInitialized && realDistData.get_q()->isInitialized;
+             << "distData.get_q() =" << logInited;
+
+    bool isEnabled = cfgData.get_q()->isInitialized;
+    if (isEnabled) {
+        if (analyzeStatus == CALC_LOG_ANALYZE) {
+            isEnabled = isEnabled && logInited;
+        }
+    }
+
     ui->actionWylie->setEnabled(isEnabled);
     ui->actionMultiPoint->setEnabled(isEnabled);
     ui->actionRes->setEnabled(isEnabled);
@@ -289,10 +298,6 @@ void uiMainWindow::checkData() {
 
     ui->actionWeightedTaylor->setEnabled(isEnabled);
     ui->actionKalmanCoupled->setEnabled(isEnabled);
-    ui->actionKalmanTrail->setEnabled(isEnabled);
-    ui->actionKalmanGauss->setEnabled(isEnabled);
-    ui->actionKalmanWeight->setEnabled(isEnabled);
-    ui->actionKalmanSmooth->setEnabled(isEnabled);
 
     ui->actionLMedS->setEnabled(isEnabled);
     ui->actionBilateration->setEnabled(isEnabled);
@@ -305,9 +310,13 @@ void uiMainWindow::checkData() {
 }
 void uiMainWindow::resetData() {
     // CLEAR LEGACY DATA
-    realStore.removeAll();
-    realDistData.clear();
-    realUsrFrame.removeAll();
+    calcAnalyzeInput[CALC_LOG_ANALYZE]->modelStore.removeAll();
+    static_cast<dataInputLog *>(calcAnalyzeInput[CALC_LOG_ANALYZE]->dataInputHandler)->clear();
+    calcAnalyzeInput[CALC_TEST_ANALYZE]->modelStore.removeAll();
+
+    for (int i = 0; i < NUM_ANALYZE_STATUS; i++) {
+        calcAnalyzeInput[i]->usrFrame.removeAll();
+    }
     ui->canvas->removeAll();
     // CLEAR UI
     resetUi(true, true);
@@ -345,15 +354,17 @@ void uiMainWindow::resetUi(bool isPos, bool isTrack) {
 void uiMainWindow::setStatusTimeInfo() {
     QString posStr;
     QString trackStr;
-    posStr = CALC_POS2STR[getStore().calcPosType];
+
+    showTagModel &store = getStore();
+    posStr = CALC_POS2STR[store.calcPosType];
     trackStr = TRACK_METHOD2STR[getStore().calcTrackMethod];
 
     calcTimeElapsed->setText(QString("<b>nPOS:%0</b> | <b>%1</b>:%2(s) | <b>%3</b>:%4(s)")
-                             .arg(!isFaked ? totalPos : 1)
+                             .arg(store.totalPos)
                              .arg(posStr)
-                             .arg(!isFaked ? QString::number(calcTimeElapsedMeasu) : "NaN")
+                             .arg(QString::number(store.calcTimeElapsedMeasu))
                              .arg(trackStr)
-                             .arg(!isFaked ? QString::number(calcTimeElapsedTrack) : "NaN"));
+                             .arg(QString::number(store.calcTimeElapsedTrack)));
 }
 void uiMainWindow::setStatusDistCount() {
     distCountShow->setText(QString("distCount: <b>%0</b>").arg(getCounting(), 4, 10, QChar('0')));
@@ -382,11 +393,6 @@ void uiMainWindow::captureCanvas(bool) {
 void uiMainWindow::showMousePos(int x, int y) {
     setStatusMousePos(x, y);
 
-    uiUsrFrame *usrFrame = &getUsrFrame();
-    if (&fakeUsrFrame == usrFrame) {    // return if in test model
-        return;
-    }
-
     int ansTagId;
     int ansCount;
     QPointF ansPos;
@@ -394,6 +400,7 @@ void uiMainWindow::showMousePos(int x, int y) {
 
     dType minDistance{25.f};    // if dist < minDistance: ansFound = true, then find the min
     showTagModel &store = getStore();
+    uiUsrFrame &usrFrame = getUsrFrame();
     foreach (const storeTagInfo *oneTagInfo, store.tags) {
         if (!oneTagInfo->methodInfo.contains(MEASUR_STR)) {
             continue;
@@ -401,7 +408,7 @@ void uiMainWindow::showMousePos(int x, int y) {
 
         const storeMethodInfo &measInfo = oneTagInfo->methodInfo[MEASUR_STR];
 
-        if (usrFrame->isShowable(oneTagInfo->tagId) // 1. the user wants to show
+        if (usrFrame.isShowable(oneTagInfo->tagId) // 1. the user wants to show
         && oneTagInfo->isTagPosInitialed) {         // 2. MEASURE (position) is sucessful processed
             for(int i{0}; i < measInfo.Ans.count(); i++) {
                 dType currDist = calcDistance(measInfo.Ans[i].toQPointF(), QPointF(x, y));
@@ -428,75 +435,71 @@ void uiMainWindow::setStatusIter(int n, dType mse, int crossed1, int crossed2) {
                           QString("<") + QString::number(crossed2) + QString(">"));
 }
 
-void uiMainWindow::modelChange(bool isTest) {
-    qDebug() << "isChecked (is test model)" << isTest << "isFaked" << isFaked;
-    if (isFaked != isTest) {
-        isFaked = isTest;
+void uiMainWindow::on_cbAnalyzeMode_currentIndexChanged(int index)
+{
+    qDebug() << "cbAnalyzeMode from" << analyzeStatus << calcAnalyzeInput[analyzeStatus]->strName
+                             << "to" << index         << calcAnalyzeInput[index]->strName;
 
-        //initWithDistanceData();
+/* reset the enviroment *******************************************************/
+    ui->canvas->removeAll();
 
-        ui->actionKalmanInfoTrack->setEnabled(!isFaked);
-        ui->actionKalmanLiteTrack->setEnabled(!isFaked);
-        ui->actionKalmanTrack->setEnabled(!isFaked);
-        //ui->UsrFrm->setEnabledAll(!isFaked);
-        ui->canvas->isTestModel = isFaked;
-
-        dataDistanceLog &distData = getDistData();
-        showTagModel &store = getStore();
-        uiUsrFrame *usrFrame = &getUsrFrame();
-        int counting = getCounting();
-        distanceShowTagId = usrFrame->getShowDistTagId();   //change showDist data
-
-        const QVector<int> &distance = distData.get_q()->
-                tagsData[distanceShowTagId].distData[counting].distance;
-        QVector<dType> weight;
-        bool isWeighted = true;
-        if (UN_INIT_SHOW_TAGID == distanceShowTagId) {
-            isWeighted = false;
-        } else if (store.tags[distanceShowTagId]->weight.count() < counting) {
-            isWeighted = false;
-        } else if (0 == store.tags[distanceShowTagId]->weight[counting].count()) {
-            isWeighted = false;
-        } else {
-            weight = store.tags[distanceShowTagId]->weight[counting];
-        }
-
-        ui->label_Id->setText("<b><font black>----<\font><\b>");
-        switch (cfgData.get_q()->sensor.count()) {
-        case 6: IS_TEST_CHANGE_DISTANCE(5);
-        case 5: IS_TEST_CHANGE_DISTANCE(4);
-        case 4: IS_TEST_CHANGE_DISTANCE(3);
-        case 3: IS_TEST_CHANGE_DISTANCE(2);
-        case 2: IS_TEST_CHANGE_DISTANCE(1);
-        case 1: IS_TEST_CHANGE_DISTANCE(0);
-        default:
-            RESET_SHOW_DIST_DATA(p);
-        }
-
-        if (isFaked) {
-            oneTag &tmpTagData = fakeDistData.get_q()->tagsData[TEST_TAG_ID];
-            ui->canvas->setDistance(TEST_TAG_ID, tmpTagData.distData[0].distance);
-        }
-
-        ui->canvas->syncWithUiFrame(usrFrame);
-        isFaked ? fakeUsrFrame.show() : realUsrFrame.show();
-        isFaked ? realUsrFrame.hide() : fakeUsrFrame.hide();
-
-        resetUi(true, true);
-
-        QAction *actionNowPos = getActionNowPos();
-        if (actionNowPos) {
-            actionNowPos->setChecked(true);
-            if (ui->actionKalmanCoupled == actionNowPos) {
-                kalmanCoupledSyncUi();
-            }
-        }
-
-        int tagShowLM = usrFrame->getTagShowLM();
-        oneUsrShowML(tagShowLM, tagShowLM != UN_INIT_LM_TAGID);
-
-        setStatusTimeInfo();
-        setStatusIter(-1, -1, -1, -1);
-        handleModelDataUpdate(false);
+    if (ui->canvas->getShowPath()) {
+        emit ui->showPath->click();
     }
+    if (ui->canvas->getShowAllPos()) {
+        emit ui->allPos->click();
+    }
+    if (ui->canvas->getShowRadius()) {
+        emit ui->showRadius->click();
+    }
+    if (ui->canvas->getShowTrack()) {
+        emit ui->showTrace->click();
+    }
+    if (ui->canvas->getShowCross()) {
+        emit ui->showCross->click();
+    }
+    if (ui->canvas->getShowTagId()) {
+        emit ui->btn_drawTagId->click();
+    }
+
+    if (actionNowPos) {
+        actionNowPos->setChecked(false);
+        kalmanCoupledChange(false);
+        actionNowPos = nullptr;
+    }
+    if (actionNowTrack) {
+        actionNowTrack->setChecked(false);
+        actionNowTrack = nullptr;
+    }
+
+    resetUi(true, true);
+/******************************************************* reset the enviroment */
+
+    calcAnalyzeInput[CALC_LOG_ANALYZE ]->handleModelChange(false, this);
+    calcAnalyzeInput[CALC_TEST_ANALYZE]->handleModelChange(false, this);
+    calcAnalyzeInput[CALC_CAN_ANALYZE ]->handleModelChange(false, this);
+    calcAnalyzeInput[CALC_POS_ANALYZE ]->handleModelChange(false, this);
+
+    if (CALC_LOG_ANALYZE == index) {
+        workingStore = &calcAnalyzeInput[CALC_LOG_ANALYZE]->modelStore;
+        workingUsrFrame = &calcAnalyzeInput[CALC_LOG_ANALYZE]->usrFrame;
+        calcAnalyzeInput[CALC_LOG_ANALYZE]->handleModelChange(true, this);
+    } else
+    if (CALC_TEST_ANALYZE == index) {
+        workingStore = &calcAnalyzeInput[CALC_TEST_ANALYZE]->modelStore;
+        workingUsrFrame = &calcAnalyzeInput[CALC_TEST_ANALYZE]->usrFrame;
+        calcAnalyzeInput[CALC_TEST_ANALYZE]->handleModelChange(true, this);
+	} else
+    if (CALC_CAN_ANALYZE == index) {
+        workingStore = &calcAnalyzeInput[CALC_CAN_ANALYZE]->modelStore;
+        workingUsrFrame = &calcAnalyzeInput[CALC_CAN_ANALYZE]->usrFrame;
+        calcAnalyzeInput[CALC_CAN_ANALYZE]->handleModelChange(true, this);
+    } else
+    if (CALC_POS_ANALYZE == index) {
+        workingStore = &calcAnalyzeInput[CALC_POS_ANALYZE]->modelStore;
+        workingUsrFrame = &calcAnalyzeInput[CALC_POS_ANALYZE]->usrFrame;
+        calcAnalyzeInput[CALC_POS_ANALYZE]->handleModelChange(true, this);
+    } else {}
+
+    analyzeStatus = (ANALYZE_STATUS)index;
 }

@@ -5,7 +5,7 @@
 #include "calcTagTrack.h"
 
 uiMainWindow::uiMainWindow(QWidget *parent) :
-    QMainWindow(parent), timerStarted(false),
+    QMainWindow(parent), stepShowTimerStarted(false),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -25,22 +25,44 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     // status bar shows the "distCount"
     distCountShow = new QLabel(this);
     statusBar()->addWidget(distCountShow);
-    setStatusDistCount();
+
     // status bar shows the "calcTimeElapsed"
     calcTimeElapsed = new QLabel(this);
     calcTimeElapsed->setAlignment(Qt::AlignRight);
     calcTimeElapsed->setFrameStyle(QFrame::Box | QFrame::Sunken);
     statusBar()->addPermanentWidget(calcTimeElapsed);
-    setStatusTimeInfo();
+
     iterationNum = new QLabel(this);
     statusBar()->addWidget(iterationNum);
     setStatusIter(0, 0.f);
 
-    mpPosInput.setParent(this);
+    calcAnalyzeInput[CALC_LOG_ANALYZE] = new dataInput_calcAnalyzeSet(CALC_LOG_ANALYZE, this);
+    calcAnalyzeInput[CALC_TEST_ANALYZE] = new dataInput_calcAnalyzeSet(CALC_TEST_ANALYZE, this);
+    calcAnalyzeInput[CALC_CAN_ANALYZE] = new dataInput_calcAnalyzeSet(CALC_CAN_ANALYZE, this);
+    calcAnalyzeInput[CALC_POS_ANALYZE] = new dataInput_calcAnalyzeSet(CALC_POS_ANALYZE, this);
+
+    analyzeStatus = CALC_LOG_ANALYZE;
+    ui->cbAnalyzeMode->addItem(calcAnalyzeInput[CALC_LOG_ANALYZE]->strName);
+    ui->cbAnalyzeMode->addItem(calcAnalyzeInput[CALC_TEST_ANALYZE]->strName);
+    ui->cbAnalyzeMode->addItem(calcAnalyzeInput[CALC_CAN_ANALYZE]->strName);
+    ui->cbAnalyzeMode->addItem(calcAnalyzeInput[CALC_POS_ANALYZE]->strName);
+    ui->cbAnalyzeMode->setCurrentIndex(CALC_LOG_ANALYZE);
+
+    connect(&calcAnalyzeInput[CALC_LOG_ANALYZE]->usrFrame, SIGNAL(oneUsrBtnClicked_siganl(int, bool)),
+            this, SLOT(oneUsrBtnClicked(int, bool)));
+    connect(&calcAnalyzeInput[CALC_LOG_ANALYZE]->usrFrame, SIGNAL(oneUsrShowML_siganl(int, bool)),
+            this, SLOT(oneUsrShowML(int, bool)));
+    connect(&calcAnalyzeInput[CALC_LOG_ANALYZE]->usrFrame, &uiUsrFrame::oneUsrShowDistance_siganl, this, [this](int tagId) {
+        distanceShowTagId = this->calcAnalyzeInput[CALC_LOG_ANALYZE]->usrFrame.isShowable(tagId) ? tagId : UN_INIT_SHOW_TAGID;
+        handleModelDataUpdate(false);
+    });
+
+    setStatusDistCount();
+    setStatusTimeInfo();
 
     // load initial CFG and DIST data
 #if 1
-    loadIniConfigFile(MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/机车配置文件/demo-6d.ini"));
+    //loadIniConfigFile(MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/机车配置文件/demo-6d.ini"));
     loadIniConfigFile(MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/config/WC50Y(B)型支架运输车.ini"));
     loadLogDistanceFile(2, MY_STR("C:/Users/rono_/Desktop/locationWithKalman/data/太原WC50Y(B)/distance/201705181600.log"));
 #else
@@ -62,27 +84,24 @@ uiMainWindow::uiMainWindow(QWidget *parent) :
     //posWeightedTaylor();
     //trackKalman(true);
 
-    fakeStore.addNewTagInfo(TEST_TAG_ID);
-    fakeDistData.initFakeData();
-    fakeUsrFrame.addOneUsr(TEST_TAG_ID);
-    fakeUsrFrame.setShowDistTagId(TEST_TAG_ID);
-
-    fakeUsrFrame.setParent(ui->UsrFrm);
-    realUsrFrame.setParent(ui->UsrFrm);
-
     handleModelDataUpdate(false);
 }
 
 uiMainWindow::~uiMainWindow()
 {
+	delete calcAnalyzeInput[CALC_LOG_ANALYZE];
+	delete calcAnalyzeInput[CALC_TEST_ANALYZE];
+	delete calcAnalyzeInput[CALC_CAN_ANALYZE];
+	delete calcAnalyzeInput[CALC_POS_ANALYZE];
     delete ui;
 }
 
 void uiMainWindow::oneUsrBtnClicked(int tagId, bool isShowable) {
     Q_UNUSED(tagId);
     ui->canvas->syncWithUiFrame(&getUsrFrame());
-    if (!isShowable)    // if tagId change from showDist to not disable
+    if (!isShowable) {  // if tagId change from showDist to not disable
         distanceShowTagId = UN_INIT_SHOW_TAGID; // propose to find another tagId to show distance
+    }
     handleModelDataUpdate(false);
 }
 void uiMainWindow::oneUsrShowML(int tagId, bool isShowML) {
@@ -100,7 +119,7 @@ void uiMainWindow::sigmaChanged(int sigma) {
 // feed the data to canvas->showTagRelated at different time point
 void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
     int &counting = getCounting();
-    counting = counting < 1 ? 1 : counting;
+    counting = counting < 0 ? 0 : counting;
     // distCount updated automaticly when timeout event occurs
     if (isUpdateCount) {
         counting++;
@@ -110,131 +129,120 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
 
     // clear
     ui->canvas->resetPos();
-    dataDistanceLog &distDataClear = isFaked ? realDistData : fakeDistData;
-    foreach (oneTag tag, distDataClear.get_q()->tagsData) {
-        ui->canvas->clearData(tag.tagId);
-    }
 
     // prepare model data for canvas view
-    uiUsrFrame *usrFrame = &getUsrFrame();
-    dataDistanceLog &distData = getDistData();
+    uiUsrFrame &usrFrame = getUsrFrame();
     showTagModel &store = getStore();
-    foreach (oneTag tag, distData.get_q()->tagsData) {
-        storeTagInfo *oneTagInfo = store.getTagInfo(tag.tagId);
-        storeMethodInfo &measInfo = oneTagInfo->methodInfo[MEASUR_STR];
+
+    bool hasDataShow = false;
+    foreach (storeTagInfo* tag, store.tags) {
+        if (nullptr == tag) {
+            continue;
+        }
+        int tagID = tag->tagId;
+
+        storeMethodInfo &measInfo = tag->methodInfo[MEASUR_STR];
         // CONDITIONs to the data
         // 1. the user wants to show
-        if (usrFrame->isShowable(tag.tagId)
+        if (usrFrame.isShowable(tagID)
         // 2. MEASURE (position) is sucessful processed
-        && oneTagInfo->isTagPosInitialed
-        // 3. for multi-tag, tags data count may different
-        && measInfo.AnsLines.count() >= counting) {
+        && tag->isTagPosInitialed) {
+            hasDataShow = true;
 
-            oneLogData &logData = tag.distData[counting];
+            calcPosData &posReqData = tag->calcPosReqData[counting];
             // int distanceCount = logData.distance.count();
             int sensorCount = cfgData.get_q()->sensor.count();
             // location pos calc part
             if (CALC_POS_TYPE::POS_NONE != store.calcPosType) {
-                ui->canvas->setPosition(tag.tagId, MEASUR_STR, measInfo.Ans[counting].toQPointF());
-                ui->canvas->setLine(tag.tagId, MEASUR_STR, measInfo.AnsLines[counting-1]);
-                ui->canvas->setLines(tag.tagId, MEASUR_STR, measInfo.AnsLines);
+                ui->canvas->setPosition(tagID, MEASUR_STR, measInfo.Ans[counting].toQPointF());
+                ui->canvas->setLine(tagID, MEASUR_STR, measInfo.AnsLines[counting]);
+                ui->canvas->setLines(tagID, MEASUR_STR, measInfo.AnsLines);
 
-                usrFrame->setBtnToolTip(tag.tagId, true,
-                                        logData.distance.data(),
-                                        oneTagInfo->weight[counting].data(),
-                                        cfgData.get_q()->sensor.data(),
-                                        sensorCount,
-                                        measInfo.Ans[counting].toQPointF());
+                usrFrame.setBtnToolTip(tagID, true,
+                                       posReqData.distance.data(),
+                                       tag->weight[counting].data(),
+                                       cfgData.get_q()->sensor.data(),
+                                       sensorCount,
+                                       measInfo.Ans[counting].toQPointF());
             } else {
-                ui->canvas->removeTagMethod(tag.tagId, MEASUR_STR);
-                usrFrame->setBtnToolTip(tag.tagId, false);
+                ui->canvas->removeTagMethod(tagID, MEASUR_STR);
+                usrFrame.setBtnToolTip(tagID, false);
             }
 
-            ui->canvas->setPointsRaw(tag.tagId, MEASUR_STR, oneTagInfo->RawPoints[counting]);
-            ui->canvas->setPointsRefined(tag.tagId, MEASUR_STR, oneTagInfo->RefinedPoints[counting]);
+            ui->canvas->setPointsRaw(tagID, MEASUR_STR, tag->RawPoints[counting]);
+            ui->canvas->setPointsRefined(tagID, MEASUR_STR, tag->RefinedPoints[counting]);
 
-        // used for the distance data containing pos data
-        /*
-            QPointF tmpOK = logData.p_t.toQPointF();
-            tmpOK = QPointF(ui->canvas->widthActual, ui->canvas->heightActual) - logData.p_t.toQPointF();
-            ui->canvas->setPosition(tag.tagId, TRACKx_STR, tmpOK);
-            ui->canvas->setPosition(tag.tagId, TRACKx_STR, logData.p_t.toQPointF());
-
-            QVector<QLineF> tmpLines;
-            for (int i = 0; i < tag.distData.count(); i++) {
-                tmpLines.append(tag.distData[i].l_t);
-            }
-            ui->canvas->setLines(tag.tagId, TRACKx_STR, tmpLines);
-        */
-
-            qDebug() << "[@handleModelDataUpdate]" << counting << QString("<%1>").arg(tag.tagId)
+            qDebug() << "[@handleModelDataUpdate]" << counting << QString("<%1>").arg(tagID)
                      << measInfo.Ans[counting].toQPointF();
 
             if (TRACK_METHOD::TRACK_NONE != store.calcTrackMethod) {
-                storeMethodInfo &trackInfo = oneTagInfo->methodInfo[TRACKx_STR];
-                ui->canvas->setPosition(tag.tagId, TRACKx_STR, trackInfo.Ans[counting].toQPointF());
-                ui->canvas->setLine(tag.tagId, TRACKx_STR, trackInfo.AnsLines[counting-1]);
-                ui->canvas->setLines(tag.tagId, TRACKx_STR, trackInfo.AnsLines);
+                storeMethodInfo &trackInfo = tag->methodInfo[TRACKx_STR];
+                ui->canvas->setPosition(tagID, TRACKx_STR, trackInfo.Ans[counting].toQPointF());
+                ui->canvas->setLine(tagID, TRACKx_STR, trackInfo.AnsLines[counting]);
+                ui->canvas->setLines(tagID, TRACKx_STR, trackInfo.AnsLines);
             } else {
-                ui->canvas->removeTagMethod(tag.tagId, TRACKx_STR);
+                ui->canvas->removeTagMethod(tagID, TRACKx_STR);
             }
 
             // intermediate results
-            ui->canvas->setDistance(tag.tagId, logData.distance, oneTagInfo->usedSensor[counting]);
-            ui->canvas->setWeight(tag.tagId, oneTagInfo->weight[counting]);
-            ui->canvas->setIterPoints(tag.tagId, oneTagInfo->iterPoints[counting]);
+            ui->canvas->setDistance(tagID, posReqData.distance, tag->usedSensor[counting]);
+            ui->canvas->setWeight(tagID, tag->weight[counting]);
+            ui->canvas->setIterPoints(tagID, tag->iterPoints[counting]);
 
-            if (oneTagInfo->isGaussPointAdded) {    // kalmanCoupled show at LM
-                ui->canvas->setGaussPoint(tag.tagId, true, oneTagInfo->x_hat[counting]);
+            if (tag->isGaussPointAdded) {    // kalmanCoupled show at LM
+                ui->canvas->setGaussPoint(tagID, true, tag->x_hat[counting]);
             } else {
-                ui->canvas->setGaussPoint(tag.tagId, false);
+                ui->canvas->setGaussPoint(tagID, false);
             }
 
             // items in uiMainWindow
-            if (isFaked
-            || (distanceShowTagId == tag.tagId || UN_INIT_SHOW_TAGID == distanceShowTagId)) {
+            if (calcAnalyzeInput[CALC_TEST_ANALYZE]->isActive
+            || (distanceShowTagId == tagID || UN_INIT_SHOW_TAGID == distanceShowTagId)) {
                 QPalette pa;
-                pa.setColor(QPalette::WindowText, usrFrame->getBtnColorSample(tag.tagId));
+                pa.setColor(QPalette::WindowText, usrFrame.getBtnColorSample(tagID));
                 ui->label_Id->setPalette(pa);
-                ui->label_Id->setText("<b>"+QString("%0").arg(tag.tagId, 4, 10, QChar('0'))+"<\b>");
+                ui->label_Id->setText("<b>"+QString("%0").arg(tagID, 4, 10, QChar('0'))+"<\b>");
                 switch (sensorCount) {
-                case 6: SHOW_DIST_DATA(5);
-                case 5: SHOW_DIST_DATA(4);
-                case 4: SHOW_DIST_DATA(3);
-                case 3: SHOW_DIST_DATA(2);
-                case 2: SHOW_DIST_DATA(1);
-                case 1: SHOW_DIST_DATA(0);
+                case 6: SHOW_DIST_DATA(5, tag->weight[counting], posReqData.distance);
+                case 5: SHOW_DIST_DATA(4, tag->weight[counting], posReqData.distance);
+                case 4: SHOW_DIST_DATA(3, tag->weight[counting], posReqData.distance);
+                case 3: SHOW_DIST_DATA(2, tag->weight[counting], posReqData.distance);
+                case 2: SHOW_DIST_DATA(1, tag->weight[counting], posReqData.distance);
+                case 1: SHOW_DIST_DATA(0, tag->weight[counting], posReqData.distance);
                 default:
                     break;
                 }
                 ui->raw_p->setStyleSheet("color:black");
                 ui->raw_p->setText("0");
-                ui->weight_p->setText(QString::number(oneTagInfo->weight[counting][sensorCount], 'f', 3));
-                if (oneTagInfo->isGaussPointAdded) {    // kalmanCoupled show at LM
-                    dType dist = calcDistance(measInfo.Ans[counting], oneTagInfo->x_hat[counting]);
+                ui->weight_p->setText(QString::number(tag->weight[counting][sensorCount], 'f', 3));
+                if (tag->isGaussPointAdded) {    // kalmanCoupled show at LM
+                    dType dist = calcDistance(measInfo.Ans[counting], tag->x_hat[counting]);
                     ui->refine_p->setText(QString::number(dist));
                 } else {
                     ui->refine_p->setText("NaN");
                 }
 
                 QVector<dType>* ansQuality = measInfo.data;
-                setStatusIter(oneTagInfo->iterPoints[counting].count(),
+                setStatusIter(tag->iterPoints[counting].count(),
                               ansQuality[storeMethodInfo::STORED_MSE][counting],
                               ansQuality[storeMethodInfo::STORED_Crossed1][counting] + 0.1f,   // round
                               ansQuality[storeMethodInfo::STORED_Crossed2][counting] + 0.1f);
 
-                usrFrame->setShowDistTagId(tag.tagId);
+                usrFrame.setShowDistTagId(tagID);
             }
         } else {
-            ui->canvas->clearData(tag.tagId);
+            ui->canvas->clearData(tagID);
         }
     }
-    distanceShowTagId = usrFrame->getShowDistTagId();
+    distanceShowTagId = usrFrame.getShowDistTagId();
 
     update();
 
-    if (counting >= distData.maxDataCount)
-        timer.stop();
+    if (!hasDataShow) {
+        if (stepShowTimer.isActive()) {
+            stepShowTimer.stop();
+        }
+    }
 }
 /***********************************************************/
 // MENU ACTION
@@ -242,8 +250,8 @@ void uiMainWindow::handleModelDataUpdate(bool isUpdateCount) {
 // FILE
 void uiMainWindow::loadIniConfigFile(QString pathIn) {
     resetData();
-    realStore.calcPosType = CALC_POS_TYPE::POS_NONE;
-    realStore.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
+    calcAnalyzeInput[CALC_LOG_ANALYZE]->modelStore.calcPosType = CALC_POS_TYPE::POS_NONE;
+    calcAnalyzeInput[CALC_LOG_ANALYZE]->modelStore.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
 
     int nSensorKeep = cfgData.get_q()->sensor.count();
     bool isInitKeep = cfgData.get_q()->isInitialized;
@@ -273,10 +281,9 @@ void uiMainWindow::loadIniConfigFile(QString pathIn) {
 
 void uiMainWindow::loadLogDistanceFile(int type, QString pathIn) {
     resetData();
-    isFaked = false;
-    ui->isTest->setChecked(isFaked);
-    realStore.calcPosType = CALC_POS_TYPE::POS_NONE;
-    realStore.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
+
+    calcAnalyzeInput[CALC_LOG_ANALYZE]->modelStore.calcPosType = CALC_POS_TYPE::POS_NONE;
+    calcAnalyzeInput[CALC_LOG_ANALYZE]->modelStore.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
 
     QString path;
     if (0 == pathIn.length()) {
@@ -289,14 +296,10 @@ void uiMainWindow::loadLogDistanceFile(int type, QString pathIn) {
     }
     qDebug() << "[@uiMainWindow::loadLogDistanceFile] type" << type << "Path:" << path;
 
-    if (1 == type) {
-        realDistData.loadNewFile_1(path);
-    } else if (2 == type) {
-        realDistData.loadNewFile_2(path);
-    }
+    dataInputLog &distData = *static_cast<dataInputLog *>(calcAnalyzeInput[CALC_LOG_ANALYZE]->dataInputHandler);
+    distData.loadNewFile(type, path);
 
     // initWithDistanceData
-    dataDistanceLog &distData = getDistData();
     showTagModel &store = getStore();
     uiUsrFrame *usrFrame = &getUsrFrame();
     foreach (oneTag tag, distData.get_q()->tagsData) {
@@ -313,7 +316,7 @@ void uiMainWindow::loadLogDistanceFile(int type, QString pathIn) {
 
     ui->actionRead_dist->setChecked(1 == type);
     ui->actionRead_dist_2->setChecked(2 == type);
-    qDebug() << "[@uiMainWindow::loadLogDistanceFile]" << realDistData.toString();
+    qDebug() << "[@uiMainWindow::loadLogDistanceFile]" << ((dataInputLog*)calcAnalyzeInput[CALC_LOG_ANALYZE]->dataInputHandler)->toString();
 
     checkData();
     lastDistancePath = path;
@@ -388,11 +391,13 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
 
     QTime time;
     time.start();
-    totalPos = 0;
+    store.totalPos = 0;
     foreach (storeTagInfo *info, store.tags) {
         ui->canvas->clearData(info->tagId);
-        info->clear();
-        info->addOrResetMethodInfo(MEASUR_STR, CALC_POS2STR[type]);
+        if (CALC_LOG_ANALYZE == analyzeStatus && CALC_TEST_ANALYZE == analyzeStatus) {
+            info->clear();
+            info->addOrResetMethodInfo(MEASUR_STR, CALC_POS2STR[type]);
+        }
         info->calcPosType = type;   // determine the position calculate method
         info->kalmanCoupledType = store.kalmanCoupledType;
 
@@ -402,9 +407,23 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
             info->isTagPosInitialed = true;
             usrFrame->setUsrStatus(info->tagId, USR_STATUS::HAS_MEASURE_DATA);
 
-            dataDistanceLog &distData = getDistData();
+            QVector<oneLogData> distData;
+            bool isUpdateP_t_1 = true;
+            if (CALC_LOG_ANALYZE == analyzeStatus) {
+                distData = static_cast<dataInputLog *>(calcAnalyzeInput[CALC_LOG_ANALYZE]->dataInputHandler)->get_q()->tagsData[info->tagId].distData;
+                //isUpdateP_t_1 = false;
+            } else
+            if (CALC_TEST_ANALYZE == analyzeStatus) {
+                distData.append(static_cast<dataInputTest *>(calcAnalyzeInput[CALC_TEST_ANALYZE]->dataInputHandler)->oneDistData);
+            } else
+            if (CALC_CAN_ANALYZE == analyzeStatus) {
+                //distData =
+            } else
+            if (CALC_POS_ANALYZE == analyzeStatus) {
+                continue;
+            }
 /****** CALC POS MAIN BEGIN **************************************************/
-            calcPos.calcPosVector(info, distData.get_q()->tagsData[info->tagId]);
+            calcPos.calcPosVector(info, distData, isUpdateP_t_1);
 /**********************************************************CALC POS MAIN END */
             usrFrame->setBtnEnableLM(info->tagId, true);
 
@@ -426,7 +445,7 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
         info->calcTrackMethod = TRACK_METHOD::TRACK_NONE;
         actionNowTrack = nullptr;
 
-        totalPos += info->methodInfo[MEASUR_STR].Ans.count();
+        store.totalPos += info->methodInfo[MEASUR_STR].Ans.count();
 
         dType measDist = calcTotalAvgDistanceSquare(info->methodInfo[MEASUR_STR].AnsLines);
         qDebug() << "#posCalcPROCESS#" << CALC_POS2STR[type] << info->toString();
@@ -434,12 +453,12 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
                  << "avgDistanceSquare => measDist:" << measDist
                  << info->methodInfo[MEASUR_STR].AnsLines.count();
     }
-    calcTimeElapsedMeasu = time.elapsed()/1000.f;
-    calcTimeElapsedTrack = 0.f;
+    store.calcTimeElapsedMeasu = time.elapsed()/1000.f;
+    store.calcTimeElapsedTrack = 0.f;
     setStatusTimeInfo();
     qDebug() << "#posCalcPROCESS#" << CALC_POS2STR[type]
-             << "total Pos:" << totalPos << ";"
-             << "using Time:" << calcTimeElapsedMeasu << "(s)";
+             << "total Pos:" << store.totalPos << ";"
+             << "using Time:" << store.calcTimeElapsedMeasu << "(s)";
 
     ui->actionKalmanTrack->setChecked(false);
     ui->actionKalmanLiteTrack->setChecked(false);
@@ -451,29 +470,29 @@ void uiMainWindow::posCalcPROCESS(CALC_POS_TYPE type) {
 
 void uiMainWindow::posFullCentroid() {
     UPDATE_POS_UI(ui->actionFullCentroid);
-    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::FullCentroid : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::FullCentroid : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posSubLS() {
     UPDATE_POS_UI(ui->actionSubLS);
-    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::SubLS : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::SubLS : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posTwoCenter() {
     UPDATE_POS_UI(ui->actionTwoCenter);
-    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::TwoCenter : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::TwoCenter : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posTaylorSeries() {
     UPDATE_POS_UI(ui->actionTaylorSeries);
-    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::Taylor : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::Taylor : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posWeightedTaylor() {
     UPDATE_POS_UI(ui->actionWeightedTaylor);
-    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::WeightedTaylor : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::WeightedTaylor : CALC_POS_TYPE::POS_NONE);
 }
 /* kalman coupled methods start **********************************************/
 void uiMainWindow::posKalmanCoupled() {
     UPDATE_POS_UI(ui->actionKalmanCoupled);
     kalmanCoupledSyncUi();
-    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::POS_KalmanCoupled : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::POS_KalmanCoupled : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posKalmanTrail() {
     getStore().kalmanCoupledType ^= KALMAN_COUPLED_TYPE::TRAIL_COUPLED;
@@ -498,16 +517,16 @@ void uiMainWindow::posKalmanSmooth() {
 /************************************************ kalman coupled methods end */
 void uiMainWindow::posLMedS() {
     UPDATE_POS_UI(ui->actionLMedS);
-    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::LMedS : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::LMedS : CALC_POS_TYPE::POS_NONE);
 }
 void uiMainWindow::posBilateration() {
     UPDATE_POS_UI(ui->actionBilateration);
-    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::Bilateration : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::Bilateration : CALC_POS_TYPE::POS_NONE);
 }
 // ARM VERSION /////////////////////////////////////////////////////////////////
 void uiMainWindow::posCalc_ARM() {
     UPDATE_POS_UI(ui->actioncalcTagPos_ARM);
-    posCalcPROCESS(getActionNowPos() ? CALC_POS_TYPE::ARM_calcPos : CALC_POS_TYPE::POS_NONE);
+    posCalcPROCESS(actionNowPos ? CALC_POS_TYPE::ARM_calcPos : CALC_POS_TYPE::POS_NONE);
 }
 
 /***********************************************************/
@@ -549,11 +568,11 @@ void uiMainWindow::trackCalcPROCESS(TRACK_METHOD type) {
                  << "avgDistanceSquare => measDist:" << measDist << ";"
                  << "trackDist:" << kalmanDist;
     }
-    calcTimeElapsedTrack = time.elapsed() / 1000.f;
+    store.calcTimeElapsedTrack = time.elapsed() / 1000.f;
     setStatusTimeInfo();
     qDebug() << "#trackCalcPROCESS#" << TRACK_METHOD2STR[type]
-             << "total Pos:" << totalPos << ";"
-             << "using Time:" << calcTimeElapsedTrack << "(s)";
+             << "total Pos:" << store.totalPos << ";"
+             << "using Time:" << store.calcTimeElapsedTrack << "(s)";
 
     handleModelDataUpdate(false);
 }
@@ -571,44 +590,14 @@ void uiMainWindow::trackKalmanInfo() {
     trackCalcPROCESS(actionNowTrack ? TRACK_METHOD::TRACK_KALMAN_INFO : TRACK_METHOD::TRACK_NONE);
 }
 
-void uiMainWindow::on_btn_mpPos_clicked()
+
+void uiMainWindow::on_refresh_clicked()
 {
-    ui->btn_mpPos->setEnabled(false);
-
-    showTagModel &store = getStore();
-    uiUsrFrame *usrFrame = &getUsrFrame();
-
-    usrFrame->removeAll();
-    store.removeAll();
-    ui->canvas->removeAll();
-
-    if (!isMpPosInput) {
-        disconnect(&realUsrFrame, SIGNAL(oneUsrBtnClicked_siganl(int, bool)),
-                   this, SLOT(oneUsrBtnClicked(int, bool)));
-        disconnect(&realUsrFrame, SIGNAL(oneUsrShowML_siganl(int, bool)),
-                  this, SLOT(oneUsrShowML(int, bool)));
-        store.calcPosType = CALC_POS_TYPE::Mp_Pos_In;
-        mpPosInput.startMpReqTimer();
-    } else {
-        connect(&realUsrFrame, SIGNAL(oneUsrBtnClicked_siganl(int, bool)),
-                this, SLOT(oneUsrBtnClicked(int, bool)));
-        connect(&realUsrFrame, SIGNAL(oneUsrShowML_siganl(int, bool)),
-                this, SLOT(oneUsrShowML(int, bool)));
-        mpPosInput.stopMpReqTimer();
-        dataDistanceLog &distData = getDistData();
-        foreach (oneTag tag, distData.get_q()->tagsData) {
-            store.addNewTagInfo(tag.tagId);
-            usrFrame->setBtnEnableLM(tag.tagId, false);
-            usrFrame->addOneUsr(tag.tagId, USR_STATUS::HAS_DISTANCE_DATA);
-            ui->canvas->setDistance(tag.tagId, tag.distData[0].distance);
-        }
-        for (int i = 0; i < 32 - distData.get_q()->tagsData.count(); i++) {
-            usrFrame->addOneUsr(0, USR_STATUS::HAS_NONE_DATA);
-        }
-        ui->canvas->syncWithUiFrame(usrFrame);
-        //reflashUI();
+    if (actionNowPos) {
+        posCalcPROCESS(getStore().calcPosType);
     }
-    isMpPosInput = !isMpPosInput;
 
-    ui->btn_mpPos->setEnabled(true);
+    if (actionNowTrack) {
+        trackCalcPROCESS(getStore().calcTrackMethod);
+    }
 }

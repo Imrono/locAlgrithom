@@ -30,7 +30,6 @@ SOURCES += \
     uiCanvas.cpp \
     uiMainWindow.cpp \
     dataSensorIni.cpp \
-    dataDistanceLog.cpp \
     calcTagPos.cpp \
     calcTagNLOS.cpp \
     uiUsrInfoBtn.cpp \
@@ -56,14 +55,18 @@ SOURCES += \
     uiShowItem.cpp \
     uiUsrTooltip.cpp \
     showTagColor.cpp \
-    dataMpPos.cpp
+    dataInputPos.cpp \
+    dataInputCan.cpp \
+    dataInputLog.cpp \
+    dataInputBase.cpp \
+    dataInputTest.cpp \
+    dataInput_calcAnalyzeSet.cpp
 
 HEADERS += \
     _myheads.h \
     uiMainWindow.h \
     uiCanvas.h \
     dataSensorIni.h \
-    dataDistanceLog.h \
     calcTagPos.h \
     calcTagNLOS.h \
     dataType.h \
@@ -81,7 +84,12 @@ HEADERS += \
     uiShowItem.h \
     uiUsrTooltip.h \
     showTagColor.h \
-    dataMpPos.h
+    dataInputPos.h \
+    dataInputLog.h \
+    dataInputCan.h \
+    dataInputBase.h \
+    dataInputTest.h \
+    dataInput_calcAnalyzeSet.h
 
 FORMS += \
     mainwindow.ui \

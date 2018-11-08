@@ -64,6 +64,11 @@ struct oneKalmanData {  // kalman data
     }
 };
 
+struct calcPosData {     // distance data
+    QDateTime time;
+    QVector<int> distance;
+    locationCoor p_t_1;
+};
 struct storeTagInfo {
     int tagId{-1};
     int operInfo;
@@ -72,6 +77,7 @@ struct storeTagInfo {
 
     bool isTagPosInitialed{false};
     QMap<QString, storeMethodInfo> methodInfo;
+    QVector<calcPosData> calcPosReqData;
 
     // updated in calculation
     oneKalmanData calcPosKalmanData;
@@ -116,6 +122,7 @@ struct storeTagInfo {
         isGaussPointAdded = false;
         x_hat.clear();
         calcPosKalmanData.clear();
+        calcPosReqData.clear();
     }
     void addOrResetMethodInfo(const QString &methodType, const QString &method);
     void reset(const QString &methodType, const QString &method);
@@ -148,6 +155,10 @@ public:
     CALC_POS_TYPE calcPosType    {CALC_POS_TYPE::POS_NONE};
     TRACK_METHOD  calcTrackMethod{TRACK_METHOD ::TRACK_NONE};
     QMap<int, storeTagInfo *> tags;
+
+    int totalPos{0};
+    dType calcTimeElapsedMeasu{0.f};
+    dType calcTimeElapsedTrack{0.f};
 };
 
 extern showTagModel g_realStore;

@@ -1,22 +1,18 @@
 ﻿#ifndef DATAMPPOS_H
 #define DATAMPPOS_H
+#include "dataInputBase.h"
 #include <QObject>
 #include <QUdpSocket>
 #include <QTimer>
 #include "_myheads.h"
 #include "dataType.h"
 
-class uiMainWindow;
-class dataMpPos : public QObject
+class dataInputPos : public dataInputBase
 {
     Q_OBJECT
 
 public:
-    dataMpPos();
-
-    void setParent(uiMainWindow *parent) {
-        this->parent = parent;
-    }
+    dataInputPos();
 
     void startMpReqTimer();
     void stopMpReqTimer();
@@ -33,8 +29,6 @@ private:
     quint16 portNum{16800};
 
     QTimer *sendTimer;
-
-    uiMainWindow *parent;
 
 private slots:
     void msgRecv();

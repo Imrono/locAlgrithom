@@ -2,7 +2,7 @@
 #define ZFAKEDATA_H
 #include "_myheads.h"
 #include "dataSensorIni.h"
-#include "dataDistanceLog.h"
+#include "dataInputLog.h"
 #include "dataType.h"
 
 class zFakeData

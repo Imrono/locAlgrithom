@@ -1,11 +1,11 @@
 ﻿#include <QDebug>
-#include "dataMpPos.h"
+#include "dataInputPos.h"
 #include "showTagModel.h"
 #include "uiUsrFrame.h"
 #include "uiMainWindow.h"
 #include "ui_mainwindow.h"
 
-dataMpPos::dataMpPos()
+dataInputPos::dataInputPos()
 {
     udpSocket.bind(selfAddr, portNum);
     //udpSocket.bind(QHostAddress("127.0.0.1"), portNum);
@@ -15,7 +15,7 @@ dataMpPos::dataMpPos()
     connect(sendTimer, SIGNAL(timeout()), this, SLOT(msgSend()));
 }
 
-void dataMpPos::startMpReqTimer() {
+void dataInputPos::startMpReqTimer() {
     if (!sendTimer->isActive()) {
         sendTimer->setSingleShot(false);
         sendTimer->start(300);
@@ -23,14 +23,14 @@ void dataMpPos::startMpReqTimer() {
     }
 }
 
-void dataMpPos::stopMpReqTimer() {
+void dataInputPos::stopMpReqTimer() {
     if (sendTimer->isActive()) {
         sendTimer->stop();
         qDebug() << "[stopMpReqTimer]";
     }
 }
 
-void dataMpPos::msgSend() {
+void dataInputPos::msgSend() {
     static unsigned short seqNum  = 0;
     QByteArray inspByteArr = getPsQueryCmdArray(0/*seqNum ++*/);
     udpSocket.writeDatagram(inspByteArr, mpAddr, portNum);
@@ -51,7 +51,7 @@ void dataMpPos::msgSend() {
 */
 }
 
-void dataMpPos::msgRecv() {
+void dataInputPos::msgRecv() {
     QByteArray array;
     QHostAddress address;
     quint16 port;
@@ -68,7 +68,7 @@ void dataMpPos::msgRecv() {
     }
 }
 
-int dataMpPos::checkResponseData(const QByteArray &dataIn)  //检验返回数据是否有效
+int dataInputPos::checkResponseData(const QByteArray &dataIn)  //检验返回数据是否有效
 {
     if (dataIn[0] != 'J' || dataIn[1] != 'G') {
         return -1;  //如果返回的报文标示不是"JG"，那么返回-1
@@ -85,8 +85,8 @@ int dataMpPos::checkResponseData(const QByteArray &dataIn)  //检验返回数据
     return 1;
 }
 
-void dataMpPos::dataHandling(const QByteArray &dataIn) {
-    showTagModel &store = parent->getStore();
+void dataInputPos::dataHandling(const QByteArray &dataIn) {
+    showTagModel &store = mainWin->getStore();
     // tag info
     int tagNum = dataIn[8];
     qDebug() << "nTag" << tagNum;
@@ -123,13 +123,13 @@ void dataMpPos::dataHandling(const QByteArray &dataIn) {
         store.tags[tagId]->areaInfo    = areaInfo;
         store.tags[tagId]->batteryInfo = lackBattery;
 
-        uiUsrFrame *usrFrame = &(parent->getUsrFrame());
+        uiUsrFrame *usrFrame = &(mainWin->getUsrFrame());
         if (!usrFrame->containTagId(tagId)) {
             usrFrame->addOneUsr(tagId);
-            parent->ui->canvas->syncWithUiFrame(usrFrame);
+            mainWin->ui->canvas->syncWithUiFrame(usrFrame);
         }
 
-        parent->ui->canvas->setPosition(tagId, MP_POS_STR, QPointF(x, y));
+        mainWin->ui->canvas->setPosition(tagId, MP_POS_STR, QPointF(x, y));
         qDebug() << "tagId:" << tagId << "pos:" << x << y;
     }
 
@@ -145,12 +145,12 @@ void dataMpPos::dataHandling(const QByteArray &dataIn) {
     } else
     if (dataIn[7] == 0x00) {    // trigger presentation
         qDebug() << "update";
-        parent->ui->canvas->update();
+        mainWin->ui->canvas->update();
         //parent->update();
     } else {}
 }
 
-QByteArray dataMpPos::getPsQueryCmdArray(int cmdnum) {  //以自增的命令序号（最大为65535）作为参数，返回一条完整的查询命令
+QByteArray dataInputPos::getPsQueryCmdArray(int cmdnum) {  //以自增的命令序号（最大为65535）作为参数，返回一条完整的查询命令
     QByteArray queryCmd(10, 0);
     queryCmd[0] = 0x4a;
     queryCmd[1] = 0x47; //先装填上“JG”

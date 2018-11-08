@@ -5,7 +5,7 @@
 #include <QMouseEvent>
 #include "dataType.h"
 #include "dataSensorIni.h"
-#include "dataDistanceLog.h"
+#include "dataInputLog.h"
 #include "showTagColor.h"
 #include "showTagDelegate.h"
 #include "uiUsrFrame.h"
@@ -18,7 +18,6 @@ public:
     uiShowItem item{this};
 
     uiCanvas(QWidget *parent = 0);
-    bool isTestModel{false};
 
     void setConfigData(const configData *cfg_d);
     void syncWithUiFrame(uiUsrFrame *frm);
@@ -95,24 +94,47 @@ public:
         isShowPath = !isShowPath;
         return isShowPath;
     }
+    bool getShowPath() {
+        return isShowPath;
+    }
+
     bool reverseShowAllPos() {
         isShowAllPos = !isShowAllPos;
         return isShowAllPos;
     }
+    bool getShowAllPos() {
+        return isShowAllPos;
+    }
+
     bool reverseShowRadius() {
         isShowRadius = !isShowRadius;
         return isShowRadius;
     }
+    bool getShowRadius() {
+        return isShowRadius;
+    }
+
     bool reverseShowTrack() {
         isShowTrace = !isShowTrace;
         return isShowTrace;
     }
+    bool getShowTrack() {
+        return isShowTrace;
+    }
+
     bool reverseShowCross() {
         isShowCross = !isShowCross;
         return isShowCross;
     }
+    bool getShowCross() {
+        return isShowCross;
+    }
+
     bool reverseShowTagId() {
         isShowTagId = !isShowTagId;
+        return isShowTagId;
+    }
+    bool getShowTagId() {
         return isShowTagId;
     }
 
