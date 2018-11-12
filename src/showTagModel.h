@@ -6,6 +6,7 @@
 #include "showTagDelegate.h"
 #include "dataType.h"
 
+#define MAX_STORE_METHOD_CNT    1500
 struct storeTagInfo;
 struct storeMethodInfo {
     storeMethodInfo() {}
@@ -160,8 +161,5 @@ public:
     dType calcTimeElapsedMeasu{0.f};
     dType calcTimeElapsedTrack{0.f};
 };
-
-extern showTagModel g_realStore;
-extern showTagModel g_fakeStore;
 
 #endif // SHOWSTORE_H

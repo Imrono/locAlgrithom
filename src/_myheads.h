@@ -24,6 +24,8 @@
 #define MEASUR_STR "measure"
 #define TRACKx_STR "track"
 
+#define DISPLAY_INTERVAL_TIME 300
+
 #define TEST_TAG_ID -2
 #define UN_INIT_SHOW_TAGID -1
 #define UN_INIT_LM_TAGID -1

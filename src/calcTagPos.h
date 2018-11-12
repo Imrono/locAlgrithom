@@ -17,14 +17,17 @@ extern "C" {
 class calcTagPos
 {
 public:
-    explicit calcTagPos() {}
+    explicit calcTagPos() {
+        calcNlos = new calcTagNLOS();
+    }
     explicit calcTagPos(const configData *cfg_q) {
         this->cfg_d  = cfg_q;
+        calcNlos = new calcTagNLOS();
     }
     ~calcTagPos();
     void setConfigData(const configData *cfg_q);
     void setDistanceData(const distanceData *dist_q);
-    void setNlosJudge(const calcTagNLOS *calcNlos);
+    calcTagNLOS* getNlosJudge();
 
     QVector<locationCoor> calcPosFromDistance(const int dist[], uint32_t count = 4) const;
     static locationCoor calcOnePosFor2Dim(dType dist[], locationCoor loca[]);
@@ -92,7 +95,7 @@ public:
 private:
     const configData   *cfg_d {nullptr};
 
-    const calcTagNLOS  *calcNlos{nullptr};
+    calcTagNLOS *calcNlos{nullptr};
 
     CALC_POS_TYPE calcPosType{CALC_POS_TYPE::POS_NONE};
     unsigned kalmanCoupledType{KALMAN_COUPLED_TYPE::NONE_COUPLED};   // set @ uiMainWindow

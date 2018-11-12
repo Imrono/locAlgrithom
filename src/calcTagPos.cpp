@@ -119,8 +119,8 @@ void calcTagPos::setConfigData(const configData *cfg_q) {
     W_taylor = new dType[fc_row];
 }
 
-void calcTagPos::setNlosJudge(const calcTagNLOS *calcNlos) {
-    this->calcNlos = calcNlos;
+calcTagNLOS * calcTagPos::getNlosJudge() {
+    return calcNlos;
 }
 
 locationCoor calcTagPos::calcOnePosFor2Dim(dType dist[], locationCoor loca[]) {
@@ -193,8 +193,9 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, QVector<oneLogData> &dist
 
     QVector<dist4Calc> distRefined;
     bool usedSensor[MAX_SENSOR];
-    for (int i = 0; i < MAX_SENSOR; i++)
+    for (int i = 0; i < MAX_SENSOR; i++) {
         usedSensor[i] = true;
+    }
 
     // used for kalmanTaylor only
     oneKalmanData &kalmanData = tagInfo->calcPosKalmanData;
@@ -205,14 +206,12 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, QVector<oneLogData> &dist
     for (int i{0}; i < distData.count(); i++) {
         if (isUpdateP_t_1) {
             if (i > 0) {
-                tmpLastPos = distData[i-1].p_t;
+                distData[i].p_t_1 = distData[i-1].p_t;
             } else {
-                tmpLastPos = {0.f, 0.f, 0.f};
+                distData[i].p_t_1 = {0.f, 0.f, 0.f};
             }
-            distData[i].p_t_1 = tmpLastPos;
-        } else {
-            tmpLastPos = distData[i].p_t_1;
         }
+        tmpLastPos = distData[i].p_t_1;
         //qDebug() << i << tmpLastPos.toQPointF();
 
         // copy distance, nlos distance filter may change the distance
@@ -273,9 +272,20 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, QVector<oneLogData> &dist
         //qDebug() << measInfo.Ans[measInfo.Ans.count()-1].toString();
         tagInfo->iterPoints.append(tmpTrace);
         tagInfo->weight.append(tmpWeight);
-        if (i > 0) {
-            QLineF l_p = QLineF(measInfo.Ans[i-1].toQPointF(), measInfo.Ans[i].toQPointF());
+
+        if (!isUpdateP_t_1) {
+            QLineF l_p = QLineF(distData[i].p_t_1.toQPointF(), distData[i].p_t.toQPointF());
             measInfo.AnsLines.append(l_p);
+        } else {
+            if (i > 0) {
+                QLineF l_p = QLineF(measInfo.Ans[i-1].toQPointF(), measInfo.Ans[i].toQPointF());
+                measInfo.AnsLines.append(l_p);
+            } else {
+                measInfo.AnsLines.append(QLineF(measInfo.Ans[i].toQPointF(), measInfo.Ans[i].toQPointF()));
+            }
+        }
+
+        if (i > 0) {
             // v and a info
             dType lastT = (measInfo.time[i - 1].toMSecsSinceEpoch() % 100000) / 1000.f;
             dType diffTime = T - lastT + MY_EPS;
@@ -290,7 +300,6 @@ void calcTagPos::calcPosVector (storeTagInfo *tagInfo, QVector<oneLogData> &dist
             }
             lastV = currV;
         } else {
-            measInfo.AnsLines.append(QLineF(measInfo.Ans[i].toQPointF(), measInfo.Ans[i].toQPointF()));
             measInfo.AnsV.append(0.f);
             measInfo.AnsA.append(0.f);
         }

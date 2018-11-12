@@ -28,12 +28,16 @@ class dataInputBase : public QObject
 public:
     dataInputBase();
 
-    void setParent(uiMainWindow *parent) {
-        this->mainWin = parent;
+    void setMainWin(uiMainWindow *mainWin) {
+        this->mainWin = mainWin;
+    }
+    void setSensorNum(int n) {
+        sensorNum =n;
     }
 
 protected:
     uiMainWindow *mainWin;
+    int sensorNum{6};
 };
 
 #endif // DATACALCANALYZEINPUTBASE_H

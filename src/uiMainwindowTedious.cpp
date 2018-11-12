@@ -152,7 +152,7 @@ void uiMainWindow::connectUi() {
         handleModelDataUpdate(false);
     });
     connect(ui->reset, &QPushButton::clicked, this, [this](void) {
-        getCounting() = 1;
+        getCounting() = 0;
         handleModelDataUpdate(false);
     });
     connect(ui->previous, &QPushButton::clicked, this, [this](void) {
@@ -274,7 +274,7 @@ void uiMainWindow::wheelEvent(QWheelEvent *e)
 }
 
 void uiMainWindow::checkData() {
-    bool logInited = ((dataInputLog*)calcAnalyzeInput[analyzeStatus]->dataInputHandler)->get_q()->isInitialized;
+    bool logInited = static_cast<dataInputLog*>(calcAnalyzeInput[analyzeStatus]->dataInputHandler)->get_q()->isInitialized;
     qDebug() << "[@uiMainWindow::checkData()]"
              << "cfgData.get_q() =" << cfgData.get_q()->isInitialized
              << "distData.get_q() =" << logInited;
@@ -311,11 +311,13 @@ void uiMainWindow::checkData() {
 void uiMainWindow::resetData() {
     // CLEAR LEGACY DATA
     calcAnalyzeInput[CALC_LOG_ANALYZE]->modelStore.removeAll();
-    static_cast<dataInputLog *>(calcAnalyzeInput[CALC_LOG_ANALYZE]->dataInputHandler)->clear();
+    //static_cast<dataInputLog *>(calcAnalyzeInput[CALC_LOG_ANALYZE]->dataInputHandler)->clear();
     calcAnalyzeInput[CALC_TEST_ANALYZE]->modelStore.removeAll();
 
     for (int i = 0; i < NUM_ANALYZE_STATUS; i++) {
         calcAnalyzeInput[i]->usrFrame.removeAll();
+        calcAnalyzeInput[i]->modelStore.calcPosType = CALC_POS_TYPE::POS_NONE;
+        calcAnalyzeInput[i]->modelStore.calcTrackMethod = TRACK_METHOD::TRACK_NONE;
     }
     ui->canvas->removeAll();
     // CLEAR UI
@@ -351,20 +353,24 @@ void uiMainWindow::resetUi(bool isPos, bool isTrack) {
     } else {}
 }
 
-void uiMainWindow::setStatusTimeInfo() {
-    QString posStr;
-    QString trackStr;
+void uiMainWindow::setStatusTimeInfo(bool isCalcPosAnalyze) {
+    if (isCalcPosAnalyze) {
+        calcTimeElapsed->setText("PLEASE SET PC's IP: <b>192.168.200.205</b> (matches IP1)");
+    } else {
+        QString posStr;
+        QString trackStr;
 
-    showTagModel &store = getStore();
-    posStr = CALC_POS2STR[store.calcPosType];
-    trackStr = TRACK_METHOD2STR[getStore().calcTrackMethod];
+        showTagModel &store = getStore();
+        posStr = CALC_POS2STR[store.calcPosType];
+        trackStr = TRACK_METHOD2STR[getStore().calcTrackMethod];
 
-    calcTimeElapsed->setText(QString("<b>nPOS:%0</b> | <b>%1</b>:%2(s) | <b>%3</b>:%4(s)")
-                             .arg(store.totalPos)
-                             .arg(posStr)
-                             .arg(QString::number(store.calcTimeElapsedMeasu))
-                             .arg(trackStr)
-                             .arg(QString::number(store.calcTimeElapsedTrack)));
+        calcTimeElapsed->setText(QString("<b>nPOS:%0</b> | <b>%1</b>:%2(s) | <b>%3</b>:%4(s)")
+                                 .arg(store.totalPos)
+                                 .arg(posStr)
+                                 .arg(QString::number(store.calcTimeElapsedMeasu, 'g', 4))
+                                 .arg(trackStr)
+                                 .arg(QString::number(store.calcTimeElapsedTrack)));
+    }
 }
 void uiMainWindow::setStatusDistCount() {
     distCountShow->setText(QString("distCount: <b>%0</b>").arg(getCounting(), 4, 10, QChar('0')));
@@ -472,13 +478,18 @@ void uiMainWindow::on_cbAnalyzeMode_currentIndexChanged(int index)
         actionNowTrack = nullptr;
     }
 
+    showTagModel &store = getStore();
+    foreach (storeTagInfo* tag, store.tags) {
+        ui->canvas->clearData(tag->tagId);
+    }
+
     resetUi(true, true);
 /******************************************************* reset the enviroment */
-
     calcAnalyzeInput[CALC_LOG_ANALYZE ]->handleModelChange(false, this);
     calcAnalyzeInput[CALC_TEST_ANALYZE]->handleModelChange(false, this);
     calcAnalyzeInput[CALC_CAN_ANALYZE ]->handleModelChange(false, this);
     calcAnalyzeInput[CALC_POS_ANALYZE ]->handleModelChange(false, this);
+    distanceShowTagId = UN_INIT_SHOW_TAGID;
 
     if (CALC_LOG_ANALYZE == index) {
         workingStore = &calcAnalyzeInput[CALC_LOG_ANALYZE]->modelStore;

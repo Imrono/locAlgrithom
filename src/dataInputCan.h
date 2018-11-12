@@ -20,7 +20,7 @@ struct ST_SAV_PARSED_DATA {
     uint16_t tagID;
     uint16_t distance;
 
-    qint64 timeTick;
+    uint32_t timeTick;
 };
 
 class dataInputCan : public dataInputBase
@@ -30,12 +30,14 @@ public:
     dataInputCan();
     ~dataInputCan();
 
-    void AttatchToSharedMemory();
-
     bool getOneDistanceData(ST_SAV_PARSED_DATA &distData);
 
     void startDistanceFetchTimer();
     void stopDistanceFetchTimer();
+
+    oneLogData getDistData() {
+        return distData;
+    }
 
 private:
     QSharedMemory smem;
@@ -44,13 +46,19 @@ private:
     int queueIndex{0};
     uint64_t m_ipcDataCnt{0};
 
-    const int ONE_CAN_DISTANCE_DATA_LEN{16};
+    const int ONE_CAN_DISTANCE_DATA_LEN{20};
 
     QTimer *distanceFetchTimer;
+    QTimer *displayUpdateTimer;
+
     QVector<ST_SAV_PARSED_DATA> calcDistanceData;
+    oneLogData distData;
+    QDateTime timebase;
+    qint64 timeOffset{0};
 
 private slots:
     void distanceDataFetch();
+    void displayUpdate();
 };
 
 #endif // DATADISTANCECAN_IPC_H

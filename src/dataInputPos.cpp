@@ -18,7 +18,7 @@ dataInputPos::dataInputPos()
 void dataInputPos::startMpReqTimer() {
     if (!sendTimer->isActive()) {
         sendTimer->setSingleShot(false);
-        sendTimer->start(300);
+        sendTimer->start(DISPLAY_INTERVAL_TIME);
         qDebug() << "[startMpReqTimer]";
     }
 }
@@ -87,6 +87,7 @@ int dataInputPos::checkResponseData(const QByteArray &dataIn)  //检验返回数
 
 void dataInputPos::dataHandling(const QByteArray &dataIn) {
     showTagModel &store = mainWin->getStore();
+    uiUsrFrame &usrFrame = mainWin->getUsrFrame();
     // tag info
     int tagNum = dataIn[8];
     qDebug() << "nTag" << tagNum;
@@ -116,20 +117,24 @@ void dataInputPos::dataHandling(const QByteArray &dataIn) {
         measInfo.Ans.append(locationCoor(x, y, z));
         int nCnt = measInfo.Ans.count();
         if (nCnt > 1) {
-            QLineF l_p = QLineF(measInfo.Ans[nCnt-2].toQPointF(), measInfo.Ans[nCnt-1].toQPointF());
-            measInfo.AnsLines.append(l_p);
+            measInfo.AnsLines.append(QLineF(measInfo.Ans[nCnt-2].toQPointF(), measInfo.Ans[nCnt-1].toQPointF()));
+        } else {
+            measInfo.AnsLines.append(QLineF(measInfo.Ans[nCnt-1].toQPointF(), measInfo.Ans[nCnt-1].toQPointF()));
         }
         store.tags[tagId]->operInfo    = operArea;
         store.tags[tagId]->areaInfo    = areaInfo;
         store.tags[tagId]->batteryInfo = lackBattery;
 
-        uiUsrFrame *usrFrame = &(mainWin->getUsrFrame());
-        if (!usrFrame->containTagId(tagId)) {
-            usrFrame->addOneUsr(tagId);
-            mainWin->ui->canvas->syncWithUiFrame(usrFrame);
+        if (!usrFrame.containTagId(tagId)) {
+            usrFrame.addOneUsr(tagId);
+            mainWin->ui->canvas->syncWithUiFrame(&usrFrame);
         }
 
-        mainWin->ui->canvas->setPosition(tagId, MP_POS_STR, QPointF(x, y));
+        if (usrFrame.isShowable(tagId)) {
+            mainWin->ui->canvas->setPosition(tagId, MP_POS_STR, QPointF(x, y));
+            mainWin->ui->canvas->setLine(tagId, MP_POS_STR, measInfo.AnsLines[nCnt-1]);
+            mainWin->ui->canvas->setLines(tagId, MP_POS_STR, measInfo.AnsLines);
+        }
         qDebug() << "tagId:" << tagId << "pos:" << x << y;
     }
 

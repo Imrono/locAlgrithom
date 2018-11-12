@@ -100,7 +100,7 @@ private:
     }
 
     calcTagPos calcPos;
-    calcTagNLOS calcNlos;
+    calcTagNLOS *calcNlos;
     calcTagTrack calcTrack;
 
     // sensor location and oper, alarm, stop
@@ -125,7 +125,7 @@ private:
     void connectUi();
 
     QLabel *calcTimeElapsed{nullptr};
-    void setStatusTimeInfo();
+    void setStatusTimeInfo(bool isCalcPosAnalyze = false);
     QLabel *distCountShow{nullptr};
     void setStatusDistCount();
     QLabel *distZoomShow{nullptr};
@@ -159,7 +159,7 @@ private slots:
     void nlosSumDist();
 
     // POS
-    void posCalcPROCESS(CALC_POS_TYPE type);
+    void posCalcPROCESS(CALC_POS_TYPE type, int tagId = 0);
     void posFullCentroid();
     void posSubLS();
     void posTwoCenter();
@@ -192,7 +192,7 @@ private slots:
 private slots:
     void reflashUI();
 
-    void handleModelDataUpdate(bool isUpdateCount = true);
+    void handleModelDataUpdate(bool isUpdateCount = true, bool isShowRT = false);
     void oneUsrBtnClicked(int tagId, bool isShowable);
     void oneUsrShowML(int tagId, bool isShowML);
     void sigmaChanged(int sigma);
